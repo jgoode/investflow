@@ -10,6 +10,7 @@ dependencies = [
     "alembic>=1.13",
     "argon2-cffi>=23",
     "pyjwt>=2.8",
+    "cryptography>=42",
 ]
 
 [dependency-groups]
