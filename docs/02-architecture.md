@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Active |
-| **Last updated** | 2026-11-08 |
+| **Last updated** | 2026-11-08 (ITER-01 layout reality applied — ADR-005) |
 | **Parent** | [00-overview](00-overview.md) · Decisions D-01…D-16 |
 
 ## 1. System overview
@@ -76,8 +76,10 @@ Monorepo layout:
 investflow/
 ├─ backend/         (FastAPI app, package name `app`)
 ├─ frontend/        (Next.js app)
+├─ e2e/             (Playwright L4 suite — docs/03-test-plan.md §2; ADR-005)
 ├─ docs/            (this documentation set)
-├─ Makefile         (dev, dev-all, seed, test, test-all, lint, migrate, backup)
+├─ package.json     (root — home of the Playwright test runner; ADR-005)
+├─ Makefile         (setup, dev, test, lint, migrate, test-e2e; later adds dev-all, seed, test-all, backup per §7)
 └─ README.md
 ```
 

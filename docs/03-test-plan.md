@@ -79,6 +79,11 @@ Legend: `U`=L1, `I`=L2, `C`=L3, `E`=L4. `•` = primary home for that AC's test;
 
 *(iterations referencing "15?" resolve in [04-progress](04-progress.md) roadmap — see §6 mapping table there.)
 
+*ITER-01 close note: skeleton iteration — no AC matrix rows yet. `/api/healthz` is covered at L2
+(`backend/tests/api/test_healthz.py`) and by the L4 smoke (`e2e/smoke.spec.ts`); NFR-11 SQLite conventions
+at L1 (`backend/tests/unit/test_db_connection.py`). The healthz smoke doubles as the NFR-2 exempt-path
+check from ITER-02 onward.*
+
 ## 5. Dedicated suites
 
 ### 5.1 Auth/session suite (Iterations 2–3)

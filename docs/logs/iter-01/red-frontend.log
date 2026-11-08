@@ -1,0 +1,32 @@
+
+ RUN  v3.2.7 /home/john/src/investflow/frontend
+
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  app/__tests__/pages.test.tsx [ app/__tests__/pages.test.tsx ]
+Error: Failed to resolve import "../dashboard/page" from "app/__tests__/pages.test.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/john/src/investflow/frontend/app/__tests__/pages.test.tsx:11:0
+  3  |  }));
+  4  |  const __vi_import_0__ = await import("@testing-library/react");
+  5  |  const __vi_import_1__ = await import("../dashboard/page");
+     |                                       ^
+  6  |  const __vi_import_2__ = await import("../page");
+  7  |  const __vi_import_3__ = await import("next/navigation");
+ ❯ TransformPluginContext._formatLog node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:29250:43
+ ❯ TransformPluginContext.error node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:29247:14
+ ❯ normalizeUrl node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:27370:18
+ ❯ node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:27428:32
+ ❯ TransformPluginContext.transform node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:27396:4
+ ❯ EnvironmentPluginContainer.transform node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:29048:14
+ ❯ loadAndTransform node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:22914:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  no tests
+   Start at  09:41:12
+   Duration  362ms (transform 8ms, setup 0ms, collect 0ms, tests 0ms, environment 234ms, prepare 33ms)
+

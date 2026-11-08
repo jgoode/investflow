@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-08 (time-zero; no code yet) |
+| **Last updated** | 2026-11-08 (ITER-01 closed; §4 → ITER-02) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
@@ -55,31 +55,41 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-01 — Project skeleton & CI**
+> **ITER-02 — Auth core**
 >
-> You are working in `/home/john/src/investflow` on **InvestFlow**, a personal accounting app
-> (FastAPI + Next.js + SQLite). Read first: `docs/00-overview.md`, `docs/01-requirements.md` (§11 NFR-1/6/11),
-> `docs/02-architecture.md` (§1–§2, §7), `docs/03-test-plan.md` (§2–§3, §6),
-> `docs/04-progress.md` (ITER-01 roadmap row + expected doc touches table).
+> You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
+> `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-16 stack), `docs/01-requirements.md`
+> §1 (FR-U1–U3, AC-U1a–d / AC-U2a–d / AC-U3a–b), §10 (FR-N — mega menu, AC-N2 keyboard a11y minimum), §11 NFR-2/3,
+> `docs/02-architecture.md` §3.1 `users` table, §4.2/§4.3 (JWT/session mechanics, cookie + epoch revocation,
+> CSRF header rule), §5.1/§5.2 (route tree, auth gate, mega menu), `docs/03-test-plan.md` §4 matrix rows
+> (U1–U3, N-part), §5.1 security suite, §6, docs/04-progress.md ITER-02 row + [04 §5](04-progress.md) mapping row.
 >
-> **This is an interactive TDD session.** Do not implement anything until tests exist and are red.
-> Scope strictly to ITER-01's ACs below. If anything is ambiguous, ask me — do not assume.
+> **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
+> scope only to this iteration's AC list: **AC-U1a–U1d, AC-U2a–U2c/U2d, AC-U3a–U3b, AC-N1–N4 partial, NFR-2**
+> — ask me about any ambiguity; never assume.
 >
-> **Deliverable (thin slice, no features beyond this):**
-> 1. Monorepo layout exactly per `docs/02-architecture.md` §2 (backend/, frontend/, docs/, Makefile, README stub).
-> 2. Backend: FastAPI app with single endpoint `GET /api/healthz` (no auth) returning `{"status":"ok","version":…}`;
->    SQLite connection layer with WAL + foreign_keys pragma per §4/§3 conventions; Alembic initialized.
-> 3. Frontend: Next.js 15 App Router shell with root page redirecting to `/dashboard` (a placeholder page saying
->    "not yet built" instead of auth flow), Tailwind 4 + DaisyUI 5 configured.
-> 4. Makefile targets per §7: `dev`, `test`, `test-e2e`, `lint`, `migrate`.
-> 5. Lint/type configs per NFR-6 (ruff + mypy strict; eslint flat + tsc strict), CI-runnable.
-> 6. Test harnesses per 03 §2: pytest (unit dir), vitest, Playwright with one smoke scenario:
->    open app → placeholder page renders; healthz responds ok (mock network unnecessary here).
+> **Deliverable:**
+> 1. Backend: `users` table + first real Alembic migration ([02 §3.1](02-architecture.md)); argon2id hashing;
+>    `POST /api/auth/register`, `/api/auth/login` (JWT HS256 httpOnly SameSite=Lax `investflow_session` cookie,
+>    `session_epoch` claim), `/api/auth/logout`, `/api/auth/me`; auth guard on every other `/api/**`
+>    (401) — exempt set is exactly: `/api/auth/register`, `/api/auth/login`, `/api/healthz`.
+> 2. Frontend: `/register` + `/login` screens (client-side validation mirrored as server 422s), auth-gated
+>    `(app)` layout via server-side session gate → `redirect('/login')` ([02 §5.1](02-architecture.md));
+>    mega menu shell with Dashboard·Reports groups visible (rest greyed "coming"), keyboard nav per AC-N2.
+> 3. Security tests per [03 §5.1](03-test-plan.md): 401 guard matrix, cookie flags, generic + timing-equal
+>    login failure, login throttle with pinned clock (`time-machine`), epoch revocation test.
 >
-> **Acceptance criteria for this iteration:** all tests green (`make test`, `make test-e2e`), lint/type pass on
-> both apps, healthz covered by an API test, smoke E2E green, README documents the ≤3-command quickstart
-> (NFR-1). Then execute the roll-forward workflow in `docs/07-iterative-prompts.md` §2 so the register,
-> progress log, and this document's §4 are ready for ITER-02.
+> **Out of scope this iteration:** user-management screens/AC-U4 ([ITER-03](04-progress.md)), COA ([ITER-05]),
+> registration rate-limit beyond AC-U1d minimum, HTTPS reverse-proxy config.
+>
+> **Definition of done:** mapped-layer tests green (L1/L2 backend, L3 vitest, L4 E2E login→dashboard journey),
+> `make test` + `make test-e2e` green, lint/types green, coverage gates updated per GAP-008 (pytest-cov
+> `fail_under=85`, `@vitest/coverage-v8` installed), then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8
+> so the next prompt (§4) is ready.
+>
+> **Known traps:** throttle/timing tests must use the pinned clock, never real sleeps; do not reveal account
+> activity states in the generic failure message (AC-U2b); the mega menu must already be route-highlight-aware;
+> keep `users.session_epoch` in the JWT payload from day one — retrofitting is painful.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 
@@ -103,9 +113,6 @@ ITER-02 are already green.
 
 *(R5 moves one row from here into §4, replacing the spent one. Do not skip order without a `04-progress.md` note.)*
 
-- ⏭ **ITER-02 — Auth core** (AC-U1…U3, FR-N; architecture §4.3, §5.1; traps: crypto battery n/a yet,
-  but the §5.1 security suite must exist — NFR-2/3 tests, login throttle with pinned clock,
-  MegaMenu partial with keyboard nav AC-N2)
 - ⏭ **ITER-03 — User management** (AC-U4…; architecture §3.1 `users`/`session_epoch`; traps: deactivate-in-flight
   session revocation test, last-active guard)
 - ⏭ **ITER-04 — Encryption core + crypto battery** (FR-E E1–E8; architecture §4.4, §6; traps: DB-scan suite

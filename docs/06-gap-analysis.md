@@ -61,6 +61,13 @@ Append rows during development; never delete (mark superseded). Format:
 
 *(register is live — do not pre-populate with speculative entries; new examples will follow ADR/log conventions in [04 §4](04-progress.md).)*
 
+### GAP-008 — Coverage enforcement not yet wired (pytest-cov gate / vitest coverage provider)
+- **Opened:** 2026-11-08 (ITER-01) · **Type:** discovered-missing
+- **Origin:** [03 §6](03-test-plan.md) NFR-6 coverage targets vs ITER-01 reality
+- **Description:** backend pytest runs with `pytest-cov` available but no `fail-under` gate; frontend vitest has **no coverage provider installed** (`@vitest/coverage-v8` absent). Measured manually in ITER-01: backend 100% / frontend not measured.
+- **If deferred:** target ITER-02 — wire `fail_under=85` (later revision-section targets from 03 §6) + install `@vitest/coverage-v8` with `coverage.thresholds` as first logic-bearing code lands, so gates are exercised while the suite is small.
+- **Status:** open → scheduled (ITER-02)
+
 ## 4. Close-of-iteration checklist (gap-analysis part)
 
 At each iteration close ([07 §2](07-iterative-prompts.md)):
@@ -69,4 +76,5 @@ At each iteration close ([07 §2](07-iterative-prompts.md)):
 2. Review §3 register: promote rows with ready prerequisites to "scheduled (ITER-XX)".
 3. Confirm that §2 table entries untouched during the iteration are still accurate.
 4. Refresh the 3-layer picture (§1) status sentence below: *(update on close)* —
-   **Wants are fully spec'd (§2.1/§2.2 records deltas), Reality has 0 iterations done.**
+   **Wants are fully spec'd (§2.1/§2.2 records deltas), Reality has 1 iteration done — ITER-01 (skeleton, ✅ 2026-11-08):
+   healthz + connection-layer pragmas + shell covered by red→green tests at L1/L2/L3/L4; GAP-008 tracks coverage-gate wiring.**

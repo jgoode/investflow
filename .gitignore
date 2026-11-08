@@ -1,0 +1,29 @@
+# Python / backend
+backend/.venv/
+backend/data/
+__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+
+# Node / frontend
+node_modules/
+.next/
+out/
+*.tsbuildinfo
+
+# Playwright
+test-results/
+playwright-report/
+blob-report/
+
+# Secrets (FR-E pattern: keys live outside the DB, repo-ignored)
+.secret/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/

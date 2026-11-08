@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (initial; register empty) |
+| **Last updated** | 2026-11-08 (ITER-01 close — register empty, triage clean per §5) |
 
 ## 1. Definitions
 
@@ -30,6 +30,10 @@ Priority = severity × scope: any S1 anywhere > S2 core ledger/crypto/auth > S2 
 ID pattern: `DEF-<three digits>`; never reused; a superseded row links the replacement instead of being deleted.
 
 *(Empty — first entry expected no later than ITER-01 smoke-test E2E runs.)*
+
+**ITER-01 close note:** no defect entries; no red tests parked. One red-phase test-authoring slip
+(a no-op assertion in `tests/unit/test_db_connection.py`) was caught by ruff `B018` before any test
+run and does not qualify as a defect (it never shipped nor violated an AC).
 
 ### Entry template
 
