@@ -41,8 +41,8 @@ def apply_pragmas(conn: sqlite3.Connection) -> None:
     conn.execute(f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
 
 
-def connect(path: Path | None = None) -> sqlite3.Connection:
-    db_path = path if path is not None else resolve_db_path()
+def connect(path: str | Path | None = None) -> sqlite3.Connection:
+    db_path = Path(path) if path is not None else resolve_db_path()
     db_path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row

@@ -38,13 +38,16 @@ def _current_key_file() -> Path:
     return default_key_file()
 
 
+def _normalize_key_value(value: bytes | str | bytearray) -> bytes:
+    if isinstance(value, (bytes, bytearray)):
+        return bytes(value)
+    return decode_key(str(value))
+
+
 def _canonicalize_keyring(raw_keyring: Mapping[str, Any]) -> dict[str, bytes]:
     normalized: dict[str, bytes] = {}
     for key_id, encoded in raw_keyring.items():
-        if isinstance(encoded, (bytes, bytearray)):
-            normalized[str(key_id)] = bytes(encoded)
-        else:
-            normalized[str(key_id)] = decode_key(str(encoded))
+        normalized[str(key_id)] = _normalize_key_value(encoded)
     return dict(sorted(normalized.items()))
 
 
@@ -89,7 +92,9 @@ def save_keyring(keyring: Mapping[str, bytes | str], path: str | Path | None = N
             payload[str(key_id)] = encode_key(bytes(value))
         else:
             payload[str(key_id)] = str(value)
-    target_path.write_text(json.dumps(payload, sort_keys=True), encoding="utf-8")
+    serialized = json.dumps(payload, sort_keys=True)
+    target_path.write_text(serialized, encoding="utf-8")
+    os.environ[KEYRING_ENV] = serialized
     os.chmod(target_path, 0o600)
     return target_path
 
@@ -154,9 +159,9 @@ def rotate_keyring(
 ) -> str:
     keyring = load_keyring(keyring_path=keyring_path)
     if new_key_id not in keyring:
-        keyring[new_key_id] = generate_key()
+        keyring[new_key_id] = _normalize_key_value(generate_key())
     if old_key_id is not None and old_key_id not in keyring:
-        keyring[old_key_id] = generate_key()
+        keyring[old_key_id] = _normalize_key_value(generate_key())
     save_keyring(keyring, keyring_path)
     set_active_key_id(new_key_id, db_path=db_path)
     return new_key_id
