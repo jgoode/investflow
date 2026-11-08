@@ -1,0 +1,434 @@
+
+ RUN  v3.2.7 /home/john/src/investflow/frontend
+
+ ❯ app/__tests__/mega-menu.test.tsx (2 tests | 1 failed) 55ms
+   ✓ mega menu > opens and closes with escape and keeps route highlight 41ms
+   × mega menu > shows Users as an enabled destination 14ms
+     → Unable to find an accessible element with the role "link" and name "Users"
+
+Here are the accessible roles:
+
+  banner:
+
+  Name "":
+  <header
+    class="border-b border-base-300 bg-base-100 px-4 py-3"
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "Menu":
+  <button
+    aria-controls="mega-menu-content"
+    aria-expanded="true"
+    class="btn btn-outline btn-sm min-h-11"
+    type="button"
+  />
+
+  Name "Logout":
+  <button
+    class="btn btn-ghost btn-sm min-h-11"
+    type="button"
+  />
+
+  --------------------------------------------------
+  navigation:
+
+  Name "":
+  <nav
+    class="absolute left-0 z-20 mt-2 w-[28rem] rounded-lg border border-base-300 bg-base-100 p-4 shadow-lg"
+    id="mega-menu-content"
+  />
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  <ul
+    class="grid grid-cols-2 gap-2"
+  />
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  <li />
+
+  Name "":
+  <li />
+
+  Name "":
+  <li
+    class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+  />
+
+  Name "":
+  <li
+    class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+  />
+
+  Name "":
+  <li
+    class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+  />
+
+  Name "":
+  <li
+    class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+  />
+
+  --------------------------------------------------
+  link:
+
+  Name "Dashboard":
+  <a
+    aria-current="page"
+    class="block rounded-md px-3 py-2 text-sm min-h-11 bg-primary text-primary-content"
+    href="/dashboard"
+  />
+
+  Name "Reports":
+  <a
+    class="block rounded-md px-3 py-2 text-sm min-h-11 hover:bg-base-200"
+    href="/reports"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <header
+      class="border-b border-base-300 bg-base-100 px-4 py-3"
+    >
+      <div
+        class="mx-auto flex max-w-6xl items-center justify-between gap-4"
+      >
+        <div
+          class="relative"
+        >
+          <button
+            aria-controls="mega-menu-content"
+            aria-expanded="true"
+            class="btn btn-outline btn-sm min-h-11"
+            type="button"
+          >
+            Menu
+          </button>
+          <nav
+            class="absolute left-0 z-20 mt-2 w-[28rem] rounded-lg border border-base-300 bg-base-100 p-4 shadow-lg"
+            id="mega-menu-content"
+          >
+            <ul
+              class="grid grid-cols-2 gap-2"
+            >
+              <li>
+                <a
+                  aria-current="page"
+                  class="block rounded-md px-3 py-2 text-sm min-h-11 bg-primary text-primary-content"
+                  href="/dashboard"
+                >
+                  Dashboard
+                </a>
+              </li>
+              <li>
+                <a
+                  class="block rounded-md px-3 py-2 text-sm min-h-11 hover:bg-base-200"
+                  href="/reports"
+                >
+                  Reports
+                </a>
+              </li>
+              <li
+                class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+              >
+                Accounts
+                 
+                <span
+                  class="ml-1 text-xs"
+                >
+                  (coming)
+                </span>
+              </li>
+              <li
+                class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+              >
+                Investments
+                 
+                <span
+                  class="ml-1 text-xs"
+                >
+                  (coming)
+                </span>
+              </li>
+              <li
+                class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+              >
+                Users
+                 
+                <span
+                  class="ml-1 text-xs"
+                >
+                  (coming)
+                </span>
+              </li>
+              <li
+                class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+              >
+                Settings
+                 
+                <span
+                  class="ml-1 text-xs"
+                >
+                  (coming)
+                </span>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div
+          class="flex items-center gap-3"
+        >
+          <span
+            class="text-sm opacity-70"
+          >
+            alice
+          </span>
+          <button
+            class="btn btn-ghost btn-sm min-h-11"
+            type="button"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </header>
+  </div>
+</body>
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  app/__tests__/mega-menu.test.tsx > mega menu > shows Users as an enabled destination
+TestingLibraryElementError: Unable to find an accessible element with the role "link" and name "Users"
+
+Here are the accessible roles:
+
+  banner:
+
+  Name "":
+  <header
+    class="border-b border-base-300 bg-base-100 px-4 py-3"
+  />
+
+  --------------------------------------------------
+  button:
+
+  Name "Menu":
+  <button
+    aria-controls="mega-menu-content"
+    aria-expanded="true"
+    class="btn btn-outline btn-sm min-h-11"
+    type="button"
+  />
+
+  Name "Logout":
+  <button
+    class="btn btn-ghost btn-sm min-h-11"
+    type="button"
+  />
+
+  --------------------------------------------------
+  navigation:
+
+  Name "":
+  <nav
+    class="absolute left-0 z-20 mt-2 w-[28rem] rounded-lg border border-base-300 bg-base-100 p-4 shadow-lg"
+    id="mega-menu-content"
+  />
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  <ul
+    class="grid grid-cols-2 gap-2"
+  />
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  <li />
+
+  Name "":
+  <li />
+
+  Name "":
+  <li
+    class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+  />
+
+  Name "":
+  <li
+    class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+  />
+
+  Name "":
+  <li
+    class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+  />
+
+  Name "":
+  <li
+    class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+  />
+
+  --------------------------------------------------
+  link:
+
+  Name "Dashboard":
+  <a
+    aria-current="page"
+    class="block rounded-md px-3 py-2 text-sm min-h-11 bg-primary text-primary-content"
+    href="/dashboard"
+  />
+
+  Name "Reports":
+  <a
+    class="block rounded-md px-3 py-2 text-sm min-h-11 hover:bg-base-200"
+    href="/reports"
+  />
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+<body>
+  <div>
+    <header
+      class="border-b border-base-300 bg-base-100 px-4 py-3"
+    >
+      <div
+        class="mx-auto flex max-w-6xl items-center justify-between gap-4"
+      >
+        <div
+          class="relative"
+        >
+          <button
+            aria-controls="mega-menu-content"
+            aria-expanded="true"
+            class="btn btn-outline btn-sm min-h-11"
+            type="button"
+          >
+            Menu
+          </button>
+          <nav
+            class="absolute left-0 z-20 mt-2 w-[28rem] rounded-lg border border-base-300 bg-base-100 p-4 shadow-lg"
+            id="mega-menu-content"
+          >
+            <ul
+              class="grid grid-cols-2 gap-2"
+            >
+              <li>
+                <a
+                  aria-current="page"
+                  class="block rounded-md px-3 py-2 text-sm min-h-11 bg-primary text-primary-content"
+                  href="/dashboard"
+                >
+                  Dashboard
+                </a>
+              </li>
+              <li>
+                <a
+                  class="block rounded-md px-3 py-2 text-sm min-h-11 hover:bg-base-200"
+                  href="/reports"
+                >
+                  Reports
+                </a>
+              </li>
+              <li
+                class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+              >
+                Accounts
+                 
+                <span
+                  class="ml-1 text-xs"
+                >
+                  (coming)
+                </span>
+              </li>
+              <li
+                class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+              >
+                Investments
+                 
+                <span
+                  class="ml-1 text-xs"
+                >
+                  (coming)
+                </span>
+              </li>
+              <li
+                class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+              >
+                Users
+                 
+                <span
+                  class="ml-1 text-xs"
+                >
+                  (coming)
+                </span>
+              </li>
+              <li
+                class="rounded-md bg-base-200 px-3 py-2 text-sm opacity-65"
+              >
+                Settings
+                 
+                <span
+                  class="ml-1 text-xs"
+                >
+                  (coming)
+                </span>
+              </li>
+            </ul>
+          </nav>
+        </div>
+        <div
+          class="flex items-center gap-3"
+        >
+          <span
+            class="text-sm opacity-70"
+          >
+            alice
+          </span>
+          <button
+            class="btn btn-ghost btn-sm min-h-11"
+            type="button"
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+    </header>
+  </div>
+</body>
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ app/__tests__/mega-menu.test.tsx:34:30
+     32|     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
+     33| 
+     34|     const usersLink = screen.getByRole("link", { name: "Users" });
+       |                              ^
+     35|     expect(usersLink).toBeTruthy();
+     36|     expect(screen.queryByText("Users (coming)")).toBeNull();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  11:43:21
+   Duration  474ms (transform 34ms, setup 0ms, collect 84ms, tests 55ms, environment 198ms, prepare 34ms)
+

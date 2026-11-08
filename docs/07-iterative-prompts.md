@@ -3,14 +3,14 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-08 (ITER-02 closed; §4 → ITER-03) |
+| **Last updated** | 2026-11-08 (ITER-03 closed; §4 → ITER-04) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
 
 - §2 — the documentation roll-forward workflow (what to update after every iteration)
 - §3 — the in-session TDD execution loop
-- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-01)
+- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-04)
 - §5 — the stable prompt template used to generate §4 for later iterations
 
 ---
@@ -55,36 +55,35 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-03 — User management**
+> **ITER-04 — Encryption core + crypto battery**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
 > `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-16 stack), `docs/01-requirements.md`
-> §1 FR-U4 (AC-U4a–U4e), §11 NFR-2/NFR-3, `docs/02-architecture.md` §3.1 (`users` + `session_epoch`),
-> §4.2/§4.3 (auth mechanics + revocation), §5.1 route tree (`/users`), `docs/03-test-plan.md` §4 matrix row U4,
-> §5.1 auth/session suite, docs/04-progress.md ITER-03 row + [04 §5](04-progress.md) mapping row.
+> §8 FR-E (AC-E1–E8), §11 NFR-3, `docs/02-architecture.md` §3.1 (`account_sensitive` and encrypted fields),
+> §4.4 (AES-256-GCM design/AAD/keyring), §6 (security/ops notes), `docs/03-test-plan.md` §4 matrix row E1–E8
+> and §5.2 crypto battery, docs/04-progress.md ITER-04 row + [04 §5](04-progress.md) mapping row.
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to this iteration's AC list: **AC-U4a–U4e**
+> scope only to this iteration's AC list: **AC-E1–E8**
 > — ask me about any ambiguity; never assume.
 >
 > **Deliverable:**
-> 1. Backend `/api/users` management endpoints for list/edit/activate-inactivate/delete + own-password change:
->    include last-active guard (AC-U4c), authenticated-only enumeration (AC-U4e), and epoch bump/revocation on
->    deactivate/reactivate paths (AC-U4b).
-> 2. Frontend `/users` screen with shared-book visibility and edit actions (AC-U4a); own-password update flow (AC-U4d).
-> 3. Regression/security tests per [03 §5.1](03-test-plan.md): active-session invalidation after deactivation,
->    last-active refusal, own-password refresh path, and protected user-list access checks.
+> 1. Implement `crypto/` encryption service (AES-256-GCM, keyring loading/selection, AAD binding) and wire
+>    encrypted account-sensitive field persistence without plaintext leaks.
+> 2. Add key management + rotation path per architecture (`active_key_id`, multi-key reads, rotate/backfill flow).
+> 3. Build and pass the dedicated crypto battery from [03 §5.2](03-test-plan.md) (E1–E8) including DB-scan,
+>    tamper/AAD mismatch, wrong-key behavior, masking/log-safety, and rotation idempotence checks.
 >
-> **Out of scope this iteration:** account/COA work ([ITER-05](04-progress.md)), encryption core ([ITER-04](04-progress.md)),
-> mega-menu finalization/mobile collapse (later FR-N slices), and market/investment features.
+> **Out of scope this iteration:** COA CRUD UI/data model breadth ([ITER-05](04-progress.md)), transaction/reporting
+> features, and menu finalization/mobile behavior polish.
 >
-> **Definition of done:** mapped-layer tests green (U4 row layers), `make test` + `make test-e2e` green,
+> **Definition of done:** mapped-layer tests green (E row layers + crypto battery), `make test` + `make test-e2e` green,
 > lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8
 > so the next prompt (§4) is ready.
 >
-> **Known traps:** deactivation must revoke existing sessions immediately via `session_epoch` (no lazy behavior);
-> do not allow deactivating/deleting the last active user; keep generic auth-failure behavior unchanged while adding
-> user-management APIs.
+> **Known traps:** crypto tests must assert on actual DB bytes/WAL behavior (no superficial API-only checks);
+> never emit secrets/plaintext to logs or error payloads; keep AAD binding strict so ciphertext copy/paste across
+> entities fails deterministically.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 
@@ -108,8 +107,6 @@ ITER-02 are already green.
 
 *(R5 moves one row from here into §4, replacing the spent one. Do not skip order without a `04-progress.md` note.)*
 
-- ⏭ **ITER-04 — Encryption core + crypto battery** (FR-E E1–E8; architecture §4.4, §6; traps: DB-scan suite
-  from 03 §5.2 is the meat of the iteration — implement crypto service **and** its tests together; rotation CLI)
 - ⏭ **ITER-05 — Chart of accounts** (FR-C; architecture §3.1 accounts/account_sensitive, §3.3 seed, §5.1; traps:
   idempotent seed re-apply merges additions only, AAD binding regression set from ITER-04 must stay green,
   finalize mega menu six groups)

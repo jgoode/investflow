@@ -139,6 +139,8 @@ def user_public_payload(user_row: dict[str, Any]) -> dict[str, Any]:
         "display_name": user_row["display_name"],
         "is_active": bool(user_row["is_active"]),
         "session_epoch": user_row["session_epoch"],
+        "created_at": user_row.get("created_at"),
+        "last_login_at": user_row.get("last_login_at"),
     }
 
 
@@ -146,7 +148,16 @@ def fetch_user_by_username(username: str) -> dict[str, Any] | None:
     with connect() as conn:
         row = conn.execute(
             """
-            SELECT id, username, display_name, password_hash, is_active, session_epoch
+            SELECT
+                id,
+                username,
+                display_name,
+                password_hash,
+                is_active,
+                session_epoch,
+                created_at,
+                updated_at,
+                last_login_at
             FROM users
             WHERE username = ?
             """,
@@ -161,7 +172,16 @@ def fetch_user_by_id(user_id: int) -> dict[str, Any] | None:
     with connect() as conn:
         row = conn.execute(
             """
-            SELECT id, username, display_name, password_hash, is_active, session_epoch
+            SELECT
+                id,
+                username,
+                display_name,
+                password_hash,
+                is_active,
+                session_epoch,
+                created_at,
+                updated_at,
+                last_login_at
             FROM users
             WHERE id = ?
             """,
@@ -187,10 +207,11 @@ def create_user(username: str, display_name: str | None, password: str) -> dict[
                     is_active,
                     session_epoch,
                     created_at,
-                    updated_at
-                ) VALUES (?, ?, ?, 1, 1, ?, ?)
+                    updated_at,
+                    last_login_at
+                ) VALUES (?, ?, ?, 1, 1, ?, ?, ?)
                 """,
-                (username_normalized, display_name, password_hash, now, now),
+                (username_normalized, display_name, password_hash, now, now, now),
             )
             conn.commit()
         except Exception as exc:
@@ -291,6 +312,137 @@ def record_login_failure(request: Request, username: str) -> None:
 def reset_login_failures(request: Request, username: str) -> None:
     auth_state = ensure_auth_state(request)
     auth_state.login_failures[_normalize_username(username)] = LoginThrottleState()
+
+
+def touch_last_login(user_id: int) -> None:
+    now = now_ts()
+    with connect() as conn:
+        conn.execute(
+            "UPDATE users SET last_login_at = ?, updated_at = ? WHERE id = ?",
+            (now, now, user_id),
+        )
+        conn.commit()
+
+
+def list_users() -> list[dict[str, Any]]:
+    with connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT
+                id,
+                username,
+                display_name,
+                is_active,
+                session_epoch,
+                created_at,
+                last_login_at
+            FROM users
+            ORDER BY username ASC
+            """
+        ).fetchall()
+    return [dict(row) for row in rows]
+
+
+def count_active_users() -> int:
+    with connect() as conn:
+        row = conn.execute("SELECT COUNT(*) AS count FROM users WHERE is_active = 1").fetchone()
+    if row is None:
+        return 0
+    return int(row["count"])
+
+
+def ensure_not_last_active_target(target_user: dict[str, Any]) -> None:
+    if not bool(target_user["is_active"]):
+        return
+    if count_active_users() <= 1:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="cannot deactivate or delete the last active user",
+        )
+
+
+def update_user_fields(
+    *,
+    actor_user_id: int,
+    target_user_id: int,
+    display_name: str | None = None,
+    is_active: bool | None = None,
+    soft_delete: bool = False,
+) -> dict[str, Any]:
+    target = fetch_user_by_id(target_user_id)
+    if target is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="user not found")
+
+    deactivating = soft_delete or (is_active is False and bool(target["is_active"]))
+    if actor_user_id == target_user_id and deactivating:
+        if count_active_users() <= 1:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="cannot deactivate or delete the last active user",
+            )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="self deactivate/delete is not allowed",
+        )
+    if deactivating:
+        ensure_not_last_active_target(target)
+
+    next_display_name = display_name if display_name is not None else target["display_name"]
+    next_active = (
+        False if soft_delete else (bool(target["is_active"]) if is_active is None else is_active)
+    )
+    next_epoch = (
+        int(target["session_epoch"]) + 1
+        if bool(target["is_active"]) and not next_active
+        else int(target["session_epoch"])
+    )
+    now = now_ts()
+
+    with connect() as conn:
+        conn.execute(
+            """
+            UPDATE users
+            SET display_name = ?, is_active = ?, session_epoch = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (next_display_name, 1 if next_active else 0, next_epoch, now, target_user_id),
+        )
+        conn.commit()
+    updated = fetch_user_by_id(target_user_id)
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="user not found")
+    return updated
+
+
+def change_own_password(
+    *,
+    user_id: int,
+    old_password: str,
+    new_password: str,
+) -> dict[str, Any]:
+    user = fetch_user_by_id(user_id)
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="user not found")
+    if not verify_password(user["password_hash"], old_password):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=GENERIC_LOGIN_FAILURE)
+
+    now = now_ts()
+    next_hash = hash_password(new_password)
+    next_epoch = int(user["session_epoch"]) + 1
+    with connect() as conn:
+        conn.execute(
+            """
+            UPDATE users
+            SET password_hash = ?, session_epoch = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (next_hash, next_epoch, now, user_id),
+        )
+        conn.commit()
+    updated = fetch_user_by_id(user_id)
+    if updated is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="user not found")
+    return updated
 
 
 def authenticate_request_cookie(request: Request) -> dict[str, Any]:

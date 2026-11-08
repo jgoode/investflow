@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-02 ✅ closed) |
+| **Last updated** | 2026-11-08 (ITER-03 ✅ closed) |
 
 ## 1. Status legend
 
@@ -25,7 +25,7 @@ with the next iteration's template.
 |---|---|---|---|---|---|
 | **ITER-01** | Project skeleton & CI | Monorepo layout, FastAPI `/api/healthz`, Next.js shell, Makefile targets, lint/type configs, L1+L4 harnesses, smoke E2E | NFR-1, NFR-6, NFR-11 | ✅ | — |
 | **ITER-02** | Auth core | Registration screen/screen-level validation, login + JWT httpOnly cookie + logout, auth-gated app layout, mega menu partial (menu groups Dashboard/Reports throttle later), login-throttle, Users table | FR-U1, FR-U2, FR-U3, NFR-2, FR-N | ✅ | — |
-| **ITER-03** | User management | Users list/edit screens, activate/inactive with session revocation (epoch), own-password change, last-active guard | FR-U4 | 📋 | — |
+| **ITER-03** | User management | Users list/edit screens, activate/inactive with session revocation (epoch), own-password change, last-active guard | FR-U4 | ✅ | — |
 | **ITER-04** | Encryption core + crypto battery | `crypto/` AES-256-GCM service, key store/gen, AAD, masking helper, rotation job, DB-scan test suite | FR-E (E1–E8), NFR-3 | 📋 | — |
 | **ITER-05** | Chart of accounts | Models+migrations, seed COA v1 (idempotent), COA tree UI, account CRUD+archive, encrypted detail fields wired end-to-end (sensitive screen) | FR-C, FR-N full menu, D-16 seed | 📋 | — |
 | **ITER-06** | Categories | Category CRUD, starter categories, assignment plumbing, defaults | FR-K | 📋 | — |
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-03 — User management            (status: ✅)
+Started: 2026-11-08 · Finished: 2026-11-08
+
+- ✅ ACs completed with tests: **AC-U4a** authenticated users list + frontend Users screen showing username/display/active/created/last-login fields; **AC-U4b** deactivate path bumps `session_epoch` and revokes existing sessions on next request; **AC-U4c** last-active refusal enforced on deactivate/delete attempts; **AC-U4d** own-password change requires old password, writes argon2id hash, and refreshes session cookie without logout; **AC-U4e** `/api/users` remains authenticated-only (401 when unauthenticated)
+- ✅ Deliverables: backend user-management API routes (`GET /api/users`, `PATCH /api/users/{id}`, `DELETE /api/users/{id}` soft-delete semantics, `PATCH /api/users/me/password`) in `app/routers/users.py`; user-management service logic in `app/auth.py` including revocation/guards/password update; migration `0002_users_last_login` + login touch of `last_login_at`; frontend `/users` screen (list/edit/activate/deactivate/soft-delete + own-password change) and mega-menu Users destination enabled
+- 🔧 Implementation notes: per user clarification, delete uses soft-delete (`is_active=0`) and self deactivate/delete is refused; to satisfy both this rule and AC-U4c, last-active self operation returns conflict, while non-last-active self operation returns forbidden; auth generic failure behavior for inactive users remains unchanged
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 94% lines (`pytest-cov` gate 85%) · frontend vitest L3 green · E2E now 3-scenario smoke including user-management flow
+- 📝 Doc deltas: red snapshots captured under `docs/logs/iter-03/red-backend.log`, `docs/logs/iter-03/red-frontend.log`, and `docs/logs/iter-03/red-e2e.log`; [03](03-test-plan.md) ITER-03 matrix note appended; [07 §4](07-iterative-prompts.md) rolled to ITER-04 prompt
 
 ### ITER-02 — Auth core            (status: ✅)
 Started: 2026-11-08 · Finished: 2026-11-08
@@ -88,6 +99,7 @@ Started: 2026-11-08 · Finished: 2026-11-08
 | ADR-003 | 2026-11-08 | Categories as separate tag entities, not income/expense COA leaves | supports both COA and category grouping in cash-flow reports | [01 §3](01-requirements.md), [02 §3.1](02-architecture.md) |
 | ADR-004 | 2026-11-08 | Session revocation via `session_epoch` counter claim | simple, DB-driven logout/deactivation invalidation | [02 §4.3](02-architecture.md) |
 | ADR-005 | 2026-11-08 | Monorepo gains `e2e/` (Playwright L4) + root `package.json` (Playwright test runner home) + `.github/workflows/ci.yml`; toolchain realized as uv + Python 3.12 pin, pnpm, vitest 3.2.7, Playwright 1.x, Next 15.5/React 19.1, eslint 9 flat | [03 §2](03-test-plan.md) places L4 at repo-root `e2e/**` and the user approved a minimal GH Actions workflow; layout in [02 §2](02-architecture.md) updated, spec-level D-16 floors unchanged | [02 §2](02-architecture.md) |
+| ADR-006 | 2026-11-08 | User delete is implemented as soft-delete (`is_active=0`) and self deactivate/delete is denied | preserves user-history rows while still satisfying revocation and last-active protections; aligns with shared-book continuity expectations | [01 §1 FR-U4](01-requirements.md), [02 §3.1](02-architecture.md) |
 
 *(Append rows as decisions arise — never rewrite history rows.)*
 

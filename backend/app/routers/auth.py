@@ -20,6 +20,7 @@ from app.auth import (
     record_registration_success,
     reset_login_failures,
     set_session_cookie,
+    touch_last_login,
     user_public_payload,
     verify_password_timing_equal,
 )
@@ -84,6 +85,9 @@ def login(payload: LoginPayload, request: Request, response: Response) -> dict[s
 
     assert user is not None
     reset_login_failures(request, payload.username)
+    touch_last_login(user["id"])
+    user = fetch_user_by_username(payload.username)
+    assert user is not None
     token = create_session_token(user_id=user["id"], session_epoch=user["session_epoch"])
     set_session_cookie(response, token)
     return {"user": user_public_payload(user)}

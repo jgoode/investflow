@@ -1,0 +1,48 @@
+[WebServer] INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+[WebServer] INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+[WebServer] INFO:     Started server process [91990]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+[WebServer] $ next dev --turbopack
+
+Running 1 test using 1 worker
+
+  ✘  1 e2e/smoke.spec.ts:40:1 › users management flow: list + own-password change (6.4s)
+
+
+  1) e2e/smoke.spec.ts:40:1 › users management flow: list + own-password change ────────────────────
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: 'Users' })
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" getByRole('heading', { name: 'Users' }) with timeout 5000ms
+      - waiting for getByRole('heading', { name: 'Users' })
+
+
+      51 |
+      52 |   await page.goto("/users");
+    > 53 |   await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
+         |                                                              ^
+      54 |   await expect(page.getByText(username)).toBeVisible();
+      55 |
+      56 |   await page.getByLabel("Current password").fill(oldPassword);
+        at /home/john/src/investflow/e2e/smoke.spec.ts:53:62
+
+    Error Context: test-results/smoke-users-management-flow-list-own-password-change/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-users-management-flow-list-own-password-change/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/smoke-users-management-flow-list-own-password-change/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/smoke.spec.ts:40:1 › users management flow: list + own-password change ─────────────────────

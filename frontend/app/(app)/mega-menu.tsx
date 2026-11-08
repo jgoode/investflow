@@ -11,7 +11,7 @@ const GROUPS = [
   { key: "reports", label: "Reports", href: "/reports", enabled: true },
   { key: "accounts", label: "Accounts", href: "/accounts", enabled: false },
   { key: "investments", label: "Investments", href: "/investments", enabled: false },
-  { key: "users", label: "Users", href: "/users", enabled: false },
+  { key: "users", label: "Users", href: "/users", enabled: true },
   { key: "settings", label: "Settings", href: "/settings", enabled: false },
 ] as const;
 

@@ -89,6 +89,11 @@ suite (`backend/tests/api/test_register.py`, `backend/tests/api/test_login.py`, 
 frontend L3 validations/menu shell (`frontend/app/__tests__/pages.test.tsx`, `frontend/app/__tests__/mega-menu.test.tsx`),
 and L4 journey (`e2e/smoke.spec.ts`: register → dashboard → logout → login).*
 
+*ITER-03 close note: U4 row is now covered at mapped layers — backend L2 user-management suite
+(`backend/tests/api/test_users.py`) verifies list/edit/activate-deactivate/delete guard/password refresh behaviors;
+frontend L3 keeps Users navigation enabled/regression-tested (`frontend/app/__tests__/mega-menu.test.tsx`);
+L4 scenario extends through `/users` with own-password change and re-login (`e2e/smoke.spec.ts`).*
+
 ## 5. Dedicated suites
 
 ### 5.1 Auth/session suite (Iterations 2–3)

@@ -1,0 +1,210 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.2.0, pluggy-1.7.0
+rootdir: /home/john/src/investflow/backend
+configfile: pyproject.toml
+plugins: cov-7.1.0, time-machine-3.6.0, anyio-4.16.0
+collected 8 items
+
+tests/api/test_users.py .FFFFFFF                                         [100%]
+
+=================================== FAILURES ===================================
+___________ test_users_list_returns_all_users_for_authenticated_user ___________
+
+client = <starlette.testclient.TestClient object at 0xfdce180590a0>
+
+    def test_users_list_returns_all_users_for_authenticated_user(client: TestClient) -> None:
+        register(client, "alice")
+        client.post("/api/auth/logout", headers=CSRF_HEADER)
+        register(client, "bob")
+    
+        login(client, "alice")
+        resp = client.get("/api/users")
+    
+>       assert resp.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_users.py:23: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+_________________________ test_users_edit_display_name _________________________
+
+client = <starlette.testclient.TestClient object at 0xfdce181fe930>
+
+    def test_users_edit_display_name(client: TestClient) -> None:
+        register(client, "alice")
+        client.post("/api/auth/logout", headers=CSRF_HEADER)
+        register(client, "bob")
+    
+        login(client, "alice")
+        users_resp = client.get("/api/users")
+>       bob_id = next(row["id"] for row in users_resp.json()["users"] if row["username"] == "bob")
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'users'
+
+tests/api/test_users.py:37: KeyError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+________ test_deactivate_user_revokes_existing_session_on_next_request _________
+
+client = <starlette.testclient.TestClient object at 0xfdce180ed250>
+
+    def test_deactivate_user_revokes_existing_session_on_next_request(client: TestClient) -> None:
+        register(client, "alice")
+        client.post("/api/auth/logout", headers=CSRF_HEADER)
+        register(client, "bob")
+        client.post("/api/auth/logout", headers=CSRF_HEADER)
+    
+        login(client, "bob")
+        bob_me = client.get("/api/auth/me")
+        assert bob_me.status_code == 200
+        bob_id = bob_me.json()["user"]["id"]
+        client.post("/api/auth/logout", headers=CSRF_HEADER)
+    
+        login(client, "alice")
+        deactivate = client.patch(
+            f"/api/users/{bob_id}",
+            headers=CSRF_HEADER,
+            json={"is_active": False},
+        )
+>       assert deactivate.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_users.py:66: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+____________ test_last_active_user_cannot_be_deactivated_or_deleted ____________
+
+client = <starlette.testclient.TestClient object at 0xfdce1805b410>
+
+    def test_last_active_user_cannot_be_deactivated_or_deleted(client: TestClient) -> None:
+        register(client, "alice")
+        me = client.get("/api/auth/me")
+        alice_id = me.json()["user"]["id"]
+    
+        deactivate = client.patch(
+            f"/api/users/{alice_id}",
+            headers=CSRF_HEADER,
+            json={"is_active": False},
+        )
+>       assert deactivate.status_code == 409
+E       assert 404 == 409
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_users.py:83: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+_____ test_user_cannot_deactivate_or_delete_self_even_when_not_last_active _____
+
+client = <starlette.testclient.TestClient object at 0xfdce16f21c70>
+
+    def test_user_cannot_deactivate_or_delete_self_even_when_not_last_active(client: TestClient) -> None:
+        register(client, "alice")
+        client.post("/api/auth/logout", headers=CSRF_HEADER)
+        register(client, "bob")
+        client.post("/api/auth/logout", headers=CSRF_HEADER)
+        login(client, "alice")
+        me = client.get("/api/auth/me")
+        alice_id = me.json()["user"]["id"]
+    
+        deactivate = client.patch(
+            f"/api/users/{alice_id}",
+            headers=CSRF_HEADER,
+            json={"is_active": False},
+        )
+>       assert deactivate.status_code == 403
+E       assert 404 == 403
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_users.py:108: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+___________ test_delete_endpoint_soft_deletes_user_and_blocks_login ____________
+
+client = <starlette.testclient.TestClient object at 0xfdce180eef00>
+
+    def test_delete_endpoint_soft_deletes_user_and_blocks_login(client: TestClient) -> None:
+        register(client, "alice")
+        client.post("/api/auth/logout", headers=CSRF_HEADER)
+        register(client, "bob")
+        client.post("/api/auth/logout", headers=CSRF_HEADER)
+    
+        login(client, "alice")
+        users_resp = client.get("/api/users")
+>       bob_id = next(row["id"] for row in users_resp.json()["users"] if row["username"] == "bob")
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+E       KeyError: 'users'
+
+tests/api/test_users.py:125: KeyError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+_____ test_change_own_password_requires_old_password_and_refreshes_session _____
+
+client = <starlette.testclient.TestClient object at 0xfdce16f21370>
+
+    def test_change_own_password_requires_old_password_and_refreshes_session(client: TestClient) -> None:
+        register(client, "alice", "correct-horse-10")
+    
+        wrong_old = client.patch(
+            "/api/users/me/password",
+            headers=CSRF_HEADER,
+            json={
+                "old_password": "incorrect-old-pass",
+                "new_password": "new-secure-pass-22",
+                "new_password_confirmation": "new-secure-pass-22",
+            },
+        )
+>       assert wrong_old.status_code == 401
+E       assert 404 == 401
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_users.py:153: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.15-final-0 _______________
+
+Name                      Stmts   Miss  Cover   Missing
+-------------------------------------------------------
+app/__init__.py               0      0   100%
+app/auth.py                 176     34    81%   50, 68-69, 94-95, 110-111, 115, 156, 171, 196-202, 204, 210, 221, 242, 269, 273-275, 279-288, 303, 305
+app/db/__init__.py            0      0   100%
+app/db/connection.py         24      1    96%   30
+app/main.py                  34      1    97%   34
+app/routers/__init__.py       0      0   100%
+app/routers/auth.py          59      5    92%   41, 47, 49, 82-83
+app/routers/healthz.py        6      1    83%   13
+app/version.py                1      0   100%
+-------------------------------------------------------
+TOTAL                       300     42    86%
+Required test coverage of 85% reached. Total coverage: 86.00%
+=========================== short test summary info ============================
+FAILED tests/api/test_users.py::test_users_list_returns_all_users_for_authenticated_user
+FAILED tests/api/test_users.py::test_users_edit_display_name - KeyError: 'users'
+FAILED tests/api/test_users.py::test_deactivate_user_revokes_existing_session_on_next_request
+FAILED tests/api/test_users.py::test_last_active_user_cannot_be_deactivated_or_deleted
+FAILED tests/api/test_users.py::test_user_cannot_deactivate_or_delete_self_even_when_not_last_active
+FAILED tests/api/test_users.py::test_delete_endpoint_soft_deletes_user_and_blocks_login
+FAILED tests/api/test_users.py::test_change_own_password_requires_old_password_and_refreshes_session
+==================== 7 failed, 1 passed, 1 warning in 1.35s ====================
