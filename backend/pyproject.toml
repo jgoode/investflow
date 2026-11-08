@@ -8,6 +8,8 @@ dependencies = [
     "uvicorn>=0.30",
     "sqlalchemy>=2.0.30",
     "alembic>=1.13",
+    "argon2-cffi>=23",
+    "pyjwt>=2.8",
 ]
 
 [dependency-groups]
@@ -17,6 +19,7 @@ dev = [
     "pytest-cov>=5",
     "ruff>=0.6",
     "mypy>=1.11",
+    "time-machine>=2.15",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -32,9 +35,16 @@ build-backend = "hatchling.build"
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+# Coverage gate (GAP-008: fail_under wired in ITER-02 per docs/03-test-plan.md §6 —
+# backend ≥ 85% lines).
+addopts = "--cov=app --cov-report=term-missing --cov-fail-under=85"
 
 [tool.coverage.run]
 source = ["app"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
 
 [tool.ruff]
 line-length = 100

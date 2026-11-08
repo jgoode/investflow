@@ -84,6 +84,11 @@ Legend: `U`=L1, `I`=L2, `C`=L3, `E`=L4. `•` = primary home for that AC's test;
 at L1 (`backend/tests/unit/test_db_connection.py`). The healthz smoke doubles as the NFR-2 exempt-path
 check from ITER-02 onward.*
 
+*ITER-02 close note: U1/U2/U3/N partial rows are now covered at their mapped layers — backend L2 auth/session
+suite (`backend/tests/api/test_register.py`, `backend/tests/api/test_login.py`, `backend/tests/api/test_auth_session.py`),
+frontend L3 validations/menu shell (`frontend/app/__tests__/pages.test.tsx`, `frontend/app/__tests__/mega-menu.test.tsx`),
+and L4 journey (`e2e/smoke.spec.ts`: register → dashboard → logout → login).*
+
 ## 5. Dedicated suites
 
 ### 5.1 Auth/session suite (Iterations 2–3)

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-08 (ITER-01 closed; §4 → ITER-02) |
+| **Last updated** | 2026-11-08 (ITER-02 closed; §4 → ITER-03) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
@@ -55,41 +55,36 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-02 — Auth core**
+> **ITER-03 — User management**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
 > `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-16 stack), `docs/01-requirements.md`
-> §1 (FR-U1–U3, AC-U1a–d / AC-U2a–d / AC-U3a–b), §10 (FR-N — mega menu, AC-N2 keyboard a11y minimum), §11 NFR-2/3,
-> `docs/02-architecture.md` §3.1 `users` table, §4.2/§4.3 (JWT/session mechanics, cookie + epoch revocation,
-> CSRF header rule), §5.1/§5.2 (route tree, auth gate, mega menu), `docs/03-test-plan.md` §4 matrix rows
-> (U1–U3, N-part), §5.1 security suite, §6, docs/04-progress.md ITER-02 row + [04 §5](04-progress.md) mapping row.
+> §1 FR-U4 (AC-U4a–U4e), §11 NFR-2/NFR-3, `docs/02-architecture.md` §3.1 (`users` + `session_epoch`),
+> §4.2/§4.3 (auth mechanics + revocation), §5.1 route tree (`/users`), `docs/03-test-plan.md` §4 matrix row U4,
+> §5.1 auth/session suite, docs/04-progress.md ITER-03 row + [04 §5](04-progress.md) mapping row.
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to this iteration's AC list: **AC-U1a–U1d, AC-U2a–U2c/U2d, AC-U3a–U3b, AC-N1–N4 partial, NFR-2**
+> scope only to this iteration's AC list: **AC-U4a–U4e**
 > — ask me about any ambiguity; never assume.
 >
 > **Deliverable:**
-> 1. Backend: `users` table + first real Alembic migration ([02 §3.1](02-architecture.md)); argon2id hashing;
->    `POST /api/auth/register`, `/api/auth/login` (JWT HS256 httpOnly SameSite=Lax `investflow_session` cookie,
->    `session_epoch` claim), `/api/auth/logout`, `/api/auth/me`; auth guard on every other `/api/**`
->    (401) — exempt set is exactly: `/api/auth/register`, `/api/auth/login`, `/api/healthz`.
-> 2. Frontend: `/register` + `/login` screens (client-side validation mirrored as server 422s), auth-gated
->    `(app)` layout via server-side session gate → `redirect('/login')` ([02 §5.1](02-architecture.md));
->    mega menu shell with Dashboard·Reports groups visible (rest greyed "coming"), keyboard nav per AC-N2.
-> 3. Security tests per [03 §5.1](03-test-plan.md): 401 guard matrix, cookie flags, generic + timing-equal
->    login failure, login throttle with pinned clock (`time-machine`), epoch revocation test.
+> 1. Backend `/api/users` management endpoints for list/edit/activate-inactivate/delete + own-password change:
+>    include last-active guard (AC-U4c), authenticated-only enumeration (AC-U4e), and epoch bump/revocation on
+>    deactivate/reactivate paths (AC-U4b).
+> 2. Frontend `/users` screen with shared-book visibility and edit actions (AC-U4a); own-password update flow (AC-U4d).
+> 3. Regression/security tests per [03 §5.1](03-test-plan.md): active-session invalidation after deactivation,
+>    last-active refusal, own-password refresh path, and protected user-list access checks.
 >
-> **Out of scope this iteration:** user-management screens/AC-U4 ([ITER-03](04-progress.md)), COA ([ITER-05]),
-> registration rate-limit beyond AC-U1d minimum, HTTPS reverse-proxy config.
+> **Out of scope this iteration:** account/COA work ([ITER-05](04-progress.md)), encryption core ([ITER-04](04-progress.md)),
+> mega-menu finalization/mobile collapse (later FR-N slices), and market/investment features.
 >
-> **Definition of done:** mapped-layer tests green (L1/L2 backend, L3 vitest, L4 E2E login→dashboard journey),
-> `make test` + `make test-e2e` green, lint/types green, coverage gates updated per GAP-008 (pytest-cov
-> `fail_under=85`, `@vitest/coverage-v8` installed), then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8
+> **Definition of done:** mapped-layer tests green (U4 row layers), `make test` + `make test-e2e` green,
+> lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8
 > so the next prompt (§4) is ready.
 >
-> **Known traps:** throttle/timing tests must use the pinned clock, never real sleeps; do not reveal account
-> activity states in the generic failure message (AC-U2b); the mega menu must already be route-highlight-aware;
-> keep `users.session_epoch` in the JWT payload from day one — retrofitting is painful.
+> **Known traps:** deactivation must revoke existing sessions immediately via `session_epoch` (no lazy behavior);
+> do not allow deactivating/deleting the last active user; keep generic auth-failure behavior unchanged while adding
+> user-management APIs.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 
@@ -113,8 +108,6 @@ ITER-02 are already green.
 
 *(R5 moves one row from here into §4, replacing the spent one. Do not skip order without a `04-progress.md` note.)*
 
-- ⏭ **ITER-03 — User management** (AC-U4…; architecture §3.1 `users`/`session_epoch`; traps: deactivate-in-flight
-  session revocation test, last-active guard)
 - ⏭ **ITER-04 — Encryption core + crypto battery** (FR-E E1–E8; architecture §4.4, §6; traps: DB-scan suite
   from 03 §5.2 is the meat of the iteration — implement crypto service **and** its tests together; rotation CLI)
 - ⏭ **ITER-05 — Chart of accounts** (FR-C; architecture §3.1 accounts/account_sensitive, §3.3 seed, §5.1; traps:

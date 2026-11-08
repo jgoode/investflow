@@ -1,0 +1,432 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.2.0, pluggy-1.7.0
+rootdir: /home/john/src/investflow/backend
+configfile: pyproject.toml
+plugins: cov-7.1.0, time-machine-3.6.0, anyio-4.16.0
+collected 19 items
+
+tests/api/test_register.py FFFFFFFFF                                     [ 47%]
+tests/api/test_login.py FFFF.FFFF.
+ERROR: Coverage failure: total of 79 is less than fail-under=85
+                                                                         [100%]
+
+=================================== FAILURES ===================================
+________________ test_register_success_creates_user_and_logs_in ________________
+
+client = <starlette.testclient.TestClient object at 0xff52863d39b0>
+
+    def test_register_success_creates_user_and_logs_in(client: TestClient) -> None:
+        """AC-U1a: user written (argon2id), session cookie set, /me echoes the user."""
+        resp = register(client, "alice")
+    
+>       assert resp.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_register.py:21: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+_________________ test_register_hash_is_argon2id_not_plaintext _________________
+
+self = <starlette.datastructures.State object at 0xff52863f6540>
+key = 'db_path'
+
+    def __getattr__(self, key: Any) -> Any:
+        try:
+>           return self._state[key]
+                   ^^^^^^^^^^^^^^^^
+E           KeyError: 'db_path'
+
+.venv/lib/python3.12/site-packages/starlette/datastructures.py:696: KeyError
+
+During handling of the above exception, another exception occurred:
+
+client = <starlette.testclient.TestClient object at 0xff5285a64530>
+
+    def test_register_hash_is_argon2id_not_plaintext(client: TestClient) -> None:
+        """AC-U1a/NFR-3: stored password is an argon2id hash, never plaintext
+        (hash format itself is unit-tested in tests/unit/test_passwords.py)."""
+        register(client, "hashcheck")
+    
+>       rows = user_rows(client.app.state.db_path)  # type: ignore[attr-defined]
+                         ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/api/test_register.py:35: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.datastructures.State object at 0xff52863f6540>
+key = 'db_path'
+
+    def __getattr__(self, key: Any) -> Any:
+        try:
+            return self._state[key]
+        except KeyError:
+            message = "'{}' object has no attribute '{}'"
+>           raise AttributeError(message.format(self.__class__.__name__, key))
+E           AttributeError: 'State' object has no attribute 'db_path'
+
+.venv/lib/python3.12/site-packages/starlette/datastructures.py:699: AttributeError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+_______________________ test_register_duplicate_username _______________________
+
+client = <starlette.testclient.TestClient object at 0xff5285a67230>
+
+    def test_register_duplicate_username(client: TestClient) -> None:
+        """AC-U1b: duplicate is refused inline; no second user written."""
+>       assert register(client, "alice").status_code == 200
+E       AssertionError: assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+E        +    where <Response [404 Not Found]> = register(<starlette.testclient.TestClient object at 0xff5285a67230>, 'alice')
+
+tests/api/test_register.py:41: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+_________________ test_register_rejects_short_password_as_422 __________________
+
+client = <starlette.testclient.TestClient object at 0xff5285a91700>
+
+    def test_register_rejects_short_password_as_422(client: TestClient) -> None:
+        """AC-U1c: password < 10 chars → 422 (mirrors client-side validation)."""
+        resp = client.post(
+            "/api/auth/register",
+            headers=CSRF_HEADER,
+            json={
+                "username": "shorty",
+                "display_name": None,
+                "password": "ab1",
+                "password_confirmation": "ab1",
+            },
+        )
+>       assert resp.status_code == 422
+E       assert 404 == 422
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_register.py:63: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+__________________ test_register_rejects_uppercased_username ___________________
+
+client = <starlette.testclient.TestClient object at 0xff5285b21670>
+
+    def test_register_rejects_uppercased_username(client: TestClient) -> None:
+        """AC-U1c: uppercase (and spaces) in username violate ^[a-z0-9._-]+$ → 422."""
+        for bad in ("Alice", "al ice", "al!ce"):
+            resp = client.post(
+                "/api/auth/register",
+                headers=CSRF_HEADER,
+                json={
+                    "username": bad,
+                    "display_name": None,
+                    "password": "long-enough-pass",
+                    "password_confirmation": "long-enough-pass",
+                },
+            )
+>           assert resp.status_code == 422, f"username={bad!r}"
+E           AssertionError: username='Alice'
+E           assert 404 == 422
+E            +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_register.py:79: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+________________ test_register_rejects_mismatched_confirmation _________________
+
+client = <starlette.testclient.TestClient object at 0xff5285b20b30>
+
+    def test_register_rejects_mismatched_confirmation(client: TestClient) -> None:
+        """AC-U1c: confirmation mismatch → 422 before any state mutation."""
+        resp = client.post(
+            "/api/auth/register",
+            headers=CSRF_HEADER,
+            json={
+                "username": "mismatch",
+                "display_name": None,
+                "password": "long-enough-pass",
+                "password_confirmation": "long-enough-diff",
+            },
+        )
+>       assert resp.status_code == 422
+E       assert 404 == 422
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_register.py:94: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+_______________ test_register_rejects_password_equal_to_username _______________
+
+client = <starlette.testclient.TestClient object at 0xff5285a92de0>
+
+    def test_register_rejects_password_equal_to_username(client: TestClient) -> None:
+        """FR-U1: password must not equal username."""
+        resp = client.post(
+            "/api/auth/register",
+            headers=CSRF_HEADER,
+            json={
+                "username": "same.as.pw",
+                "display_name": None,
+                "password": "same.as.pw-x",
+                "password_confirmation": "same.as.pw-x",
+            },
+        )
+>       assert resp.status_code == 422
+E       assert 404 == 422
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_register.py:111: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+________________ test_register_rate_limit_fifth_attempt_refused ________________
+
+client = <starlette.testclient.TestClient object at 0xff5285a67a10>
+
+    def test_register_rate_limit_fifth_attempt_refused(client: TestClient) -> None:
+        """AC-U1d: ≥5 registrations complete → further attempts 429 for 10 min window."""
+        for i in range(5):
+            resp = register(client, f"user{i}")
+>           assert resp.status_code == 200, f"registration {i} should succeed"
+E           AssertionError: registration 0 should succeed
+E           assert 404 == 200
+E            +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_register.py:118: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+________________ test_register_rate_limit_reopens_after_window _________________
+
+client = <starlette.testclient.TestClient object at 0xff5285b1e2a0>
+
+    def test_register_rate_limit_reopens_after_window(client: TestClient) -> None:
+        """AC-U1d: the window is 10 minutes; a pinned clock (never real sleeps)
+        proves the 429 unlocks right after it passes."""
+        with time_machine.travel("2026-11-08 12:00:00 +00:00", tick=False) as traveller:
+            for i in range(5):
+                register(client, f"user{i}")
+>           assert register(client, "user5").status_code == 429
+E           AssertionError: assert 404 == 429
+E            +  where 404 = <Response [404 Not Found]>.status_code
+E            +    where <Response [404 Not Found]> = register(<starlette.testclient.TestClient object at 0xff5285b1e2a0>, 'user5')
+
+tests/api/test_register.py:130: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+________________________ test_login_success_sets_cookie ________________________
+
+client = <starlette.testclient.TestClient object at 0xff5285b1e840>
+
+    def test_login_success_sets_cookie(client: TestClient) -> None:
+        """AC-U2a: correct credentials → 200 + investflow_session cookie."""
+        register(client, "alice")
+    
+        resp = login(client, "alice")
+    
+>       assert resp.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_login.py:28: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+__________________ test_login_wrong_password_generic_failure ___________________
+
+client = <starlette.testclient.TestClient object at 0xff5285a67650>
+
+    def test_login_wrong_password_generic_failure(client: TestClient) -> None:
+        """AC-U2c: wrong password → 401, same generic message, no detail leakage."""
+        register(client, "alice")
+    
+        resp = login(client, "alice", "wrong-pass-999")
+    
+>       assert resp.status_code == 401
+E       assert 404 == 401
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_login.py:41: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+_________________ test_login_unknown_user_same_generic_failure _________________
+
+client = <starlette.testclient.TestClient object at 0xff5285a911f0>
+
+    def test_login_unknown_user_same_generic_failure(client: TestClient) -> None:
+        """AC-U2c: unknown username → identical generic message as wrong password."""
+        register(client, "alice")  # irrelevant to the unknown-user attempt
+    
+        resp = login(client, "nobody", "long-enough-pass")
+    
+>       assert resp.status_code == 401
+E       assert 404 == 401
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_login.py:51: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+___________________ test_login_inactive_user_generic_failure ___________________
+
+self = <starlette.datastructures.State object at 0xff5285b20b30>
+key = 'db_path'
+
+    def __getattr__(self, key: Any) -> Any:
+        try:
+>           return self._state[key]
+                   ^^^^^^^^^^^^^^^^
+E           KeyError: 'db_path'
+
+.venv/lib/python3.12/site-packages/starlette/datastructures.py:696: KeyError
+
+During handling of the above exception, another exception occurred:
+
+client = <starlette.testclient.TestClient object at 0xff5285adaa20>
+
+    def test_login_inactive_user_generic_failure(client: TestClient) -> None:
+        """AC-U2b: inactive account with CORRECT credentials → generic failure.
+        The message must not reveal the account state."""
+>       db = client.app.state.db_path  # type: ignore[attr-defined]
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/api/test_login.py:58: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <starlette.datastructures.State object at 0xff5285b20b30>
+key = 'db_path'
+
+    def __getattr__(self, key: Any) -> Any:
+        try:
+            return self._state[key]
+        except KeyError:
+            message = "'{}' object has no attribute '{}'"
+>           raise AttributeError(message.format(self.__class__.__name__, key))
+E           AttributeError: 'State' object has no attribute 'db_path'
+
+.venv/lib/python3.12/site-packages/starlette/datastructures.py:699: AttributeError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+_____ test_login_throttle_blocks_sixth_attempt_even_with_correct_password ______
+
+client = <starlette.testclient.TestClient object at 0xff5285a900e0>
+
+    def test_login_throttle_blocks_sixth_attempt_even_with_correct_password(
+        client: TestClient,
+    ) -> None:
+        """AC-U2c: after 5 consecutive failures the account is throttled — even
+        correct credentials are refused while the throttle window is open."""
+        register(client, "alice")
+        for i in range(5):
+>           assert login(client, "alice", f"wrong-pass-{i}").status_code == 401
+E           AssertionError: assert 404 == 401
+E            +  where 404 = <Response [404 Not Found]>.status_code
+E            +    where <Response [404 Not Found]> = login(<starlette.testclient.TestClient object at 0xff5285a900e0>, 'alice', 'wrong-pass-0')
+
+tests/api/test_login.py:107: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+_______________ test_login_throttle_lifts_after_fifteen_minutes ________________
+
+client = <starlette.testclient.TestClient object at 0xff5285b1dfd0>
+
+    def test_login_throttle_lifts_after_fifteen_minutes(client: TestClient) -> None:
+        """AC-U2c: throttle lasts 15 minutes — proven by shifting the pinned clock
+        (time-machine), never by sleeping."""
+        register(client, "alice")
+        with time_machine.travel("2026-11-08 12:00:00 +00:00", tick=False) as traveller:
+            for i in range(5):
+                login(client, "alice", f"wrong-pass-{i}")
+>           assert login(client, "alice", "correct-horse-10").status_code == 429
+E           AssertionError: assert 404 == 429
+E            +  where 404 = <Response [404 Not Found]>.status_code
+E            +    where <Response [404 Not Found]> = login(<starlette.testclient.TestClient object at 0xff5285b1dfd0>, 'alice', 'correct-horse-10')
+
+tests/api/test_login.py:121: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+__________________ test_login_success_resets_failure_counter ___________________
+
+client = <starlette.testclient.TestClient object at 0xff5285ada480>
+
+    def test_login_success_resets_failure_counter(client: TestClient) -> None:
+        """AC-U2c: 'consecutive failures' — a success clears the counter:
+        4 failures + a success + 4 more failures must NOT behave as ≥5 consecutive."""
+        register(client, "alice")
+        with time_machine.travel("2026-11-08 12:00:00 +00:00", tick=False) as traveller:
+            for i in range(4):
+>               assert login(client, "alice", f"wrong-pass-{i}").status_code == 401
+E               AssertionError: assert 404 == 401
+E                +  where 404 = <Response [404 Not Found]>.status_code
+E                +    where <Response [404 Not Found]> = login(<starlette.testclient.TestClient object at 0xff5285ada480>, 'alice', 'wrong-pass-0')
+
+tests/api/test_login.py:134: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+________________ test_login_throttle_uniform_for_unknown_users _________________
+
+client = <starlette.testclient.TestClient object at 0xff5285b1fb00>
+
+    def test_login_throttle_uniform_for_unknown_users(client: TestClient) -> None:
+        """ITER-02 decision (user-approved): throttle is uniform for any submitted
+        username, including nonexistent ones (enumeration resistance — 03 §5.4)."""
+        for i in range(5):
+>           assert login(client, "phantom", f"wrong-pass-{i}").status_code == 401
+E           AssertionError: assert 404 == 401
+E            +  where 404 = <Response [404 Not Found]>.status_code
+E            +    where <Response [404 Not Found]> = login(<starlette.testclient.TestClient object at 0xff5285b1fb00>, 'phantom', 'wrong-pass-0')
+
+tests/api/test_login.py:148: AssertionError
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.15-final-0 _______________
+
+Name                      Stmts   Miss  Cover   Missing
+-------------------------------------------------------
+app/__init__.py               0      0   100%
+app/db/__init__.py            0      0   100%
+app/db/connection.py         24      7    71%   30, 45-50
+app/main.py                   8      0   100%
+app/routers/__init__.py       0      0   100%
+app/routers/healthz.py        6      1    83%   13
+app/version.py                1      0   100%
+-------------------------------------------------------
+TOTAL                        39      8    79%
+FAIL Required test coverage of 85% not reached. Total coverage: 79.49%
+=========================== short test summary info ============================
+FAILED tests/api/test_register.py::test_register_success_creates_user_and_logs_in
+FAILED tests/api/test_register.py::test_register_hash_is_argon2id_not_plaintext
+FAILED tests/api/test_register.py::test_register_duplicate_username - Asserti...
+FAILED tests/api/test_register.py::test_register_rejects_short_password_as_422
+FAILED tests/api/test_register.py::test_register_rejects_uppercased_username
+FAILED tests/api/test_register.py::test_register_rejects_mismatched_confirmation
+FAILED tests/api/test_register.py::test_register_rejects_password_equal_to_username
+FAILED tests/api/test_register.py::test_register_rate_limit_fifth_attempt_refused
+FAILED tests/api/test_register.py::test_register_rate_limit_reopens_after_window
+FAILED tests/api/test_login.py::test_login_success_sets_cookie - assert 404 =...
+FAILED tests/api/test_login.py::test_login_wrong_password_generic_failure - a...
+FAILED tests/api/test_login.py::test_login_unknown_user_same_generic_failure
+FAILED tests/api/test_login.py::test_login_inactive_user_generic_failure - At...
+FAILED tests/api/test_login.py::test_login_throttle_blocks_sixth_attempt_even_with_correct_password
+FAILED tests/api/test_login.py::test_login_throttle_lifts_after_fifteen_minutes
+FAILED tests/api/test_login.py::test_login_success_resets_failure_counter - A...
+FAILED tests/api/test_login.py::test_login_throttle_uniform_for_unknown_users
+=================== 17 failed, 2 passed, 1 warning in 0.51s ====================

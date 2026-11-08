@@ -1,0 +1,139 @@
+pnpm exec playwright test
+[WebServer] INFO:     Started server process [74419]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+[WebServer] $ next dev --turbopack
+
+Running 2 tests using 2 workers
+
+  ✓  1 e2e/smoke.spec.ts:5:1 › healthz responds ok with a version (55ms)
+[WebServer] ERROR:    Exception in ASGI application
+[WebServer] Traceback (most recent call last):
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/uvicorn/protocols/http/h11_impl.py", line 411, in run_asgi
+[WebServer]     result = await app(  # type: ignore[func-returns-value]
+[WebServer]              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 63, in __call__
+[WebServer]     return await self.app(scope, receive, send)
+[WebServer]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/applications.py", line 1194, in __call__
+[WebServer]     await super().__call__(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/applications.py", line 96, in __call__
+[WebServer]     await self.middleware_stack(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+[WebServer]     raise exc
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+[WebServer]     await self.app(scope, receive, _send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/telemetry/_asgi.py", line 151, in __call__
+[WebServer]     await self.app(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 91, in __call__
+[WebServer]     await self.simple_response(scope, receive, send, request_headers=headers)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 149, in simple_response
+[WebServer]     await self.app(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 203, in __call__
+[WebServer]     response = await self.dispatch_func(request, call_next)
+[WebServer]                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/app/main.py", line 28, in dispatch
+[WebServer]     return await call_next(request)
+[WebServer]            ^^^^^^^^^^^^^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 179, in call_next
+[WebServer]     raise app_exc from app_exc.__cause__ or app_exc.__context__
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/middleware/base.py", line 149, in coro
+[WebServer]     await self.app(scope, receive_or_disconnect, send_no_error)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+[WebServer]     await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+[WebServer]     raise exc
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+[WebServer]     await app(scope, receive, sender)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+[WebServer]     await self.app(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/routing.py", line 683, in __call__
+[WebServer]     await self.middleware_stack(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2811, in app
+[WebServer]     await route.handle(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 1839, in handle
+[WebServer]     await self.original_router.handle(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 2894, in handle
+[WebServer]     await included_router._handle_selected(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 1865, in _handle_selected
+[WebServer]     await original_route.handle(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 1328, in handle
+[WebServer]     await effective_context.app(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 166, in app
+[WebServer]     await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+[WebServer]     raise exc
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+[WebServer]     await app(scope, receive, sender)
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 152, in app
+[WebServer]     response = await f(request)
+[WebServer]                ^^^^^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 745, in app
+[WebServer]     raw_response = await run_endpoint_function(
+[WebServer]                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/routing.py", line 374, in run_endpoint_function
+[WebServer]     return await run_in_threadpool(
+[WebServer]            ^^^^^^^^^^^^^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/starlette/concurrency.py", line 34, in run_in_threadpool
+[WebServer]     return await anyio.to_thread.run_sync(func)
+[WebServer]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/anyio/to_thread.py", line 65, in run_sync
+[WebServer]     return await get_async_backend().run_sync_in_worker_thread(
+[WebServer]            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 2779, in run_sync_in_worker_thread
+[WebServer]     return await future
+[WebServer]            ^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/anyio/_backends/_asyncio.py", line 1124, in run
+[WebServer]     result = context.run(func, *args)
+[WebServer]              ^^^^^^^^^^^^^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/telemetry/_api.py", line 244, in _run_sync_endpoint
+[WebServer]     return function(**arguments)
+[WebServer]            ^^^^^^^^^^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/app/routers/auth.py", line 61, in register
+[WebServer]     user = create_user(
+[WebServer]            ^^^^^^^^^^^^
+[WebServer]   File "/home/john/src/investflow/backend/app/auth.py", line 181, in create_user
+[WebServer]     cursor = conn.execute(
+[WebServer]              ^^^^^^^^^^^^^
+[WebServer] sqlite3.OperationalError: no such table: users
+  ✘  2 e2e/smoke.spec.ts:14:1 › register → dashboard → logout → login journey (5.9s)
+
+
+  1) e2e/smoke.spec.ts:14:1 › register → dashboard → logout → login journey ────────────────────────
+
+    Error: expect(page).toHaveURL(expected) failed
+
+    Expected pattern: /\/dashboard$/
+    Received string:  "http://localhost:3000/register"
+    Timeout: 5000ms
+
+    Call log:
+      - Expect "toHaveURL" with timeout 5000ms
+        14 × locator resolved to <html lang="en" data-theme="light">…</html>
+           - unexpected value "http://localhost:3000/register"
+
+
+      25 |   await page.getByRole("button", { name: "Create account" }).click();
+      26 |
+    > 27 |   await expect(page).toHaveURL(/\/dashboard$/);
+         |                      ^
+      28 |   await expect(page.getByText(/not yet built/i)).toBeVisible();
+      29 |
+      30 |   await page.getByRole("button", { name: "Menu" }).click();
+        at /home/john/src/investflow/e2e/smoke.spec.ts:27:22
+
+    Error Context: test-results/smoke-register-→-dashboard-→-logout-→-login-journey/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-register-→-dashboard-→-logout-→-login-journey/trace.zip
+    Usage:
+
+        pnpm exec playwright show-trace test-results/smoke-register-→-dashboard-→-logout-→-login-journey/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/smoke.spec.ts:14:1 › register → dashboard → logout → login journey ─────────────────────────
+  1 passed (10.6s)
+make: *** [Makefile:35: test-e2e] Error 1

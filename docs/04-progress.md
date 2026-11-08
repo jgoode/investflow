@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-01 ✅ closed) |
+| **Last updated** | 2026-11-08 (ITER-02 ✅ closed) |
 
 ## 1. Status legend
 
@@ -24,7 +24,7 @@ with the next iteration's template.
 | Iter | Title | Delivers (slices) | Key ACs | Status | Defects |
 |---|---|---|---|---|---|
 | **ITER-01** | Project skeleton & CI | Monorepo layout, FastAPI `/api/healthz`, Next.js shell, Makefile targets, lint/type configs, L1+L4 harnesses, smoke E2E | NFR-1, NFR-6, NFR-11 | ✅ | — |
-| **ITER-02** | Auth core | Registration screen/screen-level validation, login + JWT httpOnly cookie + logout, auth-gated app layout, mega menu partial (menu groups Dashboard/Reports throttle later), login-throttle, Users table | FR-U1, FR-U2, FR-U3, NFR-2, FR-N | 📋 | — |
+| **ITER-02** | Auth core | Registration screen/screen-level validation, login + JWT httpOnly cookie + logout, auth-gated app layout, mega menu partial (menu groups Dashboard/Reports throttle later), login-throttle, Users table | FR-U1, FR-U2, FR-U3, NFR-2, FR-N | ✅ | — |
 | **ITER-03** | User management | Users list/edit screens, activate/inactive with session revocation (epoch), own-password change, last-active guard | FR-U4 | 📋 | — |
 | **ITER-04** | Encryption core + crypto battery | `crypto/` AES-256-GCM service, key store/gen, AAD, masking helper, rotation job, DB-scan test suite | FR-E (E1–E8), NFR-3 | 📋 | — |
 | **ITER-05** | Chart of accounts | Models+migrations, seed COA v1 (idempotent), COA tree UI, account CRUD+archive, encrypted detail fields wired end-to-end (sensitive screen) | FR-C, FR-N full menu, D-16 seed | 📋 | — |
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-02 — Auth core            (status: ✅)
+Started: 2026-11-08 · Finished: 2026-11-08
+
+- ✅ ACs completed with tests: **AC-U1a–U1d** register + duplicate + validation + 10-minute registration throttle; **AC-U2a–U2d** login success/failure, generic inactive handling, timing-equal check, 15-minute lockout, auth-page redirect behavior; **AC-U3a–U3b** logout cookie clear + stale/invalid session 401 handling; **NFR-2** `/api/**` guard matrix with exact exempt set (`/api/auth/register`, `/api/auth/login`, `/api/healthz`); **AC-N1–N4 partial / AC-N2 minimum** mega-menu shell with Dashboard/Reports links, disabled coming-soon groups, keyboard close (Escape), and route highlight
+- ✅ Deliverables: first real Alembic migration creating `users` table (`backend/alembic/versions/0001_users_auth_core.py`); backend auth stack (`/api/auth/register|login|logout|me`) with argon2id, JWT HS256 cookie (`investflow_session`, httpOnly, SameSite=Lax), `session_epoch` claim and epoch revocation check; CSRF header enforcement on mutating `/api/**`; frontend `/login` + `/register` pages with client-side validations mirrored to server constraints; server-side auth gate in `(app)` layout redirecting to `/login`; L4 flow updated to register→dashboard→logout→login
+- 🔧 Implementation notes: throttle/timing tests use pinned `time-machine` clock (no sleeps); auth middleware now executes before routing so unknown protected `/api/**` paths still return 401 as required; Playwright backend boot now runs `alembic upgrade head` before uvicorn to keep fresh environments migration-safe
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 96% lines (`pytest-cov`, gate 85%) · frontend vitest coverage provider wired (`@vitest/coverage-v8`) per GAP-008
+- 📝 Doc deltas: red snapshots stored under `docs/logs/iter-02/red-backend.log` and `docs/logs/iter-02/red-e2e.log`; [06](06-gap-analysis.md) GAP-008 closed; [07 §4](07-iterative-prompts.md) regenerated to ITER-03 handoff prompt
 
 ### ITER-01 — Project skeleton & CI            (status: ✅)
 Started: 2026-11-08 · Finished: 2026-11-08
