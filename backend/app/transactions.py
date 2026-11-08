@@ -40,6 +40,29 @@ def _fetch_category(category_id: int) -> dict[str, Any] | None:
     return dict(row) if row is not None else None
 
 
+def _fetch_transaction_by_id(transaction_id: int) -> dict[str, Any] | None:
+    with connect() as conn:
+        row = conn.execute("SELECT * FROM transactions WHERE id = ?", (transaction_id,)).fetchone()
+    return dict(row) if row is not None else None
+
+
+def _fetch_transaction_lines(transaction_id: int) -> list[sqlite3.Row]:
+    with connect() as conn:
+        return conn.execute(
+            """
+            SELECT tl.id AS line_id, tl.account_id, tl.direction, tl.amount_cents, tl.memo,
+                   tl.category_id, a.name AS account_name, a.type AS account_type,
+                   c.name AS category_name
+            FROM transaction_lines tl
+            LEFT JOIN accounts a ON a.id = tl.account_id
+            LEFT JOIN categories c ON c.id = tl.category_id
+            WHERE tl.transaction_id = ?
+            ORDER BY tl.id ASC
+            """,
+            (transaction_id,),
+        ).fetchall()
+
+
 def _ensure_leaf_account(account_id: int) -> dict[str, Any]:
     account = _fetch_account(account_id)
     if account is None:
@@ -55,6 +78,26 @@ def _ensure_leaf_account(account_id: int) -> dict[str, Any]:
             detail="group accounts are not valid posting targets",
         )
     return account
+
+
+def _ensure_transfer_accounts(
+    account_id: int, target_account_id: int
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    source = _ensure_leaf_account(account_id)
+    target = _ensure_leaf_account(target_account_id)
+    if int(account_id) == int(target_account_id):
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="transfer source and target must differ",
+        )
+    for account in (source, target):
+        account_type = str(account.get("type") or "").lower()
+        if account_type in {"income", "expense"}:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="transfer accounts cannot be income or expense accounts",
+            )
+    return source, target
 
 
 def ensure_transactions_tables() -> None:
@@ -91,6 +134,20 @@ def ensure_transactions_tables() -> None:
             )
             """
         )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS audit_log (
+                id INTEGER PRIMARY KEY,
+                user_id INTEGER NULL,
+                action TEXT NOT NULL,
+                entity TEXT NOT NULL,
+                entity_id INTEGER NULL,
+                summary TEXT NOT NULL,
+                created_at INTEGER NOT NULL,
+                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+            )
+            """
+        )
         conn.execute("CREATE INDEX IF NOT EXISTS ix_transactions_date ON transactions(date)")
         conn.execute(
             "CREATE INDEX IF NOT EXISTS ix_transaction_lines_account_id "
@@ -100,6 +157,8 @@ def ensure_transactions_tables() -> None:
             "CREATE INDEX IF NOT EXISTS ix_transaction_lines_category_id "
             "ON transaction_lines(category_id)"
         )
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_audit_log_created_at ON audit_log(created_at)")
+        conn.execute("CREATE INDEX IF NOT EXISTS ix_audit_log_action ON audit_log(action)")
         conn.commit()
 
 
@@ -111,7 +170,7 @@ def _line_mask(account_id: int) -> str:
     return mask_account_sensitive(value, "account_number_enc")
 
 
-def _serialize_line(row: sqlite3.Row) -> dict[str, Any]:
+def _serialize_line(row: sqlite3.Row | dict[str, Any]) -> dict[str, Any]:
     amount = int(row["amount_cents"])
     account_id = int(row["account_id"])
     category_id = row["category_id"]
@@ -130,7 +189,9 @@ def _serialize_line(row: sqlite3.Row) -> dict[str, Any]:
     }
 
 
-def _serialize_transaction(tx_row: sqlite3.Row, lines: Sequence[sqlite3.Row]) -> dict[str, Any]:
+def _serialize_transaction(
+    tx_row: sqlite3.Row | dict[str, Any], lines: Sequence[sqlite3.Row | dict[str, Any]]
+) -> dict[str, Any]:
     return {
         "id": int(tx_row["id"]),
         "date": tx_row["date"],
@@ -142,6 +203,26 @@ def _serialize_transaction(tx_row: sqlite3.Row, lines: Sequence[sqlite3.Row]) ->
         "updated_at": int(tx_row["updated_at"]),
         "lines": [_serialize_line(line) for line in lines],
     }
+
+
+def _log_audit(
+    *,
+    action: str,
+    summary: str,
+    entity: str,
+    entity_id: int | None,
+    user_id: int | None,
+) -> None:
+    ensure_transactions_tables()
+    with connect() as conn:
+        conn.execute(
+            """
+            INSERT INTO audit_log (user_id, action, entity, entity_id, summary, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (user_id, action, entity, entity_id, summary, _now_ts()),
+        )
+        conn.commit()
 
 
 def _parse_date(value: str | None, *, default_days_ago: int = 90) -> tuple[str, str]:
@@ -158,15 +239,55 @@ def _parse_date(value: str | None, *, default_days_ago: int = 90) -> tuple[str, 
     return start, end
 
 
+def _build_transfer_lines(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    source_id = payload.get("account_id")
+    target_id = payload.get("target_account_id")
+    if target_id is None:
+        target_id = payload.get("account_target_id")
+    amount_cents = payload.get("amount_cents")
+    if source_id is None or target_id is None or amount_cents is None:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="transfer requires account_id, target_account_id, and amount_cents",
+        )
+    source_id = int(source_id)
+    target_id = int(target_id)
+    amount_cents = int(amount_cents)
+    if amount_cents <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="amount_cents must be a positive integer",
+        )
+    _ensure_transfer_accounts(source_id, target_id)
+    return [
+        {
+            "account_id": source_id,
+            "direction": "debit",
+            "amount_cents": amount_cents,
+            "memo": payload.get("memo"),
+            "category_id": None,
+        },
+        {
+            "account_id": target_id,
+            "direction": "credit",
+            "amount_cents": amount_cents,
+            "memo": payload.get("memo"),
+            "category_id": None,
+        },
+    ]
+
+
 def _build_quick_lines(payload: dict[str, Any]) -> list[dict[str, Any]]:
     mode = str(payload.get("mode") or "").strip().lower()
     account_id = payload.get("account_id")
     category_id = payload.get("category_id")
     amount_cents = payload.get("amount_cents")
+    if mode == "transfer":
+        return _build_transfer_lines(payload)
     if mode not in {"income", "expense"}:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail="quick-post mode must be income or expense",
+            detail="quick-post mode must be income, expense, or transfer",
         )
     if account_id is None or category_id is None or amount_cents is None:
         raise HTTPException(
@@ -260,8 +381,21 @@ def _normalize_line(raw_line: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def create_transaction(payload: dict[str, Any], *, created_by: int | None = None) -> dict[str, Any]:
-    ensure_transactions_tables()
+def _validate_balanced_lines(normalized_lines: Sequence[dict[str, Any]]) -> None:
+    debits = sum(line["amount_cents"] for line in normalized_lines if line["direction"] == "debit")
+    credits = sum(
+        line["amount_cents"] for line in normalized_lines if line["direction"] == "credit"
+    )
+    if debits != credits:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="transaction balance is imbalanced",
+        )
+
+
+def _parse_transaction_payload(
+    payload: dict[str, Any],
+) -> tuple[str, str, str | None, list[dict[str, Any]]]:
     date_value = str(payload.get("date") or _today_iso()).strip()
     try:
         date.fromisoformat(date_value)
@@ -285,17 +419,15 @@ def create_transaction(payload: dict[str, Any], *, created_by: int | None = None
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="transaction requires at least one line",
         )
+    _validate_balanced_lines(normalized_lines)
+    description = str(payload.get("description") or "").strip() or "Transaction"
+    reference = payload.get("reference")
+    return date_value, description, reference, normalized_lines
 
-    debits = sum(line["amount_cents"] for line in normalized_lines if line["direction"] == "debit")
-    credits = sum(
-        line["amount_cents"] for line in normalized_lines if line["direction"] == "credit"
-    )
-    if debits != credits:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail="transaction balance is imbalanced",
-        )
 
+def create_transaction(payload: dict[str, Any], *, created_by: int | None = None) -> dict[str, Any]:
+    ensure_transactions_tables()
+    date_value, description, reference, normalized_lines = _parse_transaction_payload(payload)
     with connect() as conn:
         conn.execute("BEGIN IMMEDIATE")
         tx_cursor = conn.execute(
@@ -307,8 +439,8 @@ def create_transaction(payload: dict[str, Any], *, created_by: int | None = None
             """,
             (
                 date_value,
-                str(payload.get("description") or "").strip() or "Transaction",
-                payload.get("reference"),
+                description,
+                reference,
                 created_by,
                 _now_ts(),
                 _now_ts(),
@@ -341,24 +473,169 @@ def create_transaction(payload: dict[str, Any], *, created_by: int | None = None
         conn.commit()
 
     with connect() as conn:
-        tx_row = conn.execute(
-            "SELECT * FROM transactions WHERE id = ?",
-            (tx_id,),
-        ).fetchone()
-        line_rows = conn.execute(
-            """
-            SELECT tl.id AS line_id, tl.account_id, tl.direction, tl.amount_cents, tl.memo,
-                   tl.category_id, a.name AS account_name, a.type AS account_type,
-                   c.name AS category_name
-            FROM transaction_lines tl
-            LEFT JOIN accounts a ON a.id = tl.account_id
-            LEFT JOIN categories c ON c.id = tl.category_id
-            WHERE tl.transaction_id = ?
-            ORDER BY tl.id ASC
-            """,
-            (tx_id,),
-        ).fetchall()
+        tx_row = conn.execute("SELECT * FROM transactions WHERE id = ?", (tx_id,)).fetchone()
+        line_rows = _fetch_transaction_lines(tx_id)
+    _log_audit(
+        action="tx.post",
+        summary=f"posted {description}",
+        entity="transactions",
+        entity_id=tx_id,
+        user_id=created_by,
+    )
     return _serialize_transaction(tx_row, line_rows)
+
+
+def get_transaction(transaction_id: int) -> dict[str, Any]:
+    ensure_transactions_tables()
+    tx_row = _fetch_transaction_by_id(transaction_id)
+    if tx_row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="transaction not found")
+    line_rows = _fetch_transaction_lines(transaction_id)
+    return _serialize_transaction(tx_row, line_rows)
+
+
+def update_transaction(
+    transaction_id: int, payload: dict[str, Any], *, created_by: int | None = None
+) -> dict[str, Any]:
+    ensure_transactions_tables()
+    existing = _fetch_transaction_by_id(transaction_id)
+    if existing is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="transaction not found")
+    if existing["status"] == "void":
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="voided transactions cannot be edited",
+        )
+
+    if payload.get("status") == "void":
+        return void_transaction(transaction_id, user_id=created_by)
+
+    new_date = str(payload.get("date") or existing["date"]).strip()
+    try:
+        date.fromisoformat(new_date)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="date must use ISO format YYYY-MM-DD",
+        ) from exc
+    if new_date > _today_iso():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+            detail="future-dated posting is not allowed",
+        )
+
+    raw_lines = payload.get("lines")
+    if raw_lines is None:
+        raw_lines = [
+            {
+                "account_id": line["account_id"],
+                "direction": line["direction"],
+                "amount_cents": line["amount_cents"],
+                "memo": line["memo"],
+                "category_id": line["category_id"],
+            }
+            for line in _fetch_transaction_lines(transaction_id)
+        ]
+    normalized_lines = [_normalize_line(line) for line in raw_lines]
+    _validate_balanced_lines(normalized_lines)
+
+    description = (
+        str(payload.get("description") or existing["description"]).strip() or "Transaction"
+    )
+    reference = payload.get("reference")
+    if reference is None:
+        reference = existing["reference"]
+
+    with connect() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        conn.execute(
+            """
+            UPDATE transactions
+            SET date = ?, description = ?, reference = ?, updated_at = ?
+            WHERE id = ?
+            """,
+            (new_date, description, reference, _now_ts(), transaction_id),
+        )
+        conn.execute("DELETE FROM transaction_lines WHERE transaction_id = ?", (transaction_id,))
+        for line in normalized_lines:
+            conn.execute(
+                """
+                INSERT INTO transaction_lines (
+                    transaction_id, account_id, direction, amount_cents, memo, category_id
+                )
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    transaction_id,
+                    line["account_id"],
+                    line["direction"],
+                    line["amount_cents"],
+                    line.get("memo"),
+                    line.get("category_id"),
+                ),
+            )
+        conn.commit()
+
+    updated = get_transaction(transaction_id)
+    _log_audit(
+        action="tx.edit",
+        summary=f"edited {description}",
+        entity="transactions",
+        entity_id=transaction_id,
+        user_id=created_by,
+    )
+    return updated
+
+
+def void_transaction(transaction_id: int, *, user_id: int | None = None) -> dict[str, Any]:
+    ensure_transactions_tables()
+    tx_row = _fetch_transaction_by_id(transaction_id)
+    if tx_row is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="transaction not found")
+    if tx_row["status"] == "void":
+        return get_transaction(transaction_id)
+
+    with connect() as conn:
+        conn.execute(
+            "UPDATE transactions SET status = 'void', updated_at = ? WHERE id = ?",
+            (_now_ts(), transaction_id),
+        )
+        conn.commit()
+    updated = get_transaction(transaction_id)
+    _log_audit(
+        action="tx.void",
+        summary=f"voided {tx_row['description']}",
+        entity="transactions",
+        entity_id=transaction_id,
+        user_id=user_id,
+    )
+    return updated
+
+
+def _calculate_running_balances(*, account_id: int, tx_ids: Sequence[int]) -> dict[int, int]:
+    if not tx_ids:
+        return {}
+    placeholders = ", ".join("?" for _ in tx_ids)
+    with connect() as conn:
+        rows = conn.execute(
+            f"""
+            SELECT t.id AS tx_id, tl.direction, tl.amount_cents, t.date
+            FROM transactions t
+            JOIN transaction_lines tl ON tl.transaction_id = t.id
+            WHERE tl.account_id = ? AND t.id IN ({placeholders})
+            ORDER BY t.date ASC, t.id ASC
+            """,
+            (account_id, *tx_ids),
+        ).fetchall()
+    running_by_tx: dict[int, int] = {}
+    running_total = 0
+    for row in rows:
+        delta = (
+            int(row["amount_cents"]) if row["direction"] == "debit" else -int(row["amount_cents"])
+        )
+        running_total += delta
+        running_by_tx[int(row["tx_id"])] = running_total
+    return running_by_tx
 
 
 def list_transactions(
@@ -373,6 +650,7 @@ def list_transactions(
     q: str | None = None,
     page: int = 1,
     page_size: int = 20,
+    include_void: bool = False,
 ) -> dict[str, Any]:
     ensure_transactions_tables()
     if page < 1:
@@ -390,6 +668,8 @@ def list_transactions(
     conditions: list[str] = ["t.date >= ?", "t.date <= ?"]
     params: list[Any] = [start_date, end_date]
 
+    if not include_void:
+        conditions.append("t.status != 'void'")
     if account_id is not None:
         conditions.append("tl.account_id = ?")
         params.append(int(account_id))
@@ -438,7 +718,8 @@ def list_transactions(
     with connect() as conn:
         total = int(conn.execute(count_sql, tuple(params)).fetchone()[0])
         rows = conn.execute(
-            query_sql, tuple(params + [page_size, (page - 1) * page_size])
+            query_sql,
+            tuple(params + [page_size, (page - 1) * page_size]),
         ).fetchall()
 
     tx_map: dict[int, dict[str, Any]] = {}
@@ -460,6 +741,12 @@ def list_transactions(
             tx_map[tx_id]["lines"].append(_serialize_line(row))
 
     transactions = [tx_map[tx_id] for tx_id in sorted(tx_map, reverse=True)]
+    if account_id is not None:
+        tx_ids = [tx["id"] for tx in transactions]
+        if tx_ids:
+            running_balances = _calculate_running_balances(account_id=account_id, tx_ids=tx_ids)
+            for tx in transactions:
+                tx["running_balance_cents"] = running_balances.get(tx["id"], 0)
     return {
         "transactions": transactions,
         "page": page,

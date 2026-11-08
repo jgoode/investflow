@@ -30,7 +30,7 @@ with the next iteration's template.
 | **ITER-05** | Chart of accounts | Models+migrations, seed COA v1 (idempotent), COA tree UI, account CRUD+archive, encrypted detail fields wired end-to-end (sensitive screen) | FR-C, FR-N full menu, D-16 seed | ✅ | — |
 | **ITER-06** | Categories | Category CRUD, starter categories, assignment plumbing, defaults | FR-K | ✅ | — |
 | **ITER-07** | Simple transactions | Posting service + invariants, expense/income quick post UI, split-lines editor with off-by balance lock, list with filters/paging | FR-T1–T3, T5, T9 | ✅ | — |
-| **ITER-08** | Transfers, edit, void, audit | Transfer flow, edit-full-replace, void flow + confirmation, running balance, audit_log wiring | FR-T4, T6–T8, T10 | 📋 | — |
+| **ITER-08** | Transfers, edit, void, audit | Transfer flow, edit-full-replace, void flow + confirmation, running balance, audit_log wiring | FR-T4, T6–T8, T10 | ✅ | — |
 | **ITER-09** | Reports core | Reporting engine interface, COA report, summary, monthly, quarterly; date filters/void exclusion | FR-R1–R4, R9, R10, NFR-9 | 📋 | — |
 | **ITER-10** | Cash flow, net worth, exports | Cash-flow report, net-worth statement (+holdings valuation join), export xlsx + pdf, perf benchmarks baseline | FR-R5–R8, NFR-4 | 📋 | — |
 | **ITER-11** | Dashboard | Dashboard cards, Recharts graphs (net worth trend, in/out bars), drill-down deep links, onboarding empty states, card layout prefs | FR-D, AC-D–…D5, FR-N menus final | 📋 | — |
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-08 — Transfers, edit, void, audit            (status: ✅)
+Started: 2026-11-08 · Finished: 2026-11-08
+
+- ✅ ACs completed with tests: **FR-T4 / AC-T4**, **FR-T6–T8 / AC-T6, AC-T7, AC-T8**, and **FR-T10 / AC-T10** verified through the API regression battery; transfer posting accepts validated two-leg moves, archived/group-account protections remain enforced, the transaction list exposes running balances when filtered to a single account, and voided records stay excluded from default reads while preserving the immutable ledger trail
+- ✅ Deliverables: transfer + lifecycle support in `backend/app/transactions.py`; protected transaction routes in `backend/app/routers/transactions.py`; regression tests in `backend/tests/api/test_transactions.py`; audit log table and event emission for `tx.post`, `tx.edit`, and `tx.void` actions maintain the architecture’s audit semantics without altering the memo/plaintext scope
+- 🔧 Implementation notes: the backend remains the final authority for ledger balancing and transfer validation; quick-transfer mode accepts `account_id` + `target_account_id`, keeps the same archived/group checks as standard posting, and records audit entries on each transaction lifecycle transition while preserving the legacy `GET /api/transactions` contract for filters and pagination
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 86.87% lines (`pytest-cov` gate 85%) · frontend vitest L3 green · full `make test`, `make test-e2e`, and `make lint` green
+- 📝 Doc deltas: [04](04-progress.md) ITER-08 row/log closed; no requirement or architecture changes were necessary beyond the supported iteration scope
 
 ### ITER-07 — Simple transactions            (status: ✅)
 Started: 2026-11-08 · Finished: 2026-11-08
