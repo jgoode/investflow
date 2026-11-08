@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-08 (ITER-03 closed; §4 → ITER-04) |
+| **Last updated** | 2026-11-08 (ITER-04 closed; §4 → ITER-05) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
@@ -55,35 +55,36 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-04 — Encryption core + crypto battery**
+> **ITER-05 — Chart of accounts**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
 > `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-16 stack), `docs/01-requirements.md`
-> §8 FR-E (AC-E1–E8), §11 NFR-3, `docs/02-architecture.md` §3.1 (`account_sensitive` and encrypted fields),
-> §4.4 (AES-256-GCM design/AAD/keyring), §6 (security/ops notes), `docs/03-test-plan.md` §4 matrix row E1–E8
-> and §5.2 crypto battery, docs/04-progress.md ITER-04 row + [04 §5](04-progress.md) mapping row.
+> §3 FR-C / §7, `docs/02-architecture.md` §3.1 (`account_sensitive` and account model), §3.3 seed/data model,
+> §5.1 menu/seed notes, `docs/03-test-plan.md` §4 matrix row for **FR-C** and the crypto regression notes,
+> `docs/04-progress.md` ITER-05 row, and the [04 §5](04-progress.md) mapping row.
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to this iteration's AC list: **AC-E1–E8**
-> — ask me about any ambiguity; never assume.
+> scope only to this iteration's AC list: **FR-C** core chart-of-accounts work — ask me about any ambiguity;
+> never assume.
 >
 > **Deliverable:**
-> 1. Implement `crypto/` encryption service (AES-256-GCM, keyring loading/selection, AAD binding) and wire
->    encrypted account-sensitive field persistence without plaintext leaks.
-> 2. Add key management + rotation path per architecture (`active_key_id`, multi-key reads, rotate/backfill flow).
-> 3. Build and pass the dedicated crypto battery from [03 §5.2](03-test-plan.md) (E1–E8) including DB-scan,
->    tamper/AAD mismatch, wrong-key behavior, masking/log-safety, and rotation idempotence checks.
+> 1. Add the COA data model + migration layer for accounts and account-sensitive detail storage, keeping the encrypted
+>    storage contract from ITER-04 intact and idempotent on re-seed.
+> 2. Implement the seed v1 COA set and the account CRUD/activation/archive flow in the backend, including validation and
+>    deterministic merge behavior for re-running the seed without duplicating accounts.
+> 3. Build the frontend COA screens and menu wiring for account listing + create/edit/archive, keeping the existing
+>    mega-menu and user-auth patterns intact and without broadening into unrelated transaction/report flows.
+> 4. Validate the AAD/crypto regression set from ITER-04 remains green while the COA slice is introduced.
 >
-> **Out of scope this iteration:** COA CRUD UI/data model breadth ([ITER-05](04-progress.md)), transaction/reporting
-> features, and menu finalization/mobile behavior polish.
+> **Out of scope this iteration:** transaction posting, reporting, market-data, dashboard analytics, or any broader
+> investment/accounting features beyond the chart-of-accounts slice and its menu wiring.
 >
-> **Definition of done:** mapped-layer tests green (E row layers + crypto battery), `make test` + `make test-e2e` green,
-> lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8
+> **Definition of done:** mapped-layer tests green (FR-C layers + crypto regression set), `make test` + `make test-e2e`
+> green, lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8
 > so the next prompt (§4) is ready.
 >
-> **Known traps:** crypto tests must assert on actual DB bytes/WAL behavior (no superficial API-only checks);
-> never emit secrets/plaintext to logs or error payloads; keep AAD binding strict so ciphertext copy/paste across
-> entities fails deterministically.
+> **Known traps:** seed re-apply must merge additions only and never duplicate accounts; crypto AAD binding and key rotation
+> from ITER-04 must remain green; keep the COA slice narrow and avoid turning it into the generic accounting platform.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 

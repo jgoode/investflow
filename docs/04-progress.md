@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-03 ✅ closed) |
+| **Last updated** | 2026-11-08 (ITER-04 ✅ closed) |
 
 ## 1. Status legend
 
@@ -26,7 +26,7 @@ with the next iteration's template.
 | **ITER-01** | Project skeleton & CI | Monorepo layout, FastAPI `/api/healthz`, Next.js shell, Makefile targets, lint/type configs, L1+L4 harnesses, smoke E2E | NFR-1, NFR-6, NFR-11 | ✅ | — |
 | **ITER-02** | Auth core | Registration screen/screen-level validation, login + JWT httpOnly cookie + logout, auth-gated app layout, mega menu partial (menu groups Dashboard/Reports throttle later), login-throttle, Users table | FR-U1, FR-U2, FR-U3, NFR-2, FR-N | ✅ | — |
 | **ITER-03** | User management | Users list/edit screens, activate/inactive with session revocation (epoch), own-password change, last-active guard | FR-U4 | ✅ | — |
-| **ITER-04** | Encryption core + crypto battery | `crypto/` AES-256-GCM service, key store/gen, AAD, masking helper, rotation job, DB-scan test suite | FR-E (E1–E8), NFR-3 | 📋 | — |
+| **ITER-04** | Encryption core + crypto battery | `crypto/` AES-256-GCM service, key store/gen, AAD, masking helper, rotation job, DB-scan test suite | FR-E (E1–E8), NFR-3 | ✅ | — |
 | **ITER-05** | Chart of accounts | Models+migrations, seed COA v1 (idempotent), COA tree UI, account CRUD+archive, encrypted detail fields wired end-to-end (sensitive screen) | FR-C, FR-N full menu, D-16 seed | 📋 | — |
 | **ITER-06** | Categories | Category CRUD, starter categories, assignment plumbing, defaults | FR-K | 📋 | — |
 | **ITER-07** | Simple transactions | Posting service + invariants, expense/income quick post UI, split-lines editor with off-by balance lock, list with filters/paging | FR-T1–T3, T5, T9 | 📋 | — |
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-04 — Encryption core + crypto battery            (status: ✅)
+Started: 2026-11-08 · Finished: 2026-11-08
+
+- ✅ ACs completed with tests: **FR-E / AC-E1–E8** verified through the dedicated crypto battery and persistence-contract checks; plaintext never appears in DB bytes or WAL, AAD binding detects cross-entity ciphertext reuse, wrong-key reads fail safely with masking, rotation/backfill updates `active_key_id`, and key selection remains multi-key safe
+- ✅ Deliverables: AES-256-GCM encryption service in `backend/crypto/service.py`, keyring management and key rotation in `backend/crypto/keyring.py`, encrypted account-sensitive persistence contract in `backend/app/crypto_store.py` + migration `0003_account_sensitive_contract.py`, and focused contract tests in `backend/tests/unit/test_account_sensitive_contract.py`
+- 🔧 Implementation notes: AAD is bound to `a:{table}:{field}:{entity_id}`; old ciphertext can be re-encrypted during rotation without leaking plaintext; keyring env/file state is synchronized to avoid stale reads after rotation; the crypto iteration intentionally stops at the storage contract and does not broaden into COA CRUD or UI work
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 94% lines (`pytest-cov` gate 85%) · frontend vitest L3 green · E2E smoke remains green; crypto battery passes E1–E8
+- 📝 Doc deltas: [03](03-test-plan.md) encryption row notes marked as tested; [07 §4](07-iterative-prompts.md) rolled to ITER-05 prompt
 
 ### ITER-03 — User management            (status: ✅)
 Started: 2026-11-08 · Finished: 2026-11-08

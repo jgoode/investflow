@@ -94,6 +94,11 @@ and L4 journey (`e2e/smoke.spec.ts`: register → dashboard → logout → login
 frontend L3 keeps Users navigation enabled/regression-tested (`frontend/app/__tests__/mega-menu.test.tsx`);
 L4 scenario extends through `/users` with own-password change and re-login (`e2e/smoke.spec.ts`).*
 
+*ITER-04 close note: E1–E8 rows are now covered at mapped layers — backend crypto contract suite
+(`backend/tests/unit/test_crypto_battery.py` + `backend/tests/unit/test_account_sensitive_contract.py`) checks
+DB byte-scan and WAL-safety, AAD mismatch, wrong-key behavior, masking/log-safety, and rotation idempotence;
+all E2E smoke and standard `make test`/`make lint`/`make test-e2e` gates remain green.*
+
 ## 5. Dedicated suites
 
 ### 5.1 Auth/session suite (Iterations 2–3)
