@@ -1,0 +1,5 @@
+# pnpm project config (settings live here since v10+; renamed to allowBuilds in v11/v12).
+# Approve esbuild's install script (needed by vite/vitest). Under default
+# strictDepBuilds=true, unreviewed builds are fatal in CI (ERR_PNPM_IGNORED_BUILDS) — DEF-002.
+allowBuilds:
+  esbuild: true

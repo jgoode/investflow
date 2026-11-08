@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (DEF-001 opened+closed — CI pnpm version conflict) |
+| **Last updated** | 2026-11-08 (DEF-001, DEF-002 opened+closed — CI pnpm issues) |
 
 ## 1. Definitions
 
@@ -42,6 +42,16 @@ verification (same date) produced **DEF-001** below.
 - **Fix plan:** remove the explicit `version` input from both `frontend` and `e2e` jobs → action derives the exact pinned version from `packageManager`. Guard: the e2e job itself (installs via pnpm and runs the smoke suite) plus job startup logs show a single resolved version.
 - **Verification:** 2026-11-08 — re-run of the suite after push; jobs resolve `pnpm@12.16.1` once.
 - **Linked:** commit REC (this fix landed with DEF entry); no spec/AC impact ([01](01-requirements.md) untouched)
+
+### DEF-002 — CI: `ERR_PNPM_IGNORED_BUILDS` (fatal) on frontend install — esbuild allow-list in wrong config home
+- **Opened:** 2026-11-08 (post-DEF-001 CI re-run) · **Severity:** S3 · **State:** verified-closed
+- **Discovered by:** GitHub Actions run of `.github/workflows/ci.yml` (frontend `pnpm install` step, exit 1)
+- **Layer/Component:** infra/CI · frontend tooling
+- **Evidence:** Actions log: `Error: ERR_PNPM_IGNORED_BUILDS … Ignored build scripts: esbuild@0.28.2`
+- **Diagnosis:** pnpm 12 moved build-script allow-lists out of `package.json` (`pnpm` field reads only a deprecation warning) and renamed `onlyBuiltDependencies` → **`allowBuilds`** (pnpm.io/settings/build). Local runs only warned; CI (`strictDepBuilds=true` default) makes unreviewed builds fatal. The allow-list therefore never took effect from `package.json`.
+- **Fix plan:** create `frontend/pnpm-workspace.yaml` with `allowBuilds: {esbuild: true}`; delete the dead `pnpm.onlyBuiltDependencies` field from `frontend/package.json`. Guard: CI-mode cold install (`CI=true pnpm install` from empty `node_modules`) passes, vitest suite still runs.
+- **Verification:** 2026-11-08 — local cold install + `CI=true` exit 0; next Actions run after push.
+- **Linked:** commits REC (fix + doc in same commit); follows DEF-001 (same CI surface); settings doc: pnpm.io/settings/build
 
 ### Entry template
 
