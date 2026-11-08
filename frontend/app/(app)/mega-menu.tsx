@@ -9,7 +9,7 @@ import { apiUrl } from "@/lib/api";
 const GROUPS = [
   { key: "dashboard", label: "Dashboard", href: "/dashboard", enabled: true },
   { key: "reports", label: "Reports", href: "/reports", enabled: true },
-  { key: "accounts", label: "Accounts", href: "/accounts", enabled: false },
+  { key: "accounts", label: "Accounts", href: "/accounts", enabled: true },
   { key: "investments", label: "Investments", href: "/investments", enabled: false },
   { key: "users", label: "Users", href: "/users", enabled: true },
   { key: "settings", label: "Settings", href: "/settings", enabled: false },

@@ -9,8 +9,10 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 
+from app.accounts import ensure_seeded_coa
 from app.auth import AuthRuntimeState, authenticate_request_cookie, ensure_csrf_for_mutation
 from app.db.connection import resolve_db_path
+from app.routers.accounts import router as accounts_router
 from app.routers.auth import router as auth_router
 from app.routers.healthz import router as healthz_router
 from app.routers.users import router as users_router
@@ -39,6 +41,7 @@ def create_app() -> FastAPI:
     app = FastAPI(title="InvestFlow API", version=__version__)
     app.state.db_path = resolve_db_path()
     app.state.auth_state = AuthRuntimeState()
+    ensure_seeded_coa()
     app.add_middleware(ApiAuthMiddleware)
     app.add_middleware(
         CORSMiddleware,
@@ -50,6 +53,7 @@ def create_app() -> FastAPI:
     app.include_router(healthz_router)
     app.include_router(auth_router)
     app.include_router(users_router)
+    app.include_router(accounts_router)
     return app
 
 

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-08 (ITER-04 closed; §4 → ITER-05) |
+| **Last updated** | 2026-11-08 (ITER-05 closed; §4 → ITER-06) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
@@ -55,36 +55,31 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-05 — Chart of accounts**
+> **ITER-06 — Categories**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
 > `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-16 stack), `docs/01-requirements.md`
-> §3 FR-C / §7, `docs/02-architecture.md` §3.1 (`account_sensitive` and account model), §3.3 seed/data model,
-> §5.1 menu/seed notes, `docs/03-test-plan.md` §4 matrix row for **FR-C** and the crypto regression notes,
-> `docs/04-progress.md` ITER-05 row, and the [04 §5](04-progress.md) mapping row.
+> §3 FR-K, `docs/02-architecture.md` §3.1 (`categories` and its default-account model), §3.3 seeded data model,
+> `docs/03-test-plan.md` §4 matrix row for **FR-K** and the seed/idempotence notes, `docs/04-progress.md` ITER-06 row,
+> and the [04 §5](04-progress.md) mapping row.
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to this iteration's AC list: **FR-C** core chart-of-accounts work — ask me about any ambiguity;
+> scope only to this iteration's AC list: **FR-K** categories + defaults — ask me about any ambiguity;
 > never assume.
 >
 > **Deliverable:**
-> 1. Add the COA data model + migration layer for accounts and account-sensitive detail storage, keeping the encrypted
->    storage contract from ITER-04 intact and idempotent on re-seed.
-> 2. Implement the seed v1 COA set and the account CRUD/activation/archive flow in the backend, including validation and
->    deterministic merge behavior for re-running the seed without duplicating accounts.
-> 3. Build the frontend COA screens and menu wiring for account listing + create/edit/archive, keeping the existing
->    mega-menu and user-auth patterns intact and without broadening into unrelated transaction/report flows.
-> 4. Validate the AAD/crypto regression set from ITER-04 remains green while the COA slice is introduced.
+> 1. Add the categories model and migration layer, keeping the shared-book seed behavior idempotent and preserving any existing COA linkage rules from ITER-05.
+> 2. Implement a seeded starter category set and the backend CRUD flow for creating, editing, assigning, and deleting categories without destroying history.
+> 3. Wire the category default-account behavior into the backend and any minimal frontend category screen needed to exercise the slice without broadening into transactions or reports.
+> 4. Validate the existing crypto/AAD regression set remains green while the category slice is introduced.
 >
-> **Out of scope this iteration:** transaction posting, reporting, market-data, dashboard analytics, or any broader
-> investment/accounting features beyond the chart-of-accounts slice and its menu wiring.
+> **Out of scope this iteration:** transaction posting, reporting, market-data, dashboard analytics, investments, or any broader accounting features beyond category management and its minimal UI wiring.
 >
-> **Definition of done:** mapped-layer tests green (FR-C layers + crypto regression set), `make test` + `make test-e2e`
+> **Definition of done:** mapped-layer tests green (FR-K layers + crypto regression set), `make test` + `make test-e2e`
 > green, lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8
 > so the next prompt (§4) is ready.
 >
-> **Known traps:** seed re-apply must merge additions only and never duplicate accounts; crypto AAD binding and key rotation
-> from ITER-04 must remain green; keep the COA slice narrow and avoid turning it into the generic accounting platform.
+> **Known traps:** category deletion must set references to "(uncategorized)" rather than deleting history; seed re-apply must merge additions only and never duplicate categories; retain the narrow, non-reporting scope of this iteration.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 
@@ -108,7 +103,7 @@ ITER-02 are already green.
 
 *(R5 moves one row from here into §4, replacing the spent one. Do not skip order without a `04-progress.md` note.)*
 
-- ⏭ **ITER-05 — Chart of accounts** (FR-C; architecture §3.1 accounts/account_sensitive, §3.3 seed, §5.1; traps:
+- ✅ **ITER-05 — Chart of accounts** (FR-C; architecture §3.1 accounts/account_sensitive, §3.3 seed, §5.1; traps:
   idempotent seed re-apply merges additions only, AAD binding regression set from ITER-04 must stay green,
   finalize mega menu six groups)
 - ⏭ **ITER-06 — Categories** (FR-K; §3.1 categories; traps: delete → "(uncategorized)" never destroys history)

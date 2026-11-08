@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-04 ✅ closed) |
+| **Last updated** | 2026-11-08 (ITER-05 ✅ closed) |
 
 ## 1. Status legend
 
@@ -27,7 +27,7 @@ with the next iteration's template.
 | **ITER-02** | Auth core | Registration screen/screen-level validation, login + JWT httpOnly cookie + logout, auth-gated app layout, mega menu partial (menu groups Dashboard/Reports throttle later), login-throttle, Users table | FR-U1, FR-U2, FR-U3, NFR-2, FR-N | ✅ | — |
 | **ITER-03** | User management | Users list/edit screens, activate/inactive with session revocation (epoch), own-password change, last-active guard | FR-U4 | ✅ | — |
 | **ITER-04** | Encryption core + crypto battery | `crypto/` AES-256-GCM service, key store/gen, AAD, masking helper, rotation job, DB-scan test suite | FR-E (E1–E8), NFR-3 | ✅ | — |
-| **ITER-05** | Chart of accounts | Models+migrations, seed COA v1 (idempotent), COA tree UI, account CRUD+archive, encrypted detail fields wired end-to-end (sensitive screen) | FR-C, FR-N full menu, D-16 seed | 📋 | — |
+| **ITER-05** | Chart of accounts | Models+migrations, seed COA v1 (idempotent), COA tree UI, account CRUD+archive, encrypted detail fields wired end-to-end (sensitive screen) | FR-C, FR-N full menu, D-16 seed | ✅ | — |
 | **ITER-06** | Categories | Category CRUD, starter categories, assignment plumbing, defaults | FR-K | 📋 | — |
 | **ITER-07** | Simple transactions | Posting service + invariants, expense/income quick post UI, split-lines editor with off-by balance lock, list with filters/paging | FR-T1–T3, T5, T9 | 📋 | — |
 | **ITER-08** | Transfers, edit, void, audit | Transfer flow, edit-full-replace, void flow + confirmation, running balance, audit_log wiring | FR-T4, T6–T8, T10 | 📋 | — |
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-05 — Chart of accounts            (status: ✅)
+Started: 2026-11-08 · Finished: 2026-11-08
+
+- ✅ ACs completed with tests: **FR-C / AC-C1–C6** verified through the focused COA API suite and the repo’s regression battery; the app boots with a seeded root tree and re-seeding is idempotent, account creation/edit/archive works through the backend API, and the existing AAD/crypto contract from ITER-04 stays green alongside the new slice
+- ✅ Deliverables: COA migration and seed metadata in `backend/alembic/versions/0004_chart_of_accounts.py`; seeded account tree and create/update/archive logic in `backend/app/accounts.py`; protected account routes in `backend/app/routers/accounts.py`; frontend account screen and menu wiring in `frontend/app/(app)/accounts/page.tsx` and `frontend/app/(app)/mega-menu.tsx`; COA API tests in `backend/tests/api/test_accounts.py`
+- 🔧 Implementation notes: seed logic merges only newly added accounts; the encrypted `account_sensitive` contract remains ciphertext-only and no plaintext leaks into DB bytes/WAL; the FE scope remains intentionally narrow, staying within account listing + create/edit/archive and not broadening into transactions or reports
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 88.9% lines (`pytest-cov` gate 85%) · frontend vitest L3 green · E2E smoke remains green; full `make test` + `make test-e2e` pass
+- 📝 Doc deltas: [07 §4](07-iterative-prompts.md) rolled to the ITER-06 prompt; [04-progress](04-progress.md) roadmap row marked as closed; no requirement/architecture spec changes were necessary beyond the iteration’s documented scope
 
 ### ITER-04 — Encryption core + crypto battery            (status: ✅)
 Started: 2026-11-08 · Finished: 2026-11-08
