@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-06 ✅ closed) |
+| **Last updated** | 2026-11-08 (ITER-07 ✅ closed) |
 
 ## 1. Status legend
 
@@ -29,7 +29,7 @@ with the next iteration's template.
 | **ITER-04** | Encryption core + crypto battery | `crypto/` AES-256-GCM service, key store/gen, AAD, masking helper, rotation job, DB-scan test suite | FR-E (E1–E8), NFR-3 | ✅ | — |
 | **ITER-05** | Chart of accounts | Models+migrations, seed COA v1 (idempotent), COA tree UI, account CRUD+archive, encrypted detail fields wired end-to-end (sensitive screen) | FR-C, FR-N full menu, D-16 seed | ✅ | — |
 | **ITER-06** | Categories | Category CRUD, starter categories, assignment plumbing, defaults | FR-K | ✅ | — |
-| **ITER-07** | Simple transactions | Posting service + invariants, expense/income quick post UI, split-lines editor with off-by balance lock, list with filters/paging | FR-T1–T3, T5, T9 | 📋 | — |
+| **ITER-07** | Simple transactions | Posting service + invariants, expense/income quick post UI, split-lines editor with off-by balance lock, list with filters/paging | FR-T1–T3, T5, T9 | ✅ | — |
 | **ITER-08** | Transfers, edit, void, audit | Transfer flow, edit-full-replace, void flow + confirmation, running balance, audit_log wiring | FR-T4, T6–T8, T10 | 📋 | — |
 | **ITER-09** | Reports core | Reporting engine interface, COA report, summary, monthly, quarterly; date filters/void exclusion | FR-R1–R4, R9, R10, NFR-9 | 📋 | — |
 | **ITER-10** | Cash flow, net worth, exports | Cash-flow report, net-worth statement (+holdings valuation join), export xlsx + pdf, perf benchmarks baseline | FR-R5–R8, NFR-4 | 📋 | — |
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-07 — Simple transactions            (status: ✅)
+Started: 2026-11-08 · Finished: 2026-11-08
+
+- ✅ ACs completed with tests: **FR-T1–T3 / AC-T1, AC-T2, AC-T3**, **FR-T5 / AC-T5**, and **FR-T9 / AC-T9** verified at API/L3/L4 layers; quick income/expense postings balance server-side, split-line transactions reject any imbalance atomically, the list/filter baseline works with paging, and account numbers are masked in transaction pickers/list payloads without altering encrypted storage boundaries
+- ✅ Deliverables: posting service and validation in `backend/app/transactions.py`; protected transaction routes in `backend/app/routers/transactions.py` and registered in `backend/app/main.py`; red-to-green API coverage in `backend/tests/api/test_transactions.py`; minimal transaction UI in `frontend/app/(app)/transactions/page.tsx` and menu wiring in `frontend/app/(app)/mega-menu.tsx`
+- 🔧 Implementation notes: the backend remains the authority for ledger balancing; archived or group-type accounts are rejected before insert; category/default-account plumbing from ITER-06 is reused for quick-post flows; memo plaintext remains intentionally unchanged while encrypted account-sensitive boundaries stay stable
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 87.55% lines (`pytest-cov` gate 85%) · frontend vitest L3 green · full `make test`, `make test-e2e`, and `make lint` green
+- 📝 Doc deltas: [04](04-progress.md) ITER-07 row/log closed; [03](03-test-plan.md) T1/T2/T3/T5/T9 matrix note marked covered; [07 §4](07-iterative-prompts.md) rolled to ITER-08 prompt; [05](05-defects.md) close-review refreshed with no new entries; [08](08-backlog.md) untouched (no backlog lifecycle change)
 
 ### ITER-06 — Categories            (status: ✅)
 Started: 2026-11-08 · Finished: 2026-11-08

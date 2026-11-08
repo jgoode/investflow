@@ -99,6 +99,12 @@ L4 scenario extends through `/users` with own-password change and re-login (`e2e
 DB byte-scan and WAL-safety, AAD mismatch, wrong-key behavior, masking/log-safety, and rotation idempotence;
 all E2E smoke and standard `make test`/`make lint`/`make test-e2e` gates remain green.*
 
+*ITER-07 close note: T1–T3/T5/T9 rows are now covered at mapped layers — backend L2 transaction suite
+(`backend/tests/api/test_transactions.py`) verifies quick income/expense posting, split-line balancing,
+imbalance rejection, list/filter paging, and account-number masking without altering encrypted sensitive-field
+boundaries; frontend L3 regression coverage remains green (`frontend/app/__tests__/mega-menu.test.tsx`), and
+L4 smoke still passes in lockstep with the crypto/AAD battery.*
+
 *ITER-06 close note: K1–K4 row is now covered at mapped layers — backend L2 category suite
 (`backend/tests/api/test_categories.py`) verifies seeded starter categories are idempotent, flow↔default-account
 constraints hold, line assignment plumbing works, and category delete re-points historical line references to

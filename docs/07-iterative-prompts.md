@@ -3,14 +3,14 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-08 (ITER-06 closed; §4 → ITER-07) |
+| **Last updated** | 2026-11-08 (ITER-07 closed; §4 → ITER-08) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
 
 - §2 — the documentation roll-forward workflow (what to update after every iteration)
 - §3 — the in-session TDD execution loop
-- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-07)
+- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-08)
 - §5 — the stable prompt template used to generate §4 for later iterations
 
 ---
@@ -55,32 +55,32 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-07 — Simple transactions**
+> **ITER-08 — Transfers, edit, void, audit**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
 > `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-16 stack), `docs/01-requirements.md`
-> §4 FR-T (scope: **AC-T1, AC-T2, AC-T3, AC-T5, AC-T9 only**), `docs/02-architecture.md` §4.5 posting service + invariants,
+> §4 FR-T (scope: **AC-T4, AC-T6, AC-T7, AC-T8, AC-T10 only**), `docs/02-architecture.md` §4.5 posting service + invariants + audit log,
 > and `docs/02-architecture.md` §3.1 tables used by posting (`transactions`, `transaction_lines`, `accounts`, `categories`),
-> plus `docs/03-test-plan.md` §4 matrix row for FR-T1–T3/T5/T9 and the auth/security guard notes, `docs/04-progress.md` ITER-07 row,
-> and the [04 §5](04-progress.md) mapping row.
+> plus `docs/03-test-plan.md` §4 matrix row for FR-T4/T6/T7/T8/T10 and the auth/security guard notes,
+> `docs/04-progress.md` ITER-08 row, and the [04 §5](04-progress.md) mapping row.
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to this iteration's AC list: **AC-T1, AC-T2, AC-T3, AC-T5, AC-T9** — ask me about any ambiguity;
+> scope only to this iteration's AC list: **AC-T4, AC-T6, AC-T7, AC-T8, AC-T10** — ask me about any ambiguity;
 > never assume.
 >
 > **Deliverable:**
-> 1. Implement the posting backend for quick income/expense entries and advanced split-line entry with strict server-side balance enforcement (T-1), reusing the category/default-account plumbing from ITER-06.
-> 2. Add transaction list API + minimal UI support for AC-T5 in this iteration only (paging/filter baseline per spec scope here), without introducing transfer/edit/void behaviors reserved for ITER-08.
-> 3. Add account-number masking behavior in transaction pickers/list views per AC-T9 while keeping encrypted account-sensitive field boundaries unchanged (memos remain plaintext by design).
-> 4. Keep auth/CSRF protections and crypto/AAD regression sets green while introducing posting/list functionality.
+> 1. Add transfer posting support with server-side validation, strict account/archival checks, and atomic balance enforcement for two-account moves.
+> 2. Implement edit + void workflows for posted transactions without leaking ITER-07 quick-post assumptions; preserve the immutable audit trail by status and timestamping per the architecture.
+> 3. Add running-balance and list/detail behavior for the new transaction lifecycle while keeping the current posting/list scope stable and backward-compatible.
+> 4. Complete the memo encryption/security work for AC-T10 and keep auth/CSRF protections plus the crypto/AAD regression battery green while the transaction lifecycle expands.
 >
-> **Out of scope this iteration:** transfers (AC-T4), edit/void/running-balance (AC-T6–T8), memo encryption changes (AC-T10), reports, dashboard analytics, investments, and any market-data/provider work.
+> **Out of scope this iteration:** quick-post simplifications already finished in ITER-07, reports/dashboard/analytics, investments, market-data/provider work, and any unrelated feature bloat.
 >
-> **Definition of done:** mapped-layer tests green (FR-T1/T2/T3/T5/T9 + crypto regression set), `make test` + `make test-e2e`
+> **Definition of done:** mapped-layer tests green (FR-T4/T6/T7/T8/T10 + crypto regression set), `make test` + `make test-e2e`
 > green, lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8
 > so the next prompt (§4) is ready.
 >
-> **Known traps:** server-side balancing is final authority (client "off by" display is advisory); posting must reject archived/group accounts and any imbalance atomically; keep scope narrow to T1/T2/T3/T5/T9 without leaking ITER-08 behaviors.
+> **Known traps:** voids must remain excluded from reports by default; running-balance logic is derived from posted ledger state, not client-side approximation; transfer/edit/void flows must keep the same account safety checks and audit semantics as the original posting service.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 
@@ -108,7 +108,7 @@ ITER-02 are already green.
   idempotent seed re-apply merges additions only, AAD binding regression set from ITER-04 must stay green,
   finalize mega menu six groups)
 - ✅ **ITER-06 — Categories** (FR-K; §3.1 categories; traps: delete → "(uncategorized)" never destroys history)
-- ⏭ **ITER-07 — Simple transactions** (FR-T1–T3/5/9; §4.5 posting service; traps: imbalance atomicity,
+- ✅ **ITER-07 — Simple transactions** (FR-T1–T3/5/9; §4.5 posting service; traps: imbalance atomicity,
   server-side balance check is final authority)
 - ⏭ **ITER-08 — Transfers/edit/void/audit** (FR-T4/6/7/8/10; §4.5+audit_log; traps: void excluded by default
   from reports from now on — regression pin)
