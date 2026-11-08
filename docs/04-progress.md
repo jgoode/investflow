@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-05 ✅ closed) |
+| **Last updated** | 2026-11-08 (ITER-06 ✅ closed) |
 
 ## 1. Status legend
 
@@ -28,7 +28,7 @@ with the next iteration's template.
 | **ITER-03** | User management | Users list/edit screens, activate/inactive with session revocation (epoch), own-password change, last-active guard | FR-U4 | ✅ | — |
 | **ITER-04** | Encryption core + crypto battery | `crypto/` AES-256-GCM service, key store/gen, AAD, masking helper, rotation job, DB-scan test suite | FR-E (E1–E8), NFR-3 | ✅ | — |
 | **ITER-05** | Chart of accounts | Models+migrations, seed COA v1 (idempotent), COA tree UI, account CRUD+archive, encrypted detail fields wired end-to-end (sensitive screen) | FR-C, FR-N full menu, D-16 seed | ✅ | — |
-| **ITER-06** | Categories | Category CRUD, starter categories, assignment plumbing, defaults | FR-K | 📋 | — |
+| **ITER-06** | Categories | Category CRUD, starter categories, assignment plumbing, defaults | FR-K | ✅ | — |
 | **ITER-07** | Simple transactions | Posting service + invariants, expense/income quick post UI, split-lines editor with off-by balance lock, list with filters/paging | FR-T1–T3, T5, T9 | 📋 | — |
 | **ITER-08** | Transfers, edit, void, audit | Transfer flow, edit-full-replace, void flow + confirmation, running balance, audit_log wiring | FR-T4, T6–T8, T10 | 📋 | — |
 | **ITER-09** | Reports core | Reporting engine interface, COA report, summary, monthly, quarterly; date filters/void exclusion | FR-R1–R4, R9, R10, NFR-9 | 📋 | — |
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-06 — Categories            (status: ✅)
+Started: 2026-11-08 · Finished: 2026-11-08
+
+- ✅ ACs completed with tests: **FR-K / AC-K1–K4** verified with failing-first category tests at API/L3/L4 layers; starter categories seed idempotently, category CRUD + default-account linkage rules are enforced, transaction-line assignment plumbing works, and category deletion nulls historical references so lines resolve to "(uncategorized)" without deleting history
+- ✅ Deliverables: migration and schema wiring in `backend/alembic/versions/0005_categories.py`; category seed+service logic in `backend/app/categories.py`; protected category API routes in `backend/app/routers/categories.py` and `backend/app/main.py`; category API tests in `backend/tests/api/test_categories.py`; minimal category UI in `frontend/app/(app)/categories/page.tsx`; menu + E2E coverage updates in `frontend/app/(app)/mega-menu.tsx`, `frontend/app/__tests__/mega-menu.test.tsx`, and `e2e/smoke.spec.ts`
+- 🔧 Implementation notes: delete requires explicit confirmation and clears `transaction_lines.category_id` to `NULL` (reporting as "(uncategorized)"); default-account validation preserves the COA branch rule (`income` categories only link to income accounts, `expense` categories only to expense accounts); crypto/AAD regression battery remains green alongside the category slice
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 88.83% lines (`pytest-cov` gate 85%) · frontend vitest L3 green · full `make test`, `make test-e2e`, and `make lint` green
+- 📝 Doc deltas: [04](04-progress.md) ITER-06 row/log closed; [03](03-test-plan.md) ITER-06 matrix close note added; [06](06-gap-analysis.md) close-of-iteration reality sentence refreshed (no new gaps); [07 §4](07-iterative-prompts.md) rolled to ITER-07 prompt; [05](05-defects.md) close-review timestamp refreshed with no new entries; [08](08-backlog.md) untouched (no backlog lifecycle change)
 
 ### ITER-05 — Chart of accounts            (status: ✅)
 Started: 2026-11-08 · Finished: 2026-11-08

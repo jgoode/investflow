@@ -99,6 +99,13 @@ L4 scenario extends through `/users` with own-password change and re-login (`e2e
 DB byte-scan and WAL-safety, AAD mismatch, wrong-key behavior, masking/log-safety, and rotation idempotence;
 all E2E smoke and standard `make test`/`make lint`/`make test-e2e` gates remain green.*
 
+*ITER-06 close note: K1–K4 row is now covered at mapped layers — backend L2 category suite
+(`backend/tests/api/test_categories.py`) verifies seeded starter categories are idempotent, flow↔default-account
+constraints hold, line assignment plumbing works, and category delete re-points historical line references to
+`NULL` (reported as "(uncategorized)"); frontend L3 menu regression (`frontend/app/__tests__/mega-menu.test.tsx`)
+includes Categories navigation; L4 scenario (`e2e/smoke.spec.ts`) covers category create/delete via the minimal
+category screen while preserving the crypto regression battery in parallel backend runs.*
+
 ## 5. Dedicated suites
 
 ### 5.1 Auth/session suite (Iterations 2–3)

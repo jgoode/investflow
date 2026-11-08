@@ -14,6 +14,7 @@ from app.auth import AuthRuntimeState, authenticate_request_cookie, ensure_csrf_
 from app.db.connection import resolve_db_path
 from app.routers.accounts import router as accounts_router
 from app.routers.auth import router as auth_router
+from app.routers.categories import router as categories_router
 from app.routers.healthz import router as healthz_router
 from app.routers.users import router as users_router
 from app.version import __version__
@@ -54,6 +55,7 @@ def create_app() -> FastAPI:
     app.include_router(auth_router)
     app.include_router(users_router)
     app.include_router(accounts_router)
+    app.include_router(categories_router)
     return app
 
 

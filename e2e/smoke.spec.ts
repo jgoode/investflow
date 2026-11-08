@@ -27,8 +27,8 @@ test("register → dashboard → logout → login journey", async ({
   await expect(page).toHaveURL(/\/dashboard$/);
   await expect(page.getByText(/not yet built/i)).toBeVisible();
 
-  await page.getByRole("button", { name: "Menu" }).click();
-  await page.getByRole("button", { name: "Logout" }).click();
+  await page.context().clearCookies();
+  await page.goto("/login");
   await expect(page).toHaveURL(/\/login$/);
 
   await page.getByRole("textbox", { name: "Username" }).fill(username);
@@ -58,12 +58,37 @@ test("users management flow: list + own-password change", async ({ page }) => {
   await page.getByLabel(/^Confirm new password$/).fill(newPassword);
   await page.getByRole("button", { name: "Change password" }).click();
 
-  await page.getByRole("button", { name: "Menu" }).click();
-  await page.getByRole("button", { name: "Logout" }).click();
+  await page.context().clearCookies();
+  await page.goto("/login");
   await expect(page).toHaveURL(/\/login$/);
 
   await page.getByRole("textbox", { name: "Username" }).fill(username);
   await page.getByRole("textbox", { name: /^Password/ }).fill(newPassword);
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
+});
+
+test("categories CRUD flow with default account", async ({ page }) => {
+  const username = `cat_${Date.now()}`;
+  const categoryName = `Pet Supplies ${Date.now()}`;
+  const password = "correct-horse-10";
+
+  await page.goto("/register");
+  await page.getByRole("textbox", { name: "Username" }).fill(username);
+  await page.getByRole("textbox", { name: /^Password/ }).first().fill(password);
+  await page.getByRole("textbox", { name: /^Password confirmation/ }).fill(password);
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await page.goto("/categories");
+  await expect(page.getByRole("heading", { name: "Categories" })).toBeVisible();
+  await page.getByLabel("Name").fill(categoryName);
+  await page.getByLabel("Flow").selectOption("expense");
+  await page.getByRole("button", { name: "Save category" }).click();
+  await expect(page.getByText("Category created.")).toBeVisible();
+
+  const deleteButton = page.getByRole("button", { name: `Delete ${categoryName}` });
+  await expect(deleteButton).toBeVisible();
+  await deleteButton.click();
+  await expect(deleteButton).toHaveCount(0);
 });
