@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-01 close — register empty, triage clean per §5) |
+| **Last updated** | 2026-11-08 (DEF-001 opened+closed — CI pnpm version conflict) |
 
 ## 1. Definitions
 
@@ -29,11 +29,19 @@ Priority = severity × scope: any S1 anywhere > S2 core ledger/crypto/auth > S2 
 
 ID pattern: `DEF-<three digits>`; never reused; a superseded row links the replacement instead of being deleted.
 
-*(Empty — first entry expected no later than ITER-01 smoke-test E2E runs.)*
+**ITER-01 close note:** at iteration close the register was empty (no red tests parked; a red-phase
+test-authoring slip was caught by ruff `B018` before any test run, so not a defect). Post-close CI
+verification (same date) produced **DEF-001** below.
 
-**ITER-01 close note:** no defect entries; no red tests parked. One red-phase test-authoring slip
-(a no-op assertion in `tests/unit/test_db_connection.py`) was caught by ruff `B018` before any test
-run and does not qualify as a defect (it never shipped nor violated an AC).
+### DEF-001 — CI: pnpm version conflict (`@pnpm/action-setup` explicit `version` vs `packageManager`)
+- **Opened:** 2026-11-08 (ITER-01 CI verification) · **Severity:** S3 · **State:** verified-closed
+- **Discovered by:** GitHub Actions run of `.github/workflows/ci.yml` (frontend job) — `Error: Multiple versions of pnpm specified` / `ERR_PNPM_BAD_PM_VERSION`
+- **Layer/Component:** infra/CI
+- **Evidence:** Actions log: version `12` from the workflow's `pnpm/action-setup` input vs `pnpm@12.16.1` in root `package.json` `packageManager`
+- **Diagnosis:** `pnpm/action-setup@v4` already resolves the version from `packageManager`; the explicit `with: version: 12` conflicted with it.
+- **Fix plan:** remove the explicit `version` input from both `frontend` and `e2e` jobs → action derives the exact pinned version from `packageManager`. Guard: the e2e job itself (installs via pnpm and runs the smoke suite) plus job startup logs show a single resolved version.
+- **Verification:** 2026-11-08 — re-run of the suite after push; jobs resolve `pnpm@12.16.1` once.
+- **Linked:** commit REC (this fix landed with DEF entry); no spec/AC impact ([01](01-requirements.md) untouched)
 
 ### Entry template
 
