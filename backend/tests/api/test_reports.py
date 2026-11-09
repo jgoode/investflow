@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 import sqlite3
 from pathlib import Path
 
@@ -316,3 +317,99 @@ def test_quarterly_report_supports_year_filter_and_optional_accounts_subreport(
     assert rows["2026-Q2"]["expense_cents"] == 45_000
     assert rows["2026-Q2"]["net_cents"] == 65_000
     assert "accounts" in rows["2026-Q2"]
+
+
+def test_report_exports_match_report_payloads(client: TestClient) -> None:
+    register(client, "alice")
+    bank_id = _account_id_by_code(client, "BANK-01")
+    brokerage_id = _account_id_by_code(client, "BROKERAGE-01")
+    salary_category_id = _category_id_by_name(client, "Salary")
+    food_category_id = _category_id_by_name(client, "Food")
+
+    _post_quick(
+        client,
+        date="2026-03-02",
+        description="Salary Mar",
+        mode="income",
+        account_id=bank_id,
+        category_id=salary_category_id,
+        amount_cents=200_000,
+    )
+    _post_quick(
+        client,
+        date="2026-03-05",
+        description="Groceries Mar",
+        mode="expense",
+        account_id=bank_id,
+        category_id=food_category_id,
+        amount_cents=50_000,
+    )
+
+    db_path = os.environ["INVESTFLOW_DB_PATH"]
+    with sqlite3.connect(db_path) as conn:
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS positions ("
+            "id INTEGER PRIMARY KEY, account_id INTEGER, ticker TEXT, "
+            "quantity_q4 INTEGER, avg_cost_q4 INTEGER, status TEXT, "
+            "realized_gain_loss_cents INTEGER, created_at INTEGER, "
+            "updated_at INTEGER)"
+        )
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS price_cache ("
+            "id INTEGER PRIMARY KEY, ticker TEXT, date TEXT, close_q4 INTEGER, "
+            "volume INTEGER, source TEXT, fetched_at INTEGER)"
+        )
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS latest_quotes ("
+            "ticker TEXT PRIMARY KEY, price_q4 INTEGER, asof TEXT, source TEXT, "
+            "fetched_at INTEGER)"
+        )
+        conn.execute("DELETE FROM positions")
+        conn.execute("DELETE FROM price_cache")
+        conn.execute("DELETE FROM latest_quotes")
+        conn.execute(
+            (
+                "INSERT INTO positions (account_id, ticker, quantity_q4, avg_cost_q4, "
+                "status, realized_gain_loss_cents, created_at, updated_at) "
+                "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            ),
+            (brokerage_id, "AAPL", 100_000, 1_500_000, "open", 0, 1_700_000_000, 1_700_000_000),
+        )
+        conn.execute(
+            (
+                "INSERT INTO price_cache (ticker, date, close_q4, volume, source, "
+                "fetched_at) VALUES (?, ?, ?, ?, ?, ?)"
+            ),
+            ("AAPL", "2026-03-31", 1_750_000, 1000, "manual", 1_700_000_000),
+        )
+        conn.execute(
+            (
+                "INSERT INTO latest_quotes (ticker, price_q4, asof, source, "
+                "fetched_at) VALUES (?, ?, ?, ?, ?)"
+            ),
+            ("AAPL", 1_750_000, "2026-03-31", "manual", 1_700_000_000),
+        )
+        conn.commit()
+
+    response = client.get(
+        "/api/reports/cash_flow?date_from=2026-03-01&date_to=2026-03-31",
+        headers=CSRF_HEADER,
+    )
+    assert response.status_code == 200, response.text
+    assert response.json()["report"]["totals"]["closing_net_liquid_cents"] == 150_000
+
+    xlsx = client.get(
+        "/api/reports/cash_flow/xlsx?date_from=2026-03-01&date_to=2026-03-31",
+        headers=CSRF_HEADER,
+    )
+    assert xlsx.status_code == 200, xlsx.text
+    assert xlsx.headers["content-disposition"].endswith("cash-flow-2026-03-01-2026-03-31.xlsx\"")
+    assert xlsx.content.startswith(b"PK")
+
+    pdf = client.get(
+        "/api/reports/net_worth/pdf?date_from=2026-03-01&date_to=2026-03-31",
+        headers=CSRF_HEADER,
+    )
+    assert pdf.status_code == 200, pdf.text
+    assert pdf.headers["content-disposition"].endswith("net-worth-2026-03-01-2026-03-31.pdf\"")
+    assert pdf.content.startswith(b"%PDF")

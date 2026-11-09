@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import io
+import zipfile
+from calendar import monthrange
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, timedelta
@@ -13,7 +16,7 @@ from app.categories import ensure_seeded_categories
 from app.db.connection import connect
 from app.transactions import ensure_transactions_tables
 
-REPORT_KINDS = {"coa", "summary", "monthly", "quarterly"}
+REPORT_KINDS = {"coa", "summary", "monthly", "quarterly", "cash_flow", "net_worth"}
 ACCOUNT_TYPES = {"asset", "liability", "income", "expense", "equity"}
 
 
@@ -37,10 +40,12 @@ def _parse_iso_date(value: str, *, field: str) -> date:
         ) from exc
 
 
-def _parse_bool(value: str | None, *, default: bool = False) -> bool:
+def _parse_bool(value: str | bool | None, *, default: bool = False) -> bool:
     if value is None:
         return default
-    normalized = value.strip().lower()
+    if isinstance(value, bool):
+        return value
+    normalized = str(value).strip().lower()
     return normalized in {"1", "true", "yes"}
 
 
@@ -543,6 +548,548 @@ def _run_quarterly_report(params: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+def _ensure_report_valuation_tables() -> None:
+    with connect() as conn:
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS positions (
+                id INTEGER PRIMARY KEY,
+                account_id INTEGER NOT NULL,
+                ticker TEXT NOT NULL,
+                quantity_q4 INTEGER NOT NULL,
+                avg_cost_q4 INTEGER NOT NULL,
+                status TEXT NOT NULL DEFAULT 'open',
+                realized_gain_loss_cents INTEGER NOT NULL DEFAULT 0,
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS price_cache (
+                id INTEGER PRIMARY KEY,
+                ticker TEXT NOT NULL,
+                date TEXT NOT NULL,
+                close_q4 INTEGER NOT NULL,
+                volume INTEGER NOT NULL DEFAULT 0,
+                source TEXT NOT NULL DEFAULT 'manual',
+                fetched_at INTEGER NOT NULL,
+                UNIQUE(ticker, date)
+            )
+            """
+        )
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS latest_quotes (
+                ticker TEXT PRIMARY KEY,
+                price_q4 INTEGER NOT NULL,
+                asof TEXT NOT NULL,
+                source TEXT NOT NULL DEFAULT 'manual',
+                fetched_at INTEGER NOT NULL
+            )
+            """
+        )
+        conn.commit()
+
+
+def _net_liquid_accounts() -> list[tuple[int, str, int]]:
+    with connect() as conn:
+        rows = conn.execute(
+            """
+            SELECT
+                a.id,
+                a.type,
+                a.subtype,
+                COALESCE(
+                    SUM(
+                        CASE
+                            WHEN tl.direction = 'debit' THEN tl.amount_cents
+                            WHEN tl.direction = 'credit' THEN -tl.amount_cents
+                            ELSE 0
+                        END
+                    ),
+                    0
+                ) AS balance_cents
+            FROM accounts a
+            LEFT JOIN transaction_lines tl ON tl.account_id = a.id
+            LEFT JOIN transactions t ON t.id = tl.transaction_id AND t.status = 'posted'
+            WHERE a.type IN ('asset', 'liability')
+              AND a.subtype IN ('cash', 'bank', 'credit_card', 'other')
+            GROUP BY a.id, a.type, a.subtype
+            """
+        ).fetchall()
+    balances: list[tuple[int, str, int]] = []
+    for row in rows:
+        account_type = str(row["type"])
+        amount = int(row["balance_cents"] or 0)
+        if account_type == "asset":
+            balances.append((int(row["id"]), account_type, amount))
+        else:
+            balances.append((int(row["id"]), account_type, -amount))
+    return balances
+
+
+def _balance_by_account_up_to(as_of: str, include_void: bool) -> dict[int, int]:
+    rows = _fetch_ledger_rows(date_from="1900-01-01", date_to=as_of, include_void=include_void)
+    balances: dict[int, int] = defaultdict(int)
+    for row in rows:
+        account_id = int(row["account_id"])
+        account_type = str(row["account_type"])
+        if account_type not in ACCOUNT_TYPES:
+            continue
+        balances[account_id] += _signed_for_account_type(
+            account_type=account_type,
+            direction=str(row["direction"]),
+            amount_cents=int(row["amount_cents"]),
+        )
+    return balances
+
+
+def _account_rows_for_date(as_of: str) -> dict[int, dict[str, Any]]:
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT id, code, name, type, subtype, is_archived FROM accounts ORDER BY id ASC"
+        ).fetchall()
+    return {int(row["id"]): dict(row) for row in rows}
+
+
+def _resolve_quote_price(ticker: str, as_of: str) -> int:
+    with connect() as conn:
+        latest = conn.execute(
+            """
+            SELECT price_q4, asof
+            FROM latest_quotes
+            WHERE ticker = ? AND asof <= ?
+            ORDER BY asof DESC, fetched_at DESC
+            LIMIT 1
+            """,
+            (ticker.upper(), as_of),
+        ).fetchone()
+        if latest is not None:
+            return int(latest["price_q4"])
+        cached = conn.execute(
+            """
+            SELECT close_q4, date
+            FROM price_cache
+            WHERE ticker = ? AND date <= ?
+            ORDER BY date DESC, fetched_at DESC
+            LIMIT 1
+            """,
+            (ticker.upper(), as_of),
+        ).fetchone()
+        if cached is not None:
+            return int(cached["close_q4"])
+    return 0
+
+
+def _position_market_value_for_date(as_of: str) -> dict[str, int]:
+    _ensure_report_valuation_tables()
+    with connect() as conn:
+        rows = conn.execute(
+            "SELECT account_id, ticker, quantity_q4 FROM positions WHERE status = 'open'"
+        ).fetchall()
+    values: dict[str, int] = defaultdict(int)
+    for row in rows:
+        ticker = str(row["ticker"]).upper()
+        quantity_q4 = int(row["quantity_q4"])
+        price_q4 = _resolve_quote_price(ticker, as_of)
+        if price_q4 <= 0:
+            continue
+        values[ticker] += (quantity_q4 * price_q4) // 1_000_000
+    return values
+
+
+def _liquid_balance_at_date(as_of: str, *, include_void: bool = False) -> int:
+    balances = _balance_by_account_up_to(as_of, include_void=include_void)
+    accounts = _account_rows_for_date(as_of)
+    total = 0
+    for account_id, balance in balances.items():
+        account = accounts.get(account_id)
+        if account is None:
+            continue
+        account_type = str(account.get("type") or "")
+        subtype = str(account.get("subtype") or "")
+        if account_type == "asset" and subtype in {"cash", "bank"}:
+            total += balance
+        elif account_type == "liability":
+            total -= balance
+    return total
+
+
+def _report_periods(date_from: str, date_to: str) -> list[str]:
+    start = _parse_iso_date(date_from, field="date_from")
+    end = _parse_iso_date(date_to, field="date_to")
+    delta_days = (end - start).days
+    if delta_days <= 62:
+        cursor = start
+        points: list[str] = []
+        while cursor <= end:
+            points.append(cursor.isoformat())
+            cursor += timedelta(days=1)
+        return points
+
+    periods: list[str] = []
+    cursor = date(start.year, start.month, 1)
+    stop = date(end.year, end.month, 1)
+    while cursor <= stop:
+        last_day = monthrange(cursor.year, cursor.month)[1]
+        periods.append(date(cursor.year, cursor.month, last_day).isoformat())
+        if cursor.month == 12:
+            cursor = date(cursor.year + 1, 1, 1)
+        else:
+            cursor = date(cursor.year, cursor.month + 1, 1)
+    return periods
+
+
+def _run_cash_flow_report(params: dict[str, Any]) -> dict[str, Any]:
+    report_range = _parse_range_params(params)
+    include_void = _parse_bool(params.get("include_void"), default=False)
+    opening = _liquid_balance_at_date(
+        (date.fromisoformat(report_range.date_from) - timedelta(days=1)).isoformat(),
+        include_void=include_void,
+    )
+    rows = _fetch_ledger_rows(
+        date_from=report_range.date_from,
+        date_to=report_range.date_to,
+        include_void=include_void,
+    )
+
+    inflow_by_category: dict[str, int] = defaultdict(int)
+    outflow_by_category: dict[str, int] = defaultdict(int)
+    inflow_total = 0
+    outflow_total = 0
+    for row in rows:
+        account_type = str(row["account_type"])
+        account_name = str(row["account_name"])
+        category_name = str(row["category_name"] or "(uncategorized)")
+        if account_type == "income":
+            amount = (
+                int(row["amount_cents"])
+                if str(row["direction"]) == "credit"
+                else -int(row["amount_cents"])
+            )
+            if amount > 0:
+                inflow_by_category[category_name or account_name] += amount
+                inflow_total += amount
+        elif account_type == "expense":
+            amount = (
+                int(row["amount_cents"])
+                if str(row["direction"]) == "debit"
+                else -int(row["amount_cents"])
+            )
+            if amount > 0:
+                outflow_by_category[category_name or account_name] += amount
+                outflow_total += amount
+
+    rows_out = [
+        {"category": category, "amount_cents": amount, "kind": "inflow"}
+        for category, amount in sorted(
+            inflow_by_category.items(), key=lambda item: (-item[1], item[0])
+        )
+    ] + [
+        {"category": category, "amount_cents": amount, "kind": "outflow"}
+        for category, amount in sorted(
+            outflow_by_category.items(), key=lambda item: (-item[1], item[0])
+        )
+    ]
+    closing = opening + inflow_total - outflow_total
+    normalized_params = {
+        "date_from": report_range.date_from,
+        "date_to": report_range.date_to,
+        "include_void": include_void,
+    }
+    return {
+        "kind": "cash_flow",
+        "params": normalized_params,
+        "query": _normalize_query(normalized_params),
+        "headers": ["kind", "category", "amount_cents"],
+        "rows": rows_out,
+        "totals": {
+            "opening_net_liquid_cents": opening,
+            "inflow_cents": inflow_total,
+            "outflow_cents": outflow_total,
+            "closing_net_liquid_cents": closing,
+        },
+    }
+
+
+def _run_net_worth_report(params: dict[str, Any]) -> dict[str, Any]:
+    report_range = _parse_range_params(params)
+    include_void = _parse_bool(params.get("include_void"), default=False)
+    periods = _report_periods(report_range.date_from, report_range.date_to)
+    rows: list[dict[str, Any]] = []
+    for marker in periods:
+        as_of = marker
+        balances = _balance_by_account_up_to(as_of, include_void=include_void)
+        accounts = _account_rows_for_date(as_of)
+        asset_value = 0
+        liability_value = 0
+        for account_id, balance in balances.items():
+            account = accounts.get(account_id)
+            if account is None:
+                continue
+            if str(account.get("type") or "") == "asset":
+                asset_value += balance
+            elif str(account.get("type") or "") == "liability":
+                liability_value += balance
+        holdings_value = sum(_position_market_value_for_date(as_of).values())
+        net_worth = asset_value + holdings_value - liability_value
+        rows.append(
+            {
+                "period": as_of,
+                "asset_value_cents": asset_value,
+                "liability_value_cents": liability_value,
+                "holdings_value_cents": holdings_value,
+                "net_worth_cents": net_worth,
+            }
+        )
+    totals = rows[-1] if rows else {
+        "asset_value_cents": 0,
+        "liability_value_cents": 0,
+        "holdings_value_cents": 0,
+        "net_worth_cents": 0,
+    }
+    normalized_params = {
+        "date_from": report_range.date_from,
+        "date_to": report_range.date_to,
+        "include_void": include_void,
+    }
+    return {
+        "kind": "net_worth",
+        "params": normalized_params,
+        "query": _normalize_query(normalized_params),
+        "headers": [
+            "period",
+            "asset_value_cents",
+            "liability_value_cents",
+            "holdings_value_cents",
+            "net_worth_cents",
+        ],
+        "rows": rows,
+        "totals": {
+            "asset_value_cents": int(totals["asset_value_cents"]),
+            "liability_value_cents": int(totals["liability_value_cents"]),
+            "holdings_value_cents": int(totals["holdings_value_cents"]),
+            "net_worth_cents": int(totals["net_worth_cents"]),
+        },
+    }
+
+
+def _report_export_filename(kind: str, *, date_from: str, date_to: str, file_format: str) -> str:
+    sanitized_kind = kind.strip().lower().replace("_", "-")
+    return f"investflow-{sanitized_kind}-{date_from}-{date_to}.{file_format.lower()}"
+
+
+def _xlsx_serialize(rows: list[dict[str, Any]], headers: list[str]) -> bytes:
+    buffer = io.BytesIO()
+    with zipfile.ZipFile(buffer, mode="w", compression=zipfile.ZIP_DEFLATED) as workbook:
+        workbook.writestr(
+            "[Content_Types].xml",
+            (
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+                '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n'
+                '  <Default Extension="rels" '
+                'ContentType="application/vnd.openxmlformats-package.relationships+xml"/>\n'
+                '  <Default Extension="xml" ContentType="application/xml"/>\n'
+                '  <Override PartName="/xl/workbook.xml" '
+                'ContentType="application/vnd.openxmlformats-officedocument.'
+                'spreadsheetml.sheet.main+xml"/>\n'
+                '  <Override PartName="/xl/worksheets/sheet1.xml" '
+                'ContentType="application/vnd.openxmlformats-officedocument.'
+                'spreadsheetml.worksheet+xml"/>\n'
+                '  <Override PartName="/docProps/core.xml" '
+                'ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>\n'
+                '  <Override PartName="/docProps/app.xml" '
+                'ContentType="application/vnd.openxmlformats-officedocument.'
+                'extended-properties+xml"/>\n'
+                '</Types>\n'
+            ),
+        )
+        workbook.writestr(
+            "_rels/.rels",
+            (
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+                '<Relationships '
+                'xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n'
+                '  <Relationship Id="rId1" '
+                'Type="http://schemas.openxmlformats.org/officeDocument/2006/'
+                'relationships/officeDocument" Target="xl/workbook.xml"/>\n'
+                '  <Relationship Id="rId2" '
+                'Type="http://schemas.openxmlformats.org/package/2006/relationships/'
+                'metadata/core-properties" Target="docProps/core.xml"/>\n'
+                '  <Relationship Id="rId3" '
+                'Type="http://schemas.openxmlformats.org/officeDocument/2006/'
+                'relationships/extended-properties" Target="docProps/app.xml"/>\n'
+                '</Relationships>\n'
+            ),
+        )
+        workbook.writestr(
+            "docProps/core.xml",
+            (
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+                '<cp:coreProperties '
+                'xmlns:cp="http://schemas.openxmlformats.org/package/2006/'
+                'metadata/core-properties" '
+                'xmlns:dc="http://purl.org/dc/elements/1.1/" '
+                'xmlns:dcterms="http://purl.org/dc/terms/" '
+                'xmlns:dcmitype="http://purl.org/dc/dcmitype/" '
+                'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n'
+                '  <dc:creator>InvestFlow</dc:creator>\n'
+                '  <cp:lastModifiedBy>InvestFlow</cp:lastModifiedBy>\n'
+                '</cp:coreProperties>\n'
+            ),
+        )
+        workbook.writestr(
+            "docProps/app.xml",
+            (
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+                '<Properties '
+                'xmlns="http://schemas.openxmlformats.org/officeDocument/2006/'
+                'extended-properties" '
+                'xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/'
+                'docPropsVTypes">\n'
+                '  <Application>InvestFlow</Application>\n'
+                '</Properties>\n'
+            ),
+        )
+        workbook.writestr(
+            "xl/workbook.xml",
+            (
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+                '<workbook '
+                'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
+                'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/'
+                'relationships">\n'
+                '  <sheets>\n'
+                '    <sheet name="Report" sheetId="1" r:id="rId1"/>\n'
+                '  </sheets>\n'
+                '</workbook>\n'
+            ),
+        )
+        workbook.writestr(
+            "xl/_rels/workbook.xml.rels",
+            (
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+                '<Relationships '
+                'xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n'
+                '  <Relationship Id="rId1" '
+                'Type="http://schemas.openxmlformats.org/officeDocument/2006/'
+                'relationships/worksheet" Target="worksheets/sheet1.xml"/>\n'
+                '</Relationships>\n'
+            ),
+        )
+
+        def cell_xml(value: object, column_index: int, row_index: int) -> str:
+            cell_ref = f"{chr(65 + (column_index % 26))}{row_index + 1}"
+            if isinstance(value, (int, float)):
+                return f'<c r="{cell_ref}" t="n"><v>{value}</v></c>'
+            escaped = (
+                str(value)
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+            )
+            return f'<c r="{cell_ref}" t="inlineStr"><is><t>{escaped}</t></is></c>'
+
+        sheet_rows: list[str] = []
+        header_row = "<row r='1'>" + "".join(
+            cell_xml(header, idx, 0) for idx, header in enumerate(headers)
+        ) + "</row>"
+        sheet_rows.append(header_row)
+        for row_index, entry in enumerate(rows, start=1):
+            values = [entry.get(header, "") for header in headers]
+            sheet_rows.append(
+                f"<row r='{row_index + 1}'>"
+                + "".join(cell_xml(value, idx, row_index) for idx, value in enumerate(values))
+                + "</row>"
+            )
+        workbook.writestr(
+            "xl/worksheets/sheet1.xml",
+            (
+                '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
+                '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">\n'
+                '  <sheetViews><sheetView workbookViewId="0"/></sheetViews>\n'
+                '  <sheetData>\n'
+                '    {rows}\n'
+                '  </sheetData>\n'
+                '</worksheet>\n'
+            ).format(rows="".join(sheet_rows)),
+        )
+
+    return buffer.getvalue()
+
+
+def _pdf_serialize(report: dict[str, Any]) -> bytes:
+    lines = [
+        f"InvestFlow {report['kind']} report",
+        (
+            "range: "
+            f"{report.get('params', {}).get('date_from')} -> "
+            f"{report.get('params', {}).get('date_to')}"
+        ),
+    ]
+    for key, value in sorted(report.get("totals", {}).items()):
+        lines.append(f"{key}: {value}")
+    for row in report.get("rows", [])[:20]:
+        lines.append(str(row))
+    text_body = "\n".join(lines)
+    escaped = text_body.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+    objects: list[str] = []
+    objects.append("<< /Type /Catalog /Pages 2 0 R >>")
+    objects.append("<< /Type /Pages /Kids [3 0 R] /Count 1 >>")
+    objects.append(
+        "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R "
+        "/Resources << /Font << /F1 5 0 R >> >> >>"
+    )
+    stream = f"BT /F1 12 Tf 50 760 Td ({escaped}) Tj ET"
+    objects.append(f"<< /Length {len(stream.encode('latin-1'))} >>\nstream\n{stream}\nendstream")
+    objects.append("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
+    content: list[bytes] = [b"%PDF-1.4\n"]
+    offsets = [0]
+    for index, obj in enumerate(objects, start=1):
+        offsets.append(len(b"".join(content)))
+        content.append(f"{index} 0 obj\n{obj}\nendobj\n".encode("latin-1"))
+    xref_pos = len(b"".join(content))
+    content.append(b"xref\n0 %d\n0000000000 65535 f \n" % (len(objects) + 1))
+    for offset in offsets[1:]:
+        content.append(f"{offset:010d} 00000 n \n".encode("latin-1"))
+    content.append(
+        (
+            f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\n"
+            f"startxref\n{xref_pos}\n%%EOF\n"
+        ).encode("latin-1")
+    )
+    return b"".join(content)
+
+
+def export_report(
+    kind: str,
+    params: dict[str, Any],
+    file_format: str = "xlsx",
+) -> tuple[bytes, str]:
+    normalized_kind = kind.strip().lower()
+    report = run_report(normalized_kind, params)
+    file_ext = str(file_format or "xlsx").strip().lower()
+    filename = _report_export_filename(
+        normalized_kind,
+        date_from=str(report["params"].get("date_from", "")),
+        date_to=str(report["params"].get("date_to", "")),
+        file_format=file_ext,
+    )
+    if file_ext == "pdf":
+        return _pdf_serialize(report), filename
+    return _xlsx_serialize(report.get("rows", []), report.get("headers", [])), filename
+
+
+def build_report_xlsx(kind: str, params: dict[str, Any]) -> tuple[bytes, str]:
+    return export_report(kind, params, "xlsx")
+
+
+def build_report_pdf(kind: str, params: dict[str, Any]) -> tuple[bytes, str]:
+    return export_report(kind, params, "pdf")
+
+
 def run_report(kind: str, params: dict[str, Any]) -> dict[str, Any]:
     ensure_seeded_coa()
     ensure_seeded_categories()
@@ -557,4 +1104,10 @@ def run_report(kind: str, params: dict[str, Any]) -> dict[str, Any]:
         return _run_summary_report(params)
     if normalized_kind == "monthly":
         return _run_monthly_report(params)
-    return _run_quarterly_report(params)
+    if normalized_kind == "quarterly":
+        return _run_quarterly_report(params)
+    if normalized_kind == "cash_flow":
+        return _run_cash_flow_report(params)
+    if normalized_kind == "net_worth":
+        return _run_net_worth_report(params)
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="unknown report kind")
