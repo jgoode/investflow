@@ -23,11 +23,12 @@ describe("root route (/)", () => {
   });
 });
 
-describe("dashboard placeholder (/dashboard)", () => {
-  it("states the dashboard is not yet built", () => {
+describe("dashboard page (/dashboard)", () => {
+  it("renders the dashboard shell", () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => ({ dashboard: { empty: true, cards: {}, empty_state: { enabled: true, title: "Start your book", message: "Ready" } } }) }));
     render(<DashboardPage />);
 
-    expect(screen.getByText(/not yet built/i)).toBeTruthy();
+    expect(screen.getByRole("heading", { name: /dashboard/i })).toBeTruthy();
   });
 });
 

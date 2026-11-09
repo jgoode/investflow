@@ -15,6 +15,7 @@ from app.db.connection import resolve_db_path
 from app.routers.accounts import router as accounts_router
 from app.routers.auth import router as auth_router
 from app.routers.categories import router as categories_router
+from app.routers.dashboard import router as dashboard_router
 from app.routers.healthz import router as healthz_router
 from app.routers.reports import router as reports_router
 from app.routers.transactions import router as transactions_router
@@ -59,6 +60,7 @@ def create_app() -> FastAPI:
     app.include_router(accounts_router)
     app.include_router(categories_router)
     app.include_router(transactions_router)
+    app.include_router(dashboard_router)
     app.include_router(reports_router)
     return app
 

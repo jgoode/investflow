@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-09 (ITER-10 closed; §4 → ITER-11) |
+| **Last updated** | 2026-11-09 (ITER-11 closed; §4 → ITER-12) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
@@ -55,30 +55,30 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-11 — Dashboard**
+> **ITER-12 — Investment accounts & positions**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
-> `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-07 net worth, D-16 stack),
-> `docs/01-requirements.md` §6 FR-D (scope: **AC-D1, AC-D2, AC-D3, AC-D4, AC-D5 only**),
-> `docs/02-architecture.md` §5.1 dashboards + §5.3 data contracts and route plan,
-> plus `docs/03-test-plan.md` §4 matrix row for FR-D and the auth/security guard notes,
-> `docs/04-progress.md` ITER-11 row, and the [04 §5](04-progress.md) mapping row.
+> `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-07 net worth, D-09 legality/quantity rules, D-16 stack),
+> `docs/01-requirements.md` §6 FR-I1 and FR-I3 (manual part only),
+> `docs/02-architecture.md` §4.6 positions + account model notes and §5.3 data contracts,
+> plus `docs/03-test-plan.md` §4 matrix rows for FR-I1 and FR-I3, and the auth/security guard notes,
+> `docs/04-progress.md` ITER-12 row, and the [04 §5](04-progress.md) mapping row.
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to this iteration's AC list: **AC-D1, AC-D2, AC-D3, AC-D4, AC-D5** — ask me about any ambiguity;
+> scope only to this iteration's AC list: **AC-I1a–I1d, AC-I3a (manual part)** — ask me about any ambiguity;
 > never assume.
 >
 > **Deliverable:**
-> 1. Implement the dashboard shell and cards with the correct allocation of net worth, cash-flow, and recent activity data sources.
-> 2. Add dashboard data-fetching contracts and any minimal FE/BE adapters needed to support efficient batched calls while staying within the performance budget.
-> 3. Wire the dashboard to shareable deep links, empty/onboarding states, and the expected chart/filter semantics without changing unrelated portfolio logic.
+> 1. Implement brokerage/investment account support and the manual position model for buy/sell lifecycle handling with average-cost accounting.
+> 2. Add the minimal backend/frontend contracts needed to create, list, and group positions while preserving the ledger invariants and quantity precision rules.
+> 3. Wire the position list to safe manual trade flows and the expected list/group semantics without changing unrelated dashboard or report logic.
 >
-> **Out of scope this iteration:** portfolio optimization, provider expansion, advanced charting polish, and any non-dashboard feature work.
+> **Out of scope this iteration:** market-data provider expansion, automated TA/news integration, portfolio optimization, and any non-investment feature work.
 >
-> **Definition of done:** mapped-layer tests green for AC-D1–D5, `make test` + `make test-e2e` green,
+> **Definition of done:** mapped-layer tests green for AC-I1a–I1d and AC-I3a, `make test` + `make test-e2e` green,
 > lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8 so the next prompt (§4) is ready.
 >
-> **Known traps:** keep dashboard query batches to the required cap, preserve the server-side report semantics already proven in ITER-09/ITER-10, and do not regenerate dashboard data by mutating the ledger.
+> **Known traps:** keep signed quantity/avg-cost math in cents or q4 units per the project rules, enforce oversell guards and quantity scaling correctly, and do not mutate report semantics or broaden the provider stack beyond this iteration's scope.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 
@@ -114,7 +114,7 @@ ITER-02 are already green.
   implementation cross-check per 03 §5.3, DST property tests)
 - ✅ **ITER-10 — Cash flow, net worth, exports** (FR-R5–R8, NFR-4; §4.8/§4.9 exports; traps: xlsx/pdf cross-checks,
   first perf benchmark)
-- ⏭ **ITER-11 — Dashboard** (FR-D; §5.1/§5.3; traps: ≤2 batched calls AC-D3, drill deep links, onboarding states)
+- ✅ **ITER-11 — Dashboard** (FR-D; §5.1/§5.3; traps: ≤2 batched calls AC-D3, drill deep links, onboarding states)
 - ⏭ **ITER-12 — Investment accounts & positions** (FR-I1, AC-I3a manual; §4.6, §3.1 positions; traps: avg-cost
   property tests per 03 §4 row, oversell 422, quantity ×10⁴ scaling)
 - ⏭ **ITER-13 — Market data adapter** (FR-I2; §4.9 providers; traps: 15-min freshness observable via mock,

@@ -25,7 +25,8 @@ test("register → dashboard → logout → login journey", async ({
   await page.getByRole("button", { name: "Create account" }).click();
 
   await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByText(/not yet built/i)).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
+  await expect(page.getByText(/net worth/i)).toBeVisible();
 
   await page.context().clearCookies();
   await page.goto("/login");

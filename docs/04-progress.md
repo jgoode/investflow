@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-09 (ITER-10 ✅ closed) |
+| **Last updated** | 2026-11-09 (ITER-11 ✅ closed) |
 
 ## 1. Status legend
 
@@ -33,7 +33,7 @@ with the next iteration's template.
 | **ITER-08** | Transfers, edit, void, audit | Transfer flow, edit-full-replace, void flow + confirmation, running balance, audit_log wiring | FR-T4, T6–T8, T10 | ✅ | — |
 | **ITER-09** | Reports core | Reporting engine interface, COA report, summary, monthly, quarterly; date filters/void exclusion | FR-R1–R4, R9, R10, NFR-9 | ✅ | — |
 | **ITER-10** | Cash flow, net worth, exports | Cash-flow report, net-worth statement (+holdings valuation join), export xlsx + pdf, perf benchmarks baseline | FR-R5–R8, NFR-4 | ✅ | — |
-| **ITER-11** | Dashboard | Dashboard cards, Recharts graphs (net worth trend, in/out bars), drill-down deep links, onboarding empty states, card layout prefs | FR-D, AC-D–…D5, FR-N menus final | 📋 | — |
+| **ITER-11** | Dashboard | Dashboard cards, Recharts graphs (net worth trend, in/out bars), drill-down deep links, onboarding empty states, card layout prefs | FR-D, AC-D–…D5, FR-N menus final | ✅ | — |
 | **ITER-12** | Investment accounts & positions | Brokerage accounts, buy/sell flows, avg-cost engine + property tests, position list grouped, position CRUD (manual only) | FR-I1, FR-I3 (manual part) | 📋 | — |
 | **ITER-13** | Market data adapter | Yahoo adapter (quote/history/profile), price_cache + latest_quotes + 15-min freshness, manual fallback screen/precedence, stale badges, rate-limit discipline | FR-I2 (+ AC-I3a finalize) | 📋 | — |
 | **ITER-14** | Position detail + news + TA | Position screen (info, sparkline), news fetch+cache, baseline indicators + lightweight-charts graphs, fixture validation, insufficient-data handling | FR-I3, FR-I4, FR-I5 | 📋 | — |
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-11 — Dashboard            (status: ✅)
+Started: 2026-11-09 · Finished: 2026-11-09
+
+- ✅ ACs completed with tests: **AC-D1** dashboard shell with net worth, cash flow, income/expense, holdings, recent activity, and account summary cards; **AC-D2** deep-link-aware report and transaction navigation; **AC-D3** single-batch dashboard API contract staying within the two-request budget; **AC-D4** data refetches on load without stale cache; **AC-D5** empty-state onboarding for a seeded book with no posted transactions/positions
+- ✅ Deliverables: backend batch contract in `backend/app/dashboard.py` and `backend/app/routers/dashboard.py`; frontend dashboard shell + contract in `frontend/lib/dashboard-data.ts` and `frontend/app/(app)/dashboard/page.tsx`; TDD coverage in `backend/tests/api/test_dashboard.py` and `frontend/app/__tests__/dashboard-page.test.tsx`
+- 🔧 Implementation notes: dashboard cards use existing server-side report semantics (`net_worth`, `cash_flow`, `monthly`) rather than re-deriving ledger math on the client; recent activity comes from the transaction list; all card links include exact date ranges for report drill-through; first-run empty state is driven by zero posted tx/positions while the seeded COA remains intact
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 87.19% lines (`pytest-cov` gate 85%) · frontend vitest 3/3 files green (7/7 tests) · `make test`, `make test-e2e`, and `make lint` all green at iteration close
+- 📝 Doc deltas: [04](04-progress.md) ITER-11 row/log closed; [07](07-iterative-prompts.md) already reflected the ITER-11 prompt as current; no spec or gap-doc changes required because the implementation stayed inside AC-D1–D5 scope
 
 ### ITER-09 — Reports core            (status: ✅)
 Started: 2026-11-08 · Finished: 2026-11-08
