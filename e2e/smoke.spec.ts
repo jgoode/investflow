@@ -92,3 +92,41 @@ test("categories CRUD flow with default account", async ({ page }) => {
   await deleteButton.click();
   await expect(deleteButton).toHaveCount(0);
 });
+
+test("reports monthly URL params are shareable and deterministic", async ({ page }) => {
+  const username = `rep_${Date.now()}`;
+  const password = "correct-horse-10";
+  const now = new Date();
+  const year = now.getUTCFullYear();
+  const month = now.getUTCMonth();
+  const monthNumber = String(month + 1).padStart(2, "0");
+  const start = `${year}-${monthNumber}-01`;
+  const end = new Date(Date.UTC(year, month + 1, 0)).toISOString().slice(0, 10);
+  const period = `${year}-${monthNumber}`;
+
+  await page.goto("/register");
+  await page.getByRole("textbox", { name: "Username" }).fill(username);
+  await page.getByRole("textbox", { name: /^Password/ }).first().fill(password);
+  await page.getByRole("textbox", { name: /^Password confirmation/ }).fill(password);
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  await page.goto("/transactions");
+  await page.getByLabel("Mode").selectOption("income");
+  await page.getByLabel("Description").fill("Salary report seed");
+  await page.getByLabel("Posting account").selectOption({ label: "Bank A" });
+  await page.getByLabel("Category").selectOption({ label: "Salary" });
+  await page.getByLabel("Amount (cents)").fill("12345");
+  await page.getByRole("button", { name: "Post transaction" }).click();
+  await expect(page.getByText("Transaction posted.")).toBeVisible();
+
+  await page.goto(
+    `/reports?kind=monthly&date_from=${start}&date_to=${end}&months=${period}`,
+  );
+  await expect(page.getByRole("heading", { name: "Reports" })).toBeVisible();
+  await expect(page.getByText("monthly")).toBeVisible();
+  await expect(page.getByRole("cell", { name: `"${period}"` })).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole("cell", { name: `"${period}"` })).toBeVisible();
+});

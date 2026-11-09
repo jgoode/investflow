@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-07 ✅ closed) |
+| **Last updated** | 2026-11-08 (ITER-09 ✅ closed) |
 
 ## 1. Status legend
 
@@ -31,7 +31,7 @@ with the next iteration's template.
 | **ITER-06** | Categories | Category CRUD, starter categories, assignment plumbing, defaults | FR-K | ✅ | — |
 | **ITER-07** | Simple transactions | Posting service + invariants, expense/income quick post UI, split-lines editor with off-by balance lock, list with filters/paging | FR-T1–T3, T5, T9 | ✅ | — |
 | **ITER-08** | Transfers, edit, void, audit | Transfer flow, edit-full-replace, void flow + confirmation, running balance, audit_log wiring | FR-T4, T6–T8, T10 | ✅ | — |
-| **ITER-09** | Reports core | Reporting engine interface, COA report, summary, monthly, quarterly; date filters/void exclusion | FR-R1–R4, R9, R10, NFR-9 | 📋 | — |
+| **ITER-09** | Reports core | Reporting engine interface, COA report, summary, monthly, quarterly; date filters/void exclusion | FR-R1–R4, R9, R10, NFR-9 | ✅ | — |
 | **ITER-10** | Cash flow, net worth, exports | Cash-flow report, net-worth statement (+holdings valuation join), export xlsx + pdf, perf benchmarks baseline | FR-R5–R8, NFR-4 | 📋 | — |
 | **ITER-11** | Dashboard | Dashboard cards, Recharts graphs (net worth trend, in/out bars), drill-down deep links, onboarding empty states, card layout prefs | FR-D, AC-D–…D5, FR-N menus final | 📋 | — |
 | **ITER-12** | Investment accounts & positions | Brokerage accounts, buy/sell flows, avg-cost engine + property tests, position list grouped, position CRUD (manual only) | FR-I1, FR-I3 (manual part) | 📋 | — |
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-09 — Reports core            (status: ✅)
+Started: 2026-11-08 · Finished: 2026-11-08
+
+- ✅ ACs completed with tests: **FR-R1 / AC-R1** COA report grouped by account type with archived-account inclusion and balance-sheet invariant checks; **FR-R2 / AC-R2** summary report with income/expense totals plus category grouping; **FR-R3 / AC-R3** monthly aggregation by calendar month with top expense categories and selectable month filters; **FR-R4 / AC-R4** quarterly aggregation with year selector and optional accounts sub-report; **FR-R9 / AC-R9** URL-ready normalized report params and deterministic query payloads; **FR-R10 / AC-R10** historical integrity re-aggregation from raw `transaction_lines` matched against report totals
+- ✅ Deliverables: reporting engine contract added in `backend/app/reports.py` (`run_report(kind, params)` for `coa`, `summary`, `monthly`, `quarterly`), protected reports router in `backend/app/routers/reports.py`, API wiring in `backend/app/main.py`, and mapped tests in `backend/tests/api/test_reports.py` + `backend/tests/unit/test_reports_engine.py`
+- 🔧 Implementation notes: report numbers are ledger-derived only (no client-side arithmetic), void transactions remain excluded by default unless `include_void=true`, range parsing and period selection are server-normalized, and monthly integrity compares report income against an independent raw-line SQL rollup over the same date window
+- ❌ Tests currently red: none (initial red phase captured as expected 404s on `/api/reports/*` before router/service implementation)
+- 🐞 New defects: none
+- 📊 Coverage: backend 88.02% lines (`pytest-cov` gate 85%) · frontend vitest L3 green (6/6 tests) · `make test`, `make test-e2e`, and `make lint` all green at iteration close
+- 📝 Doc deltas: [03](03-test-plan.md) iteration-close matrix note updated for reports coverage, [04](04-progress.md) ITER-09 row/log closed, [05](05-defects.md) close-review timestamp refreshed (no new defects), [06](06-gap-analysis.md) close-of-iteration status sentence refreshed, [07](07-iterative-prompts.md) §4 rolled to ITER-10 prompt; [00](00-overview.md), [01](01-requirements.md), [02](02-architecture.md), and [08](08-backlog.md) unchanged
 
 ### ITER-08 — Transfers, edit, void, audit            (status: ✅)
 Started: 2026-11-08 · Finished: 2026-11-08

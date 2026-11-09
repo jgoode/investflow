@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-06 close review: no new defects; DEF-001/DEF-002 remain closed) |
+| **Last updated** | 2026-11-08 (ITER-09 close review: no new defects; DEF-001/DEF-002 remain closed) |
 
 ## 1. Definitions
 

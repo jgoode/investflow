@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — reviewed at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-06 close review) |
+| **Last updated** | 2026-11-08 (ITER-09 close review) |
 
 Gap analysis compares three layers and records what does (not) survive between them:
 
@@ -76,6 +76,6 @@ At each iteration close ([07 §2](07-iterative-prompts.md)):
 2. Review §3 register: promote rows with ready prerequisites to "scheduled (ITER-XX)".
 3. Confirm that §2 table entries untouched during the iteration are still accurate.
 4. Refresh the 3-layer picture (§1) status sentence below: *(update on close)* —
-   **Wants are fully spec'd (§2.1/§2.2 records deltas), Reality has 6 iterations done — ITER-01 through ITER-06 (✅ 2026-11-08):
-   the category slice now has tested seed/idempotence, CRUD, default-account linkage, and history-safe delete behavior;
-   no new open gaps were introduced in ITER-06.**
+   **Wants are fully spec'd (§2.1/§2.2 records deltas), Reality has 9 iterations done — ITER-01 through ITER-09 (✅ 2026-11-08):
+   reports core now has tested ledger-derived COA/summary/monthly/quarterly aggregation with void-default filtering,
+   URL-ready normalized parameters, and raw-line integrity re-aggregation checks; no new open gaps were introduced in ITER-09.**

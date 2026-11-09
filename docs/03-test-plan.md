@@ -99,6 +99,13 @@ L4 scenario extends through `/users` with own-password change and re-login (`e2e
 DB byte-scan and WAL-safety, AAD mismatch, wrong-key behavior, masking/log-safety, and rotation idempotence;
 all E2E smoke and standard `make test`/`make lint`/`make test-e2e` gates remain green.*
 
+*ITER-09 close note: R1–R4/R9/R10 report-core slice is now covered at mapped layers — backend L2 report API suite
+(`backend/tests/api/test_reports.py`) verifies COA/summary/monthly/quarterly outputs, date-range filtering,
+void-default exclusion with explicit toggle inclusion, URL-ready normalized parameters, and the historical-integrity
+comparison against raw `transaction_lines`; backend L1 report-engine coverage (`backend/tests/unit/test_reports_engine.py`)
+pins deterministic server-side aggregation behavior, and L4 smoke adds a shareable reports-URL scenario
+(`e2e/smoke.spec.ts`) that reloads with the same params and asserts identical period output.*
+
 *ITER-07 close note: T1–T3/T5/T9 rows are now covered at mapped layers — backend L2 transaction suite
 (`backend/tests/api/test_transactions.py`) verifies quick income/expense posting, split-line balancing,
 imbalance rejection, list/filter paging, and account-number masking without altering encrypted sensitive-field

@@ -3,14 +3,14 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-08 (ITER-07 closed; §4 → ITER-08) |
+| **Last updated** | 2026-11-08 (ITER-09 closed; §4 → ITER-10) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
 
 - §2 — the documentation roll-forward workflow (what to update after every iteration)
 - §3 — the in-session TDD execution loop
-- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-08)
+- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-10)
 - §5 — the stable prompt template used to generate §4 for later iterations
 
 ---
@@ -55,32 +55,30 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-08 — Transfers, edit, void, audit**
+> **ITER-10 — Cash flow, net worth, exports**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
-> `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-16 stack), `docs/01-requirements.md`
-> §4 FR-T (scope: **AC-T4, AC-T6, AC-T7, AC-T8, AC-T10 only**), `docs/02-architecture.md` §4.5 posting service + invariants + audit log,
-> and `docs/02-architecture.md` §3.1 tables used by posting (`transactions`, `transaction_lines`, `accounts`, `categories`),
-> plus `docs/03-test-plan.md` §4 matrix row for FR-T4/T6/T7/T8/T10 and the auth/security guard notes,
-> `docs/04-progress.md` ITER-08 row, and the [04 §5](04-progress.md) mapping row.
+> `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-07 net worth, D-16 stack),
+> `docs/01-requirements.md` §6 FR-R (scope: **AC-R5, AC-R6, AC-R7, AC-R8 only**),
+> `docs/02-architecture.md` §4.8 reports engine + §4.9 export adapters + §3.1 valuation/report tables (`transactions`, `transaction_lines`, `accounts`, `positions`, `price_cache`, `latest_quotes`),
+> plus `docs/03-test-plan.md` §4 matrix row for FR-R5–R8 and the auth/security guard notes,
+> `docs/04-progress.md` ITER-10 row, and the [04 §5](04-progress.md) mapping row.
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to this iteration's AC list: **AC-T4, AC-T6, AC-T7, AC-T8, AC-T10** — ask me about any ambiguity;
+> scope only to this iteration's AC list: **AC-R5, AC-R6, AC-R7, AC-R8** — ask me about any ambiguity;
 > never assume.
 >
 > **Deliverable:**
-> 1. Add transfer posting support with server-side validation, strict account/archival checks, and atomic balance enforcement for two-account moves.
-> 2. Implement edit + void workflows for posted transactions without leaking ITER-07 quick-post assumptions; preserve the immutable audit trail by status and timestamping per the architecture.
-> 3. Add running-balance and list/detail behavior for the new transaction lifecycle while keeping the current posting/list scope stable and backward-compatible.
-> 4. Complete the memo encryption/security work for AC-T10 and keep auth/CSRF protections plus the crypto/AAD regression battery green while the transaction lifecycle expands.
+> 1. Implement cash-flow and net-worth report engines with deterministic server-side aggregation and valuation joins (ledger + positions/quotes) that preserve D-07 semantics.
+> 2. Implement XLSX and PDF export for report outputs (cash flow + net worth at minimum), including filename conventions and cross-check parity against on-screen totals.
+> 3. Keep export/report paths backward-compatible with existing reporting and transaction/list semantics while retaining ledger-first source-of-truth behavior.
 >
-> **Out of scope this iteration:** quick-post simplifications already finished in ITER-07, reports/dashboard/analytics, investments, market-data/provider work, and any unrelated feature bloat.
+> **Out of scope this iteration:** dashboard UX polish, portfolio optimization changes, provider feature expansion, and any non-reporting feature work.
 >
-> **Definition of done:** mapped-layer tests green (FR-T4/T6/T7/T8/T10 + crypto regression set), `make test` + `make test-e2e`
-> green, lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8
-> so the next prompt (§4) is ready.
+> **Definition of done:** mapped-layer tests green for FR-R5–R8, `make test` + `make test-e2e` green,
+> lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8 so the next prompt (§4) is ready.
 >
-> **Known traps:** voids must remain excluded from reports by default; running-balance logic is derived from posted ledger state, not client-side approximation; transfer/edit/void flows must keep the same account safety checks and audit semantics as the original posting service.
+> **Known traps:** net-worth must include holdings valued from cached/manual quotes without synthetic revaluation postings; cash-flow and net-worth exports must exactly match report filters/ranges; XLSX/PDF outputs must remain numerically consistent with API report payloads.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 
@@ -110,9 +108,9 @@ ITER-02 are already green.
 - ✅ **ITER-06 — Categories** (FR-K; §3.1 categories; traps: delete → "(uncategorized)" never destroys history)
 - ✅ **ITER-07 — Simple transactions** (FR-T1–T3/5/9; §4.5 posting service; traps: imbalance atomicity,
   server-side balance check is final authority)
-- ⏭ **ITER-08 — Transfers/edit/void/audit** (FR-T4/6/7/8/10; §4.5+audit_log; traps: void excluded by default
+- ✅ **ITER-08 — Transfers/edit/void/audit** (FR-T4/6/7/8/10; §4.5+audit_log; traps: void excluded by default
   from reports from now on — regression pin)
-- ⏭ **ITER-09 — Reports core** (FR-R1–R4/R9/R10, NFR-9; §4.8 reporting engine; traps: report = second
+- ✅ **ITER-09 — Reports core** (FR-R1–R4/R9/R10, NFR-9; §4.8 reporting engine; traps: report = second
   implementation cross-check per 03 §5.3, DST property tests)
 - ⏭ **ITER-10 — Cash flow, net worth, exports** (FR-R5–R8, NFR-4; §4.8/§4.9 exports; traps: xlsx/pdf cross-checks,
   first perf benchmark)
