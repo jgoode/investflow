@@ -12,7 +12,7 @@ const GROUPS = [
   { key: "accounts", label: "Accounts", href: "/accounts", enabled: true },
   { key: "transactions", label: "Transactions", href: "/transactions", enabled: true },
   { key: "categories", label: "Categories", href: "/categories", enabled: true },
-  { key: "investments", label: "Investments", href: "/investments", enabled: false },
+  { key: "investments", label: "Investments", href: "/investments", enabled: true },
   { key: "users", label: "Users", href: "/users", enabled: true },
   { key: "settings", label: "Settings", href: "/settings", enabled: false },
 ] as const;

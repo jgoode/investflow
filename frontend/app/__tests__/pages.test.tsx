@@ -2,6 +2,7 @@ import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import DashboardPage from "../(app)/dashboard/page";
+import InvestmentsPage from "../(app)/investments/page";
 import Home from "../page";
 import { validateLogin, validateRegister } from "@/lib/validation";
 
@@ -29,6 +30,28 @@ describe("dashboard page (/dashboard)", () => {
     render(<DashboardPage />);
 
     expect(screen.getByRole("heading", { name: /dashboard/i })).toBeTruthy();
+  });
+});
+
+describe("brokerage position page", () => {
+  it("loads investment accounts into a safe selector for manual trades", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn()
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ accounts: [{ id: 42, name: "Brokerage A", subtype: "brokerage" }] }),
+        })
+        .mockResolvedValueOnce({
+          ok: true,
+          json: async () => ({ account_groups: [{ account_id: 42, account_name: "Brokerage A", total_market_value_cents: 150_000, positions: [] }], overall_total_market_value_cents: 150_000 }),
+        }),
+    );
+
+    render(<InvestmentsPage />);
+
+    expect((await screen.findAllByRole("option", { name: /brokerage a/i })).length).toBeGreaterThan(0);
+    expect(screen.getByLabelText(/account/i)).toHaveProperty("tagName", "SELECT");
   });
 });
 

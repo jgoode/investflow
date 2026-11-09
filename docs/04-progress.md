@@ -34,7 +34,7 @@ with the next iteration's template.
 | **ITER-09** | Reports core | Reporting engine interface, COA report, summary, monthly, quarterly; date filters/void exclusion | FR-R1–R4, R9, R10, NFR-9 | ✅ | — |
 | **ITER-10** | Cash flow, net worth, exports | Cash-flow report, net-worth statement (+holdings valuation join), export xlsx + pdf, perf benchmarks baseline | FR-R5–R8, NFR-4 | ✅ | — |
 | **ITER-11** | Dashboard | Dashboard cards, Recharts graphs (net worth trend, in/out bars), drill-down deep links, onboarding empty states, card layout prefs | FR-D, AC-D–…D5, FR-N menus final | ✅ | — |
-| **ITER-12** | Investment accounts & positions | Brokerage accounts, buy/sell flows, avg-cost engine + property tests, position list grouped, position CRUD (manual only) | FR-I1, FR-I3 (manual part) | 📋 | — |
+| **ITER-12** | Investment accounts & positions | Brokerage accounts, buy/sell flows, avg-cost engine + property tests, position list grouped, position CRUD (manual only) | FR-I1, FR-I3 (manual part) | ✅ | — |
 | **ITER-13** | Market data adapter | Yahoo adapter (quote/history/profile), price_cache + latest_quotes + 15-min freshness, manual fallback screen/precedence, stale badges, rate-limit discipline | FR-I2 (+ AC-I3a finalize) | 📋 | — |
 | **ITER-14** | Position detail + news + TA | Position screen (info, sparkline), news fetch+cache, baseline indicators + lightweight-charts graphs, fixture validation, insufficient-data handling | FR-I3, FR-I4, FR-I5 | 📋 | — |
 | **ITER-15** | Portfolio analysis + optimization | Portfolio page (weights, allocation, return timeline graphs), risk metrics, MVO frontier/max-Sharpe/min-var, constraint fields, disclaimer | FR-I6, FR-I7 | 📋 | — |
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-12 — Investment accounts & positions            (status: ✅)
+Started: 2026-11-09 · Finished: 2026-11-09
+
+- ✅ ACs completed with tests: **AC-I1a** buy flow updates quantity and average cost; **AC-I1b** sell flow posts realized P&L and reduces quantity; **AC-I1c** q4 precision remains integer-safe across buys/sells; **AC-I1d** oversell is rejected with the expected 422 contract; **AC-I3a** position grouping shows account subtotals sorted by market value desc for multi-account books
+- ✅ Deliverables: backend manual trade model in `backend/app/positions.py` + router in `backend/app/routers/investments.py`; API contract for listing grouped positions and trading brokerage accounts; frontend safe brokerage account selector and grouped position list in `frontend/app/(app)/investments/page.tsx`; TDD coverage in `backend/tests/api/test_positions.py` and `backend/tests/unit/test_avg_cost.py`
+- 🔧 Implementation notes: average cost is computed on integer q4 shares and cents-only price inputs, with fee-inclusive math following the project’s “best interest” rounding rule; sell operations preserve position lifecycle status but keep normalized closed/open semantics with realized gain totals retained; the frontend converts decimal share/price inputs to q4 before posting and only offers brokerage accounts in the manual trade selector
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 86.86% lines (`pytest-cov` gate 85%) · frontend 3/3 vitest files green (9/9 tests) · `make test`, `make lint`, and `make test-e2e` all green at iteration close
+- 📝 Doc deltas: [04-progress.md](04-progress.md) ITER-12 row/log closed; [07-iterative-prompts.md](07-iterative-prompts.md) advanced to ITER-13 prompt; no requirement or architecture drift beyond the iteration’s scoped manual position model
 
 ### ITER-11 — Dashboard            (status: ✅)
 Started: 2026-11-09 · Finished: 2026-11-09

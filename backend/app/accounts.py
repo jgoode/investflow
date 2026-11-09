@@ -416,19 +416,25 @@ def _extract_seed_parent_id(conn: sqlite3.Connection, parent_code: str | None) -
 def ensure_seeded_coa() -> list[dict[str, Any]]:
     ensure_accounts_table()
     with connect() as conn:
-        existing = conn.execute("SELECT version FROM seed_meta WHERE name = 'coa_v1'").fetchone()
-        if existing is not None:
-            rows = conn.execute("SELECT * FROM accounts ORDER BY id ASC").fetchall()
-            return [_serialize_account(row) for row in rows]
-
         now = _now_ts()
-        for item in SEED_ACCOUNTS:
+        seed_by_code = {str(item["code"]): item for item in SEED_ACCOUNTS}
+        rows = conn.execute("SELECT * FROM accounts ORDER BY id ASC").fetchall()
+        existing_codes = {str(row["code"]) for row in rows}
+
+        def ensure_code(code: str) -> None:
+            if code in existing_codes:
+                return
+            item = seed_by_code.get(code)
+            if item is None:
+                return
             parent_id = None
-            if item["parent_code"] is not None:
-                parent_id = _extract_seed_parent_id(conn, item["parent_code"])
+            if item.get("parent_code") is not None:
+                parent_code = str(item["parent_code"])
+                ensure_code(parent_code)
+                parent_id = _extract_seed_parent_id(conn, parent_code)
             conn.execute(
                 """
-                INSERT OR IGNORE INTO accounts (
+                INSERT INTO accounts (
                     code, name, type, subtype, parent_id, institution, description,
                     last4, is_archived, is_investment, created_at, updated_at
                 ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?)
@@ -442,11 +448,16 @@ def ensure_seeded_coa() -> list[dict[str, Any]]:
                     item["institution"],
                     item["description"],
                     None,
-                    1 if item["is_investment"] else 0,
+                    1 if item.get("is_investment") else 0,
                     now,
                     now,
                 ),
             )
+            existing_codes.add(code)
+
+        for item in SEED_ACCOUNTS:
+            ensure_code(str(item["code"]))
+
         conn.execute(
             "INSERT OR REPLACE INTO seed_meta (name, version, applied_at) VALUES ('coa_v1', 1, ?)",
             (now,),

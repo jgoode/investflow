@@ -38,6 +38,7 @@ def _app_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.delenv("INVESTFLOW_COOKIE_SECURE", raising=False)
     monkeypatch.syspath_prepend(str(BACKEND_ROOT))
     os.chdir(BACKEND_ROOT)
+    print(f"DEBUG_DB_PATH={db_path}")
     _alembic_upgrade_head(db_path)
     return db_path
 
@@ -73,9 +74,16 @@ def app_env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
 
 @pytest.fixture()
 def client(app_env: Path) -> Iterator[TestClient]:
-    from app.main import create_app
+    import importlib
 
-    with TestClient(create_app()) as c:
+    import app.main as app_main
+
+    print(f"DEBUG_FIXTURE_DB={app_env}")
+    importlib.reload(app_main)
+    print(f"DEBUG_RELOADED_DB={app_main.resolve_db_path()}")
+    app = app_main.create_app()
+    print(f"DEBUG_APP_DB={app.state.db_path}")
+    with TestClient(app) as c:
         yield c
 
 
