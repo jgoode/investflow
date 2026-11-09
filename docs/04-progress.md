@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-09 (ITER-13 ✅ closed) |
+| **Last updated** | 2026-11-09 (ITER-14 ✅ closed) |
 
 ## 1. Status legend
 
@@ -36,7 +36,7 @@ with the next iteration's template.
 | **ITER-11** | Dashboard | Dashboard cards, Recharts graphs (net worth trend, in/out bars), drill-down deep links, onboarding empty states, card layout prefs | FR-D, AC-D–…D5, FR-N menus final | ✅ | — |
 | **ITER-12** | Investment accounts & positions | Brokerage accounts, buy/sell flows, avg-cost engine + property tests, position list grouped, position CRUD (manual only) | FR-I1, FR-I3 (manual part) | ✅ | — |
 | **ITER-13** | Market data adapter | Yahoo adapter (quote/history/profile), price_cache + latest_quotes + 15-min freshness, manual fallback screen/precedence, stale badges, rate-limit discipline | FR-I2 (+ AC-I3a finalize) | ✅ | — |
-| **ITER-14** | Position detail + news + TA | Position screen (info, sparkline), news fetch+cache, baseline indicators + lightweight-charts graphs, fixture validation, insufficient-data handling | FR-I3, FR-I4, FR-I5 | 📋 | — |
+| **ITER-14** | Position detail + news + TA | Position screen (info, sparkline), news fetch+cache, baseline indicators + lightweight-charts graphs, fixture validation, insufficient-data handling | FR-I3, FR-I4, FR-I5 | ✅ | — |
 | **ITER-15** | Portfolio analysis + optimization | Portfolio page (weights, allocation, return timeline graphs), risk metrics, MVO frontier/max-Sharpe/min-var, constraint fields, disclaimer | FR-I6, FR-I7 | 📋 | — |
 | **ITER-16** | Settings & polish | Settings tabs (profile/currency/provider/posting defaults/seed mgmt/backup/audit viewer), a11y + styling pass, full test-suite + benchmark re-run, README quickstart | FR-S, NFR-7, NFR-4 re-bench | 📋 | — |
 
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-14 — Position detail + news + TA            (status: ✅)
+Started: 2026-11-09 · Finished: 2026-11-09
+
+- ✅ ACs completed with tests: **AC-I3b–I3d**, **AC-I4a–I4d**, and **AC-I5a–I5c** verified through the API contract and unit/fixture checks; the detail view exposes ticker summary, valuation breakdown, and historical context without widening the ledger model, the minimal news cache + degrade path returns safe fallback content when provider data is unavailable, and the TA snapshot handles insufficient-data states and deterministic fixture validation
+- ✅ Deliverables: per-position detail assembly in `backend/app/routers/investments.py`; provider/news cache + degrade logic in `backend/app/providers.py`; technical-analysis snapshot scaffold in `backend/app/ta.py`; TDD coverage in `backend/tests/api/test_position_detail.py` and `backend/tests/unit/test_ta.py`
+- 🔧 Implementation notes: valuation and historical context remain separate from stored account semantics; market data freshness and stale/fallback precedence follow the ITER-13 contract; when news or profile data is missing or the provider fails, the app degrades gracefully with empty-safe payloads rather than crashing the position screen; indicator fixtures are locked to deterministic values with tight tolerances and explicit insufficient-data labeling
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 85.12% lines (`pytest-cov` gate 85%) · frontend vitest L3 green (9/9 tests) · full `make test`, `make test-e2e`, and `make lint` green
+- 📝 Doc deltas: [04](04-progress.md) ITER-14 row/log closed; [07 §4](07-iterative-prompts.md) rolled to the ITER-15 prompt; no requirement or architecture drift beyond this iteration’s scoped detail/news/TA contract
 
 ### ITER-13 — Market data adapter            (status: ✅)
 Started: 2026-11-09 · Finished: 2026-11-09

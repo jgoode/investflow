@@ -3,14 +3,14 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-09 (ITER-13 closed; §4 → ITER-14) |
+| **Last updated** | 2026-11-09 (ITER-14 closed; §4 → ITER-15) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
 
 - §2 — the documentation roll-forward workflow (what to update after every iteration)
 - §3 — the in-session TDD execution loop
-- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-11)
+- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-15)
 - §5 — the stable prompt template used to generate §4 for later iterations
 
 ---
@@ -55,29 +55,29 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-14 — Position detail + news + TA**
+> **ITER-15 — Portfolio analysis + optimization**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
 > `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-07 net worth, D-10 provider adapter, D-16 stack),
-> `docs/01-requirements.md` §6 FR-I3–I5 (position detail, news, technical analysis),
-> `docs/02-architecture.md` §4.6 valuation + §4.7 TA/news contracts, plus the provider adapter precedents from ITER-13,
-> plus `docs/03-test-plan.md` §4 matrix rows for FR-I3–I5 and the prior AC-I2/I3 market-data checks,
-> plus the auth/security guard notes, `docs/04-progress.md` ITER-14 row and the [04 §5](04-progress.md) mapping row.
+> `docs/01-requirements.md` §6 FR-I6–I7 (portfolio analysis and optimization),
+> `docs/02-architecture.md` §4.7 portfolio analysis + §4.8 optimization contracts, plus the provider/data precedents from ITER-13–14,
+> plus `docs/03-test-plan.md` §4 matrix rows for FR-I6–I7 and the earlier market-data and TA checks,
+> plus the auth/security guard notes, `docs/04-progress.md` ITER-15 row and the [04 §5](04-progress.md) mapping row.
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to this iteration's AC list: **AC-I3b–I3d, AC-I4a–I4d, AC-I5a–I5c** — ask me about any ambiguity; never assume.
+> scope only to this iteration's AC list: **AC-I6a–I6d, AC-I7a–I7d** — ask me about any ambiguity; never assume.
 >
 > **Deliverable:**
-> 1. Add the per-position detail screen and data contract for ticker summary, valuation breakdown, and historical context without broadening the ledger model.
-> 2. Implement the minimal news-feed integration and caching layer for the selected position, including graceful degrade when provider/news data is unavailable.
-> 3. Add lightweight technical-analysis scaffolding (sparkline/indicators) with insufficient-data handling and deterministic fixture-based validation.
+> 1. Add the portfolio analysis summary view and allocation/weighted-return contract without broadening the ledger model.
+> 2. Implement the minimal optimization scaffolding (risk/return view, constraints, and advisory-only output) for the selected holdings set.
+> 3. Add the deterministic validation layer for portfolio metrics, constraint handling, and unsupported/insufficient-history states.
 >
-> **Out of scope this iteration:** portfolio optimization, provider price arbitration beyond the already-proven manual fallback model, full analytics dashboards, or unrelated user settings.
+> **Out of scope this iteration:** provider arbitration beyond the already-proven manual fallback model, full risk-engine tuning, unrelated user settings, or broader portfolio dashboards beyond the selected ACs.
 >
 > **Definition of done:** mapped-layer tests green for the selected ACs, `make test` + `make test-e2e` green,
 > lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8 so the next prompt (§4) is ready.
 >
-> **Known traps:** keep indicator fixture tolerances tight, do not invent new pricing semantics beyond the ITER-13 contract, and preserve current position/account semantics when surfacing detail screens or stale data states.
+> **Known traps:** preserve the book/account semantics already proven in earlier iterations, keep optimization output advisory-only, and do not invent new pricing or risk semantics without a corresponding test and architecture note.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 

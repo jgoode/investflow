@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from fastapi.testclient import TestClient
 
@@ -47,7 +47,7 @@ def test_manual_quote_is_persisted_and_exposed(client: TestClient) -> None:
 
 def test_stale_provider_quote_shows_badge_and_manual_fallback(client: TestClient) -> None:
     register(client, "alice")
-    stale_time = datetime.now(timezone.utc) - timedelta(minutes=30)
+    stale_time = datetime.now(UTC) - timedelta(minutes=30)
     set_manual_quote("MSFT", 1_000_000, asof=stale_time.isoformat().replace("+00:00", "Z"))
 
     quote = get_latest_quote("MSFT", now_utc=stale_time)
