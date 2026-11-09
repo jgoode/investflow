@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-09 ✅ closed) |
+| **Last updated** | 2026-11-09 (ITER-10 ✅ closed) |
 
 ## 1. Status legend
 
@@ -32,7 +32,7 @@ with the next iteration's template.
 | **ITER-07** | Simple transactions | Posting service + invariants, expense/income quick post UI, split-lines editor with off-by balance lock, list with filters/paging | FR-T1–T3, T5, T9 | ✅ | — |
 | **ITER-08** | Transfers, edit, void, audit | Transfer flow, edit-full-replace, void flow + confirmation, running balance, audit_log wiring | FR-T4, T6–T8, T10 | ✅ | — |
 | **ITER-09** | Reports core | Reporting engine interface, COA report, summary, monthly, quarterly; date filters/void exclusion | FR-R1–R4, R9, R10, NFR-9 | ✅ | — |
-| **ITER-10** | Cash flow, net worth, exports | Cash-flow report, net-worth statement (+holdings valuation join), export xlsx + pdf, perf benchmarks baseline | FR-R5–R8, NFR-4 | 📋 | — |
+| **ITER-10** | Cash flow, net worth, exports | Cash-flow report, net-worth statement (+holdings valuation join), export xlsx + pdf, perf benchmarks baseline | FR-R5–R8, NFR-4 | ✅ | — |
 | **ITER-11** | Dashboard | Dashboard cards, Recharts graphs (net worth trend, in/out bars), drill-down deep links, onboarding empty states, card layout prefs | FR-D, AC-D–…D5, FR-N menus final | 📋 | — |
 | **ITER-12** | Investment accounts & positions | Brokerage accounts, buy/sell flows, avg-cost engine + property tests, position list grouped, position CRUD (manual only) | FR-I1, FR-I3 (manual part) | 📋 | — |
 | **ITER-13** | Market data adapter | Yahoo adapter (quote/history/profile), price_cache + latest_quotes + 15-min freshness, manual fallback screen/precedence, stale badges, rate-limit discipline | FR-I2 (+ AC-I3a finalize) | 📋 | — |
@@ -66,6 +66,17 @@ Started: 2026-11-08 · Finished: 2026-11-08
 - 🐞 New defects: none
 - 📊 Coverage: backend 88.02% lines (`pytest-cov` gate 85%) · frontend vitest L3 green (6/6 tests) · `make test`, `make test-e2e`, and `make lint` all green at iteration close
 - 📝 Doc deltas: [03](03-test-plan.md) iteration-close matrix note updated for reports coverage, [04](04-progress.md) ITER-09 row/log closed, [05](05-defects.md) close-review timestamp refreshed (no new defects), [06](06-gap-analysis.md) close-of-iteration status sentence refreshed, [07](07-iterative-prompts.md) §4 rolled to ITER-10 prompt; [00](00-overview.md), [01](01-requirements.md), [02](02-architecture.md), and [08](08-backlog.md) unchanged
+
+### ITER-10 — Cash flow, net worth, exports            (status: ✅)
+Started: 2026-11-09 · Finished: 2026-11-09
+
+- ✅ ACs completed with tests: **FR-R5 / AC-R5** cash-flow report over filtered date ranges with opening/inflow/outflow/closing totals; **FR-R6 / AC-R6** net-worth report with holdings valued from cached/manual quote joins while avoiding synthetic revaluation ledger posts; **FR-R7 / AC-R7** XLSX/PDF export generation for report outputs with filename conventions; **FR-R8 / AC-R8** export parity checks that match the report payload totals and filters used by the API
+- ✅ Deliverables: server-side report aggregation and export helpers in `backend/app/reports.py`; protected report routes in `backend/app/routers/reports.py`; coverage in `backend/tests/api/test_reports.py` and `backend/tests/unit/test_reports_engine.py`; no frontend UX scope added beyond the existing report API contract
+- 🔧 Implementation notes: the report engine remains ledger-first and deterministic; net-worth uses balance-sheet assets/liabilities plus open-position valuation at the report date; exports serialize the same report JSON totals and headers used by the API while preserving backward-compatible route naming; the PDF serializer is intentionally lightweight but numerically consistent for the report contract
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 87.11% lines (`pytest-cov` gate 85%) · frontend vitest L3 green (6/6 tests) · `make test`, `make test-e2e`, and `make lint` all green at iteration close
+- 📝 Doc deltas: [04](04-progress.md) ITER-10 row/log closed; [03](03-test-plan.md) ITER-10 close note added; [07](07-iterative-prompts.md) §4 rolled to ITER-11 prompt; [05](05-defects.md) reviewed and left unchanged (no new defects); [06](06-gap-analysis.md) and [00](00-overview.md) unchanged because no spec drift emerged from the tested implementation
 
 ### ITER-08 — Transfers, edit, void, audit            (status: ✅)
 Started: 2026-11-08 · Finished: 2026-11-08

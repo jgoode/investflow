@@ -844,12 +844,16 @@ def _run_net_worth_report(params: dict[str, Any]) -> dict[str, Any]:
                 "net_worth_cents": net_worth,
             }
         )
-    totals = rows[-1] if rows else {
-        "asset_value_cents": 0,
-        "liability_value_cents": 0,
-        "holdings_value_cents": 0,
-        "net_worth_cents": 0,
-    }
+    totals = (
+        rows[-1]
+        if rows
+        else {
+            "asset_value_cents": 0,
+            "liability_value_cents": 0,
+            "holdings_value_cents": 0,
+            "net_worth_cents": 0,
+        }
+    )
     normalized_params = {
         "date_from": report_range.date_from,
         "date_to": report_range.date_to,
@@ -903,14 +907,14 @@ def _xlsx_serialize(rows: list[dict[str, Any]], headers: list[str]) -> bytes:
                 '  <Override PartName="/docProps/app.xml" '
                 'ContentType="application/vnd.openxmlformats-officedocument.'
                 'extended-properties+xml"/>\n'
-                '</Types>\n'
+                "</Types>\n"
             ),
         )
         workbook.writestr(
             "_rels/.rels",
             (
                 '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
-                '<Relationships '
+                "<Relationships "
                 'xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n'
                 '  <Relationship Id="rId1" '
                 'Type="http://schemas.openxmlformats.org/officeDocument/2006/'
@@ -921,62 +925,62 @@ def _xlsx_serialize(rows: list[dict[str, Any]], headers: list[str]) -> bytes:
                 '  <Relationship Id="rId3" '
                 'Type="http://schemas.openxmlformats.org/officeDocument/2006/'
                 'relationships/extended-properties" Target="docProps/app.xml"/>\n'
-                '</Relationships>\n'
+                "</Relationships>\n"
             ),
         )
         workbook.writestr(
             "docProps/core.xml",
             (
                 '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
-                '<cp:coreProperties '
+                "<cp:coreProperties "
                 'xmlns:cp="http://schemas.openxmlformats.org/package/2006/'
                 'metadata/core-properties" '
                 'xmlns:dc="http://purl.org/dc/elements/1.1/" '
                 'xmlns:dcterms="http://purl.org/dc/terms/" '
                 'xmlns:dcmitype="http://purl.org/dc/dcmitype/" '
                 'xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">\n'
-                '  <dc:creator>InvestFlow</dc:creator>\n'
-                '  <cp:lastModifiedBy>InvestFlow</cp:lastModifiedBy>\n'
-                '</cp:coreProperties>\n'
+                "  <dc:creator>InvestFlow</dc:creator>\n"
+                "  <cp:lastModifiedBy>InvestFlow</cp:lastModifiedBy>\n"
+                "</cp:coreProperties>\n"
             ),
         )
         workbook.writestr(
             "docProps/app.xml",
             (
                 '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
-                '<Properties '
+                "<Properties "
                 'xmlns="http://schemas.openxmlformats.org/officeDocument/2006/'
                 'extended-properties" '
                 'xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/'
                 'docPropsVTypes">\n'
-                '  <Application>InvestFlow</Application>\n'
-                '</Properties>\n'
+                "  <Application>InvestFlow</Application>\n"
+                "</Properties>\n"
             ),
         )
         workbook.writestr(
             "xl/workbook.xml",
             (
                 '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
-                '<workbook '
+                "<workbook "
                 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '
                 'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/'
                 'relationships">\n'
-                '  <sheets>\n'
+                "  <sheets>\n"
                 '    <sheet name="Report" sheetId="1" r:id="rId1"/>\n'
-                '  </sheets>\n'
-                '</workbook>\n'
+                "  </sheets>\n"
+                "</workbook>\n"
             ),
         )
         workbook.writestr(
             "xl/_rels/workbook.xml.rels",
             (
                 '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
-                '<Relationships '
+                "<Relationships "
                 'xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n'
                 '  <Relationship Id="rId1" '
                 'Type="http://schemas.openxmlformats.org/officeDocument/2006/'
                 'relationships/worksheet" Target="worksheets/sheet1.xml"/>\n'
-                '</Relationships>\n'
+                "</Relationships>\n"
             ),
         )
 
@@ -984,18 +988,15 @@ def _xlsx_serialize(rows: list[dict[str, Any]], headers: list[str]) -> bytes:
             cell_ref = f"{chr(65 + (column_index % 26))}{row_index + 1}"
             if isinstance(value, (int, float)):
                 return f'<c r="{cell_ref}" t="n"><v>{value}</v></c>'
-            escaped = (
-                str(value)
-                .replace("&", "&amp;")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-            )
+            escaped = str(value).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
             return f'<c r="{cell_ref}" t="inlineStr"><is><t>{escaped}</t></is></c>'
 
         sheet_rows: list[str] = []
-        header_row = "<row r='1'>" + "".join(
-            cell_xml(header, idx, 0) for idx, header in enumerate(headers)
-        ) + "</row>"
+        header_row = (
+            "<row r='1'>"
+            + "".join(cell_xml(header, idx, 0) for idx, header in enumerate(headers))
+            + "</row>"
+        )
         sheet_rows.append(header_row)
         for row_index, entry in enumerate(rows, start=1):
             values = [entry.get(header, "") for header in headers]
@@ -1010,10 +1011,10 @@ def _xlsx_serialize(rows: list[dict[str, Any]], headers: list[str]) -> bytes:
                 '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n'
                 '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">\n'
                 '  <sheetViews><sheetView workbookViewId="0"/></sheetViews>\n'
-                '  <sheetData>\n'
-                '    {rows}\n'
-                '  </sheetData>\n'
-                '</worksheet>\n'
+                "  <sheetData>\n"
+                "    {rows}\n"
+                "  </sheetData>\n"
+                "</worksheet>\n"
             ).format(rows="".join(sheet_rows)),
         )
 
@@ -1056,8 +1057,7 @@ def _pdf_serialize(report: dict[str, Any]) -> bytes:
         content.append(f"{offset:010d} 00000 n \n".encode("latin-1"))
     content.append(
         (
-            f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\n"
-            f"startxref\n{xref_pos}\n%%EOF\n"
+            f"trailer\n<< /Size {len(objects) + 1} /Root 1 0 R >>\nstartxref\n{xref_pos}\n%%EOF\n"
         ).encode("latin-1")
     )
     return b"".join(content)

@@ -63,7 +63,8 @@ def get_report_export(kind: str, request: Request, format: str = "xlsx") -> Resp
             params[key] = request.query_params.get(key)
     payload, filename = export_report(kind, params, format)
     media_type = (
-        "application/pdf" if str(format).lower() == "pdf"
+        "application/pdf"
+        if str(format).lower() == "pdf"
         else "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
     return Response(

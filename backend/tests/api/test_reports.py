@@ -403,7 +403,7 @@ def test_report_exports_match_report_payloads(client: TestClient) -> None:
         headers=CSRF_HEADER,
     )
     assert xlsx.status_code == 200, xlsx.text
-    assert xlsx.headers["content-disposition"].endswith("cash-flow-2026-03-01-2026-03-31.xlsx\"")
+    assert xlsx.headers["content-disposition"].endswith('cash-flow-2026-03-01-2026-03-31.xlsx"')
     assert xlsx.content.startswith(b"PK")
 
     pdf = client.get(
@@ -411,5 +411,5 @@ def test_report_exports_match_report_payloads(client: TestClient) -> None:
         headers=CSRF_HEADER,
     )
     assert pdf.status_code == 200, pdf.text
-    assert pdf.headers["content-disposition"].endswith("net-worth-2026-03-01-2026-03-31.pdf\"")
+    assert pdf.headers["content-disposition"].endswith('net-worth-2026-03-01-2026-03-31.pdf"')
     assert pdf.content.startswith(b"%PDF")
