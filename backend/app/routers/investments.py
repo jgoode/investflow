@@ -7,6 +7,10 @@ from pydantic import BaseModel, Field, field_validator
 
 from app.db.connection import connect
 from app.positions import apply_manual_trade, ensure_positions_tables, list_positions
+from app.providers import (
+    get_latest_quote,
+    set_manual_quote,
+)
 
 router = APIRouter(prefix="/api/investments", tags=["investments"])
 
@@ -32,6 +36,17 @@ class TradePayload(BaseModel):
         if normalized not in {"buy", "sell"}:
             raise ValueError("side must be buy or sell")
         return normalized
+
+
+class ManualQuotePayload(BaseModel):
+    ticker: str = Field(min_length=1, max_length=16)
+    price_q4: int = Field(gt=0)
+    asof: str | None = None
+
+    @field_validator("ticker")
+    @classmethod
+    def validate_ticker(cls, value: str) -> str:
+        return value.strip().upper()
 
 
 @router.get("/positions")
@@ -86,3 +101,32 @@ def create_trade(payload: TradePayload, request: Request) -> dict[str, Any]:
         fee_cents=payload.fee_cents,
         trade_date=payload.trade_date,
     )
+
+
+@router.get("/quote")
+@router.get("/quotes")
+@router.get("/quotes/{ticker}")
+def fetch_quote(
+    request: Request,
+    ticker: str | None = None,
+    tickers: str | None = None,
+) -> dict[str, Any]:
+    if not getattr(request.state, "current_user", None):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized")
+    selection = ticker or tickers
+    if selection is None:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="ticker is required")
+    symbols = [item.strip().upper() for item in selection.split(",") if item.strip()]
+    if not symbols:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_CONTENT, detail="ticker is required")
+    if len(symbols) == 1:
+        return get_latest_quote(symbols[0])
+    return {"quotes": [get_latest_quote(symbol) for symbol in symbols]}
+
+
+@router.post("/quote/manual")
+@router.post("/quotes/manual")
+def create_manual_quote(payload: ManualQuotePayload, request: Request) -> dict[str, Any]:
+    if not getattr(request.state, "current_user", None):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized")
+    return set_manual_quote(ticker=payload.ticker, price_q4=payload.price_q4, asof=payload.asof)

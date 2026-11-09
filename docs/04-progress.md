@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-09 (ITER-11 ✅ closed) |
+| **Last updated** | 2026-11-09 (ITER-13 ✅ closed) |
 
 ## 1. Status legend
 
@@ -35,7 +35,7 @@ with the next iteration's template.
 | **ITER-10** | Cash flow, net worth, exports | Cash-flow report, net-worth statement (+holdings valuation join), export xlsx + pdf, perf benchmarks baseline | FR-R5–R8, NFR-4 | ✅ | — |
 | **ITER-11** | Dashboard | Dashboard cards, Recharts graphs (net worth trend, in/out bars), drill-down deep links, onboarding empty states, card layout prefs | FR-D, AC-D–…D5, FR-N menus final | ✅ | — |
 | **ITER-12** | Investment accounts & positions | Brokerage accounts, buy/sell flows, avg-cost engine + property tests, position list grouped, position CRUD (manual only) | FR-I1, FR-I3 (manual part) | ✅ | — |
-| **ITER-13** | Market data adapter | Yahoo adapter (quote/history/profile), price_cache + latest_quotes + 15-min freshness, manual fallback screen/precedence, stale badges, rate-limit discipline | FR-I2 (+ AC-I3a finalize) | 📋 | — |
+| **ITER-13** | Market data adapter | Yahoo adapter (quote/history/profile), price_cache + latest_quotes + 15-min freshness, manual fallback screen/precedence, stale badges, rate-limit discipline | FR-I2 (+ AC-I3a finalize) | ✅ | — |
 | **ITER-14** | Position detail + news + TA | Position screen (info, sparkline), news fetch+cache, baseline indicators + lightweight-charts graphs, fixture validation, insufficient-data handling | FR-I3, FR-I4, FR-I5 | 📋 | — |
 | **ITER-15** | Portfolio analysis + optimization | Portfolio page (weights, allocation, return timeline graphs), risk metrics, MVO frontier/max-Sharpe/min-var, constraint fields, disclaimer | FR-I6, FR-I7 | 📋 | — |
 | **ITER-16** | Settings & polish | Settings tabs (profile/currency/provider/posting defaults/seed mgmt/backup/audit viewer), a11y + styling pass, full test-suite + benchmark re-run, README quickstart | FR-S, NFR-7, NFR-4 re-bench | 📋 | — |
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-13 — Market data adapter            (status: ✅)
+Started: 2026-11-09 · Finished: 2026-11-09
+
+- ✅ ACs completed with tests: **AC-I2a** provider quote fetch returns a resolved quote object with stable `live/stale/unavailable` status; **AC-I2b** Yahoo provider is treated as the primary source with manual quote fallback precedence when stale or missing; **AC-I2c** 15-minute freshness threshold marks stale quotes deterministically without crashing valuation or position logic; **AC-I2d** stale or unavailable provider state degrades safely in the UI with a badge/disclaimer and no double-counting or ledger changes; **AC-I3a** grouped position semantics remain intact while pricing state is displayed separately from account totals
+- ✅ Deliverables: backend provider adapter + quote cache in `backend/app/providers.py` plus `/api/investments/quotes/{ticker}` and `/api/investments/quotes/manual` endpoints in `backend/app/routers/investments.py`; frontend quote client contract in `frontend/lib/market-data.ts`; investments page stale/fallback badge in `frontend/app/(app)/investments/page.tsx`; TDD coverage in `backend/tests/api/test_market_quotes.py`
+- 🔧 Implementation notes: quote freshness uses the quote’s own `asof` timestamp and a hard 15-minute stale threshold; manual entries remain durable fallback values, with provider failures intentionally degrading to the last safe quote or a non-fatal unavailable state rather than crashing the page; valuation and UI remain separate from position semantics, preserving the q4 integer precision and account totals already proven in ITER-12
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 86.61% lines (`pytest-cov` gate 85%) · frontend 3/3 vitest files green (9/9 tests) · `make test` + `make test-e2e` green at iteration close
+- 📝 Doc deltas: [04-progress.md](04-progress.md) ITER-13 row/log closed; [07-iterative-prompts.md](07-iterative-prompts.md) roll-forward to the next iteration prompt; no requirement or architecture drift beyond the scoped provider-quote and stale-state handling
 
 ### ITER-12 — Investment accounts & positions            (status: ✅)
 Started: 2026-11-09 · Finished: 2026-11-09

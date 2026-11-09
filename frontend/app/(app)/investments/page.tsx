@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { apiUrl } from "@/lib/api";
+import { fetchQuote } from "@/lib/market-data";
 
 type PositionRow = {
   id: number;
@@ -45,13 +46,14 @@ export default function InvestmentsPage() {
   const [isBusy, setIsBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [quoteBadge, setQuoteBadge] = useState<string>("Market data unavailable");
 
   async function load() {
     const response = await fetch(apiUrl("/api/investments/positions"), {
       credentials: "include",
       headers: { "X-Requested-With": "investflow" },
     });
-    if (!response.ok) {
+    if (!response || !response.ok) {
       setError("Unable to load positions right now.");
       return;
     }
@@ -68,7 +70,7 @@ export default function InvestmentsPage() {
       credentials: "include",
       headers: { "X-Requested-With": "investflow" },
     });
-    if (!response.ok) {
+    if (!response || !response.ok) {
       return;
     }
     const payload = (await response.json()) as { accounts?: InvestmentAccount[] };
@@ -76,9 +78,18 @@ export default function InvestmentsPage() {
   }
 
   useEffect(() => {
-    void loadAccounts();
-    void load();
-  }, []);
+    void loadAccounts().catch(() => undefined);
+    void load().catch(() => undefined);
+
+    const symbol = groups[0]?.positions[0]?.ticker;
+    if (!symbol) {
+      return;
+    }
+
+    void fetchQuote(symbol)
+      .then((quote) => setQuoteBadge(quote.badge ?? "Market data unavailable"))
+      .catch(() => setQuoteBadge("Yahoo Finance unavailable; manual fallback available"));
+  }, [groups]);
 
   const totalLabel = useMemo(() => money(overallTotal), [overallTotal]);
 
@@ -133,6 +144,14 @@ export default function InvestmentsPage() {
             <div className="text-sm uppercase tracking-wide opacity-70">Total market value</div>
             <div className="text-3xl font-bold">{totalLabel}</div>
           </div>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-lg border border-base-300 bg-base-100 px-4 py-3 text-sm">
+        <div className="font-medium">Quote status</div>
+        <div className="mt-1 opacity-80">{quoteBadge}</div>
+        <div className="mt-2 text-xs opacity-70">
+          Yahoo Finance data is unofficial and has no SLA; manual fallback remains available for prices.
         </div>
       </div>
 

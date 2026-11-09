@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-09 (ITER-12 closed; §4 → ITER-13) |
+| **Last updated** | 2026-11-09 (ITER-13 closed; §4 → ITER-14) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
@@ -55,30 +55,29 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-13 — Market data adapter**
+> **ITER-14 — Position detail + news + TA**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
 > `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-07 net worth, D-10 provider adapter, D-16 stack),
-> `docs/01-requirements.md` §6 FR-I2 (and AC-I3a finalization if applicable),
-> `docs/02-architecture.md` §4.6 valuation + §4.9 provider adapters and the `latest_quotes`/`price_cache` contract,
-> plus `docs/03-test-plan.md` §4 matrix rows for FR-I2 and the prior AC-I3a grouping checks, plus the auth/security guard notes,
-> `docs/04-progress.md` ITER-13 row and the [04 §5](04-progress.md) mapping row.
+> `docs/01-requirements.md` §6 FR-I3–I5 (position detail, news, technical analysis),
+> `docs/02-architecture.md` §4.6 valuation + §4.7 TA/news contracts, plus the provider adapter precedents from ITER-13,
+> plus `docs/03-test-plan.md` §4 matrix rows for FR-I3–I5 and the prior AC-I2/I3 market-data checks,
+> plus the auth/security guard notes, `docs/04-progress.md` ITER-14 row and the [04 §5](04-progress.md) mapping row.
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to this iteration's AC list: **AC-I2a–I2d and any finalized AC-I3a assertions** — ask me about any ambiguity;
-> never assume.
+> scope only to this iteration's AC list: **AC-I3b–I3d, AC-I4a–I4d, AC-I5a–I5c** — ask me about any ambiguity; never assume.
 >
 > **Deliverable:**
-> 1. Implement the provider adapter and quote caching layer for Yahoo/manual market data, including 15-minute freshness and stale-badge behavior.
-> 2. Add the minimal backend/frontend contracts for quote fetches, provider precedence, and manual fallback entry without broadening unrelated reporting logic.
-> 3. Wire the valuation and UI states so a stale or unavailable provider degrades safely while preserving existing ledger/position semantics.
+> 1. Add the per-position detail screen and data contract for ticker summary, valuation breakdown, and historical context without broadening the ledger model.
+> 2. Implement the minimal news-feed integration and caching layer for the selected position, including graceful degrade when provider/news data is unavailable.
+> 3. Add lightweight technical-analysis scaffolding (sparkline/indicators) with insufficient-data handling and deterministic fixture-based validation.
 >
-> **Out of scope this iteration:** portfolio optimization, technical indicators, news, and any non-investment feature work beyond provider-quote plumbing and stale-state handling.
+> **Out of scope this iteration:** portfolio optimization, provider price arbitration beyond the already-proven manual fallback model, full analytics dashboards, or unrelated user settings.
 >
-> **Definition of done:** mapped-layer tests green for AC-I2a–I2d and any finalized AC-I3a checks, `make test` + `make test-e2e` green,
+> **Definition of done:** mapped-layer tests green for the selected ACs, `make test` + `make test-e2e` green,
 > lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8 so the next prompt (§4) is ready.
 >
-> **Known traps:** keep provider freshness decisions deterministic, do not double-count cash or valuations, and retain the manual fallback precedence and quantity precision rules already proven in ITER-12.
+> **Known traps:** keep indicator fixture tolerances tight, do not invent new pricing semantics beyond the ITER-13 contract, and preserve current position/account semantics when surfacing detail screens or stale data states.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 
@@ -117,8 +116,10 @@ ITER-02 are already green.
 - ✅ **ITER-11 — Dashboard** (FR-D; §5.1/§5.3; traps: ≤2 batched calls AC-D3, drill deep links, onboarding states)
 - ✅ **ITER-12 — Investment accounts & positions** (FR-I1, AC-I3a manual; §4.6, §3.1 positions; traps: avg-cost
   property tests per 03 §4 row, oversell 422, quantity ×10⁴ scaling)
-- ⏭ **ITER-13 — Market data adapter** (FR-I2; §4.9 providers; traps: 15-min freshness observable via mock,
-  manual precedence and stale-badge behavior)cedence, date-cache write-once rule R-06)- ⏭ **ITER-14 — Position detail + news + TA** (FR-I3/I4/I5; §4.6 ta; traps: indicator fixtures ≤1e-6,
+- ✅ **ITER-13 — Market data adapter** (FR-I2; §4.9 providers; traps: 15-minute freshness, manual precedence,
+  stale-badge behavior)
+- ⏭ **ITER-14 — Position detail + news + TA** (FR-I3/I4/I5; §4.6 ta; traps: indicator fixtures ≤1e-6,
+  insufficient-data labels)s: 15-min freshness observable via mock,  manual precedence and stale-badge behavior)cedence, date-cache write-once rule R-06)- ⏭ **ITER-14 — Position detail + news + TA** (FR-I3/I4/I5; §4.6 ta; traps: indicator fixtures ≤1e-6,
   insufficient-data labels)
 - ⏭ **ITER-15 — Portfolio analysis + optimization** (FR-I6/I7; §4.7 mvo; traps: ≥120-day gate AC-I7c,
   constraint infeasibility wording, advisory-only disclaimer)
