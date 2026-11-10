@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — reviewed at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-10 (ITER-21 close review: no new gaps; navbar IA slice X3/X4 fully covered at L3/L4) |
+| **Last updated** | 2026-11-10 (ITER-22 close review: no new gaps; FR-IMP-1 AC-IMP1a–IMP1g covered at L1/L2/L3/L4, AC-IMP1h slipped → ITER-23 by pre-agreement, tracked as a scope delta not a gap) |
 
 Gap analysis compares three layers and records what does (not) survive between them:
 
@@ -76,5 +76,5 @@ At each iteration close ([07 §2](07-iterative-prompts.md)):
 2. Review §3 register: promote rows with ready prerequisites to "scheduled (ITER-XX)".
 3. Confirm that §2 table entries untouched during the iteration are still accurate.
 4. Refresh the 3-layer picture (§1) status sentence below: *(update on close)* —
-   **Wants are fully spec'd (§2.1/§2.2 records deltas), Reality has 21 iteration rows done — ITER-01 through ITER-21 (✅ 2026-11-10):
-   the navbar IA slice (FR-X3 + FR-X4) is now covered at L3 (`frontend/app/__tests__/mega-menu.test.tsx`, 5 mapped scenarios incl. Escape focus-return and hover close-delay) and L4 (navbar reachability scenario in `e2e/smoke.spec.ts`); the FR-X3b/FR-X4b label contradiction was resolved by ADR-007 (FR-X4 labels govern) rather than a gap; DEF-003 was found and closed at the ITER-21 gate rerun; no new open gaps were introduced in ITER-21.**
+   **Wants are fully spec'd (§2.1/§2.2 records deltas), Reality has 22 iteration rows done — ITER-01 through ITER-22 (✅ 2026-11-10):
+   the portfolio CSV import slice (FR-IMP-1) is now covered at L1 (`backend/tests/unit/test_importer_core.py`), L2 (`backend/tests/api/test_imports.py`), L3 (`frontend/app/__tests__/import-page.test.tsx` + mega-menu Import item) and L4 (import wizard scenario in `e2e/smoke.spec.ts`); the AC-IMP1h price-history stretch slipped to ITER-23 by pre-agreement (scope delta, tracked in [01 §12](01-requirements.md) + [08 §3C](08-backlog.md), not a gap); the backlog's trade-leg wording was refined by ADR-008 (positions-only buys/sells, real postings for dividend/fee) rather than left as a doc-vs-reality contradiction; no new open gaps were introduced in ITER-22.**

@@ -1,0 +1,3 @@
+=========================== short test summary info ============================
+FAILED tests/unit/test_importer_core.py::test_select_imported_row_hashes_only_counts_committed_batches
+1 failed, 32 passed, 1 warning in 1.73s

@@ -3,14 +3,14 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-10 (ITER-21 ✅ closed; §4 → ITER-22) |
+| **Last updated** | 2026-11-10 (ITER-22 ✅ closed; §4 → ITER-23) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
 
 - §2 — the documentation roll-forward workflow (what to update after every iteration)
 - §3 — the in-session TDD execution loop
-- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-22)
+- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-23)
 - §5 — the stable prompt template used to generate §4 for later iterations
 
 ---
@@ -55,44 +55,41 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-22 — Portfolio CSV import (FEAT-001)**
+> **ITER-23 — Price-history CSV import (AC-IMP1h)**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
-> `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-04 double-entry, D-07 net worth,
-> D-16 stack), `docs/01-requirements.md` §12 FR-IMP-1 (AC-IMP1a–IMP1h) and §5 FR-I1/FR-T posting baselines,
-> `docs/02-architecture.md` §3.1 (import_mappings/import_batches staging), §4.5 (posting service — the ONLY
-> route to `transaction_lines`), §4.9 (price_cache/manual precedence for the AC-IMP1h stretch), §5.1/§5.2
-> (route + Investments submenu wiring), and `docs/03-test-plan.md` §4 (add the IMP row: L1 parser/dedupe
-> + L2 atomic import + L4 wizard E2E), plus `docs/08-backlog.md` §3C (binding Q&A §3C.7).
+> `docs/00-overview.md` (D-04 double-entry, D-07 net worth, D-16 stack), `docs/01-requirements.md` §12
+> FR-IMP-1 (AC-IMP1h) and AC-I2c (manual-price precedence), `docs/02-architecture.md` §3.1
+> (`price_cache` + the import staging tables from migration 0007), §4.9 (price_cache/manual precedence),
+> §4.5 (posting service note — price history writes no ledger rows), `docs/03-test-plan.md` §4 (IMP row —
+> extend coverage to IMP1h), and `docs/08-backlog.md` §3C (provenance; ADR-008 in [04 §4](04-progress.md)).
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to FR-IMP-1 acceptance criteria — ask me about any ambiguity; never assume.
+> scope only to AC-IMP1h — ask me about any ambiguity; never assume.
 >
 > **Deliverable:**
-> 1. Backend importer core in `backend/app/services/importer/` (parser, mapping resolver, dry-run evaluator,
->    deduper) posting **through the existing posting service only**; new `import_mappings`/`import_batches`
->    tables via Alembic + audit `import.*` entries.
-> 2. Import API (L2): positions import (AC-IMP1d), trade transactions import with hash-tuple dedupe and
->    `(account, ticker)` date-order replay (AC-IMP1e), atomic per-file semantics (AC-IMP1c), 5 MB / 5,000-row
->    synchronous limits (AC-IMP1f).
-> 3. Frontend Import center at `/investments/import` (Portfolio tab): account mapping → column mapping →
->    dry-run preview → confirm → result report, with starter templates (AC-IMP1a/AC-IMP1b); wire it into the
->    Investments submenu without changing existing aliases or auth gating (AC-X4c/X4d regression must stay green).
-> 4. L4 wizard E2E with fixture CSVs (import positions + trades, see dashboard/report reflect them).
-> 5. Roll forward docs ([07 §2](07-iterative-prompts.md) R1–R8). Color the AC-IMP1h price-history stretch
->    honestly — it may slip to ITER-23 without blocking ITER-22 closure.
+> 1. Extend the importer core (`backend/app/services/importer/`) with the `price_history` kind: parse the
+>    `bank statement` starter template's daily close/volume CSV (ticker + date + close_q4 [+ volume]),
+>    reusing the existing parser limits (5 MB / 5,000 rows), Decimal-only conversion, mapping resolver,
+>    and staging tables (new `kind` value `price_history` in `import_batches` — the CHECK already allows it).
+> 2. Import API (L2): preview + commit for `price_history` writing `price_cache` rows with
+>    `source='manual'` and refreshing `latest_quotes`, respecting AC-I2c manual precedence (manual rows
+>    are not overwritten by provider refreshes); atomic per-file semantics and `import.price_history`
+>    audit entries.
+> 3. Frontend: enable the kind in the `/investments/import` wizard (kind dropdown + template hint);
+>    no new shell routes.
+> 4. L4 E2E: import a price-history fixture and see the position detail/manual-price precedence reflect it.
+> 5. Roll forward docs ([07 §2](07-iterative-prompts.md) R1–R8).
 >
-> **Out of scope this iteration:** PDF/OFX/QIF ingestion, silent account/category auto-creation, background
-> job infra, multi-currency, non-investment statement import (FEAT-002's turf, separate iteration), navbar
-> or shell polish beyond the submenu menu-item addition.
+> **Out of scope this iteration:** FEAT-002 (non-investment statement import — separate iteration),
+> PDF/OFX/QIF, background jobs, multi-currency, provider-auto-refresh logic changes.
 >
-> **Definition of done:** FR-IMP-1 mapped-layer tests green (AC-IMP1h tracked if slipped), `make test` +
-> `make test-e2e` green, lint/types green, backend coverage ≥ 85%, no untriaged defects, docs rolled forward.
+> **Definition of done:** AC-IMP1h mapped-layer tests green, `make test` + `make test-e2e` green,
+> lint/types green, backend coverage ≥ 85%, no untriaged defects, docs rolled forward.
 >
-> **Known traps:** never write `transaction_lines` directly (T-1 invariants; reuse `backend/app/transactions.py`);
-> integer-cents/q4 quantity conversions only (NFR-10 — no floats); sells-before-buys are rejected with row
-> errors, never auto-fixed; duplicates are skipped-with-report, not double-posted; positions replace open
-> holdings only with preview-flagged confirmation; closed positions' realized P&L survives.
+> **Known traps:** reuse the importer package — do not fork a second parser; `price_cache` unique key is
+> `(ticker, date)` (upsert, never duplicate rows); `source='manual'` rows win over provider rows per
+> AC-I2c; no ledger postings for price history; integer q4 prices only (NFR-10).
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 

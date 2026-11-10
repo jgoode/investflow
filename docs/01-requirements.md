@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Active |
-| **Last updated** | 2026-11-10 (FEAT-001 scheduled → FR-IMP-1 ACs for ITER-22 added) |
+| **Last updated** | 2026-11-10 (ITER-22: FR-IMP-1 AC-IMP1a–IMP1g landed; AC-IMP1e leg refinement + AC-IMP1h slip per ADR-008) |
 | **Parent** | [00-overview](00-overview.md) |
 
 Requirement IDs: `FR-<area><n>` functional, `NFR-<n>` non-functional, `AC-<id>` acceptance criteria (Given/When/Then).
@@ -275,11 +275,20 @@ route aliases or auth gating.
 - **AC-IMP1g** — *Audit & reporting.* Each import records `audit_log` entries `import.positions` / `import.transactions` (entity = import batch id, row counts) and afterwards dashboards/reports reflect the imported state via the existing reporting engine.
 - **AC-IMP1h** — *(Stretch; may slip to ITER-23)* *Price-history import* feeds `price_cache` with `source='manual'` from a daily close/volume CSV, subject to the AC-I2c manual-price precedence rules.
 
+> **ITER-22 refinement (ADR-008, applied):** AC-IMP1e buy/sell rows update **positions only** through the
+> avg-cost engine — no ledger legs (per D-08 positions live inside brokerage accounts, so trade cash flows
+> belong to the mapped brokerage account; this keeps net-worth double-count-free). Dividend/fee rows post
+> real balanced two-leg transactions through the posting service (cash leg + seeded `Interest & Dividends`
+> / `Fees` COA leaf), with the dedupe hash stored as transaction `reference` `import:<hash16>` and in the
+> `import_rows` registry. Dedupe matching is against the committed `import_rows` hash registry
+> (equivalent to the AC-IMP1c hash-tuple over normalized fields). **AC-IMP1h slipped to ITER-23 as
+> pre-agreed** — ITER-22 closed green without it; its starter template (`bank statement`) already ships.
+
 ## 13. Data model summary
 
 Detailed field tables live in [02-architecture](02-architecture.md) §3. Entity list:
 
-`users · accounts · account_sensitive (encrypted fields, 1:1 with accounts) · categories · transactions · transaction_lines · positions (avg-cost, per account+ticker) · price_cache · settings · audit_log · alembic_version`
+`users · accounts · account_sensitive (encrypted fields, 1:1 with accounts) · categories · transactions · transaction_lines · positions (avg-cost, per account+ticker) · price_cache · import_mappings / import_batches / import_rows (import staging, ADR-008) · settings · audit_log · alembic_version`
 
 ## 14. Requirements-to-scope cross-check
 

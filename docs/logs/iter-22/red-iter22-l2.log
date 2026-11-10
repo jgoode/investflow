@@ -1,0 +1,463 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.15, pytest-9.2.0, pluggy-1.7.0
+rootdir: /home/john/src/investflow/backend
+configfile: pyproject.toml
+plugins: cov-7.1.0, time-machine-3.6.0, anyio-4.16.0
+collected 12 items
+
+tests/api/test_imports.py .FFFFFFFFFFF
+ERROR: Coverage failure: total of 27 is less than fail-under=85
+                                                                         [100%]
+
+=================================== FAILURES ===================================
+_______________ test_starter_templates_are_exposed_and_saveable ________________
+
+client = <starlette.testclient.TestClient object at 0xfbdddaaef440>
+
+    def test_starter_templates_are_exposed_and_saveable(client: TestClient) -> None:
+        _auth(client)
+        response = client.get("/api/imports/templates", headers=CSRF_HEADER)
+>       assert response.status_code == 200
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_imports.py:105: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+DEBUG_DB_PATH=/tmp/pytest-of-john/pytest-148/test_starter_templates_are_exp0/api-test.db
+DEBUG_FIXTURE_DB=/tmp/pytest-of-john/pytest-148/test_starter_templates_are_exp0/api-test.db
+DEBUG_RELOADED_DB=/tmp/pytest-of-john/pytest-148/test_starter_templates_are_exp0/api-test.db
+DEBUG_APP_DB=/tmp/pytest-of-john/pytest-148/test_starter_templates_are_exp0/api-test.db
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+INFO  [alembic.runtime.migration] Running upgrade 0001_users_auth_core -> 0002_users_last_login, Add users.last_login_at for ITER-03.
+INFO  [alembic.runtime.migration] Running upgrade 0002_users_last_login -> 0003_account_sensitive_contract, Add encrypted account-sensitive storage and active key metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0003_account_sensitive_contract -> 0004_chart_of_accounts, Add the chart-of-accounts model and seed metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0004_chart_of_accounts -> 0005_categories, Add categories and category-assignment tables.
+INFO  [alembic.runtime.migration] Running upgrade 0005_categories -> 0006_positions, Add brokerage position tables with avg-cost accounting.
+_______________ test_positions_import_sets_quantity_and_avg_cost _______________
+
+client = <starlette.testclient.TestClient object at 0xfbddd999a900>
+
+    def test_positions_import_sets_quantity_and_avg_cost(client: TestClient) -> None:
+        _auth(client)
+        bindings = _accounts(client)
+        payload = {
+            "kind": "positions",
+            "csv_text": POSITIONS_CSV_SESSION,
+            "account_bindings": {"Brokerage A": bindings["Brokerage A"]},
+            "confirm": True,
+        }
+        response = _post_json(client, "/api/imports/commit", payload)
+>       assert response.status_code == 200, response.text
+E       AssertionError: {"detail":"Not Found"}
+E       assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_imports.py:139: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+DEBUG_DB_PATH=/tmp/pytest-of-john/pytest-148/test_positions_import_sets_qua0/api-test.db
+DEBUG_FIXTURE_DB=/tmp/pytest-of-john/pytest-148/test_positions_import_sets_qua0/api-test.db
+DEBUG_RELOADED_DB=/tmp/pytest-of-john/pytest-148/test_positions_import_sets_qua0/api-test.db
+DEBUG_APP_DB=/tmp/pytest-of-john/pytest-148/test_positions_import_sets_qua0/api-test.db
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+INFO  [alembic.runtime.migration] Running upgrade 0001_users_auth_core -> 0002_users_last_login, Add users.last_login_at for ITER-03.
+INFO  [alembic.runtime.migration] Running upgrade 0002_users_last_login -> 0003_account_sensitive_contract, Add encrypted account-sensitive storage and active key metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0003_account_sensitive_contract -> 0004_chart_of_accounts, Add the chart-of-accounts model and seed metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0004_chart_of_accounts -> 0005_categories, Add categories and category-assignment tables.
+INFO  [alembic.runtime.migration] Running upgrade 0005_categories -> 0006_positions, Add brokerage position tables with avg-cost accounting.
+____ test_positions_import_flags_absent_holdings_and_requires_confirmation _____
+
+client = <starlette.testclient.TestClient object at 0xfbddd9a0cf80>
+
+    def test_positions_import_flags_absent_holdings_and_requires_confirmation(
+        client: TestClient,
+    ) -> None:
+        _auth(client)
+        bindings = _accounts(client)
+        commit = {
+            "kind": "positions",
+            "csv_text": POSITIONS_CSV_SESSION,
+            "account_bindings": {"Brokerage A": bindings["Brokerage A"]},
+            "confirm": True,
+        }
+>       assert _post_json(client, "/api/imports/commit", commit).status_code == 200
+E       AssertionError: assert 404 == 200
+E        +  where 404 = <Response [404 Not Found]>.status_code
+E        +    where <Response [404 Not Found]> = _post_json(<starlette.testclient.TestClient object at 0xfbddd9a0cf80>, '/api/imports/commit', {'kind': 'positions', 'csv_text': 'Account,Ticker,Quantity,Avg Cost\nBrokerage A,AAPL,10,150.25\nBrokerage A,MSFT,5,300\n', 'account_bindings': {'Brokerage A': 10}, 'confirm': True})
+
+tests/api/test_imports.py:162: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+DEBUG_DB_PATH=/tmp/pytest-of-john/pytest-148/test_positions_import_flags_ab0/api-test.db
+DEBUG_FIXTURE_DB=/tmp/pytest-of-john/pytest-148/test_positions_import_flags_ab0/api-test.db
+DEBUG_RELOADED_DB=/tmp/pytest-of-john/pytest-148/test_positions_import_flags_ab0/api-test.db
+DEBUG_APP_DB=/tmp/pytest-of-john/pytest-148/test_positions_import_flags_ab0/api-test.db
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+INFO  [alembic.runtime.migration] Running upgrade 0001_users_auth_core -> 0002_users_last_login, Add users.last_login_at for ITER-03.
+INFO  [alembic.runtime.migration] Running upgrade 0002_users_last_login -> 0003_account_sensitive_contract, Add encrypted account-sensitive storage and active key metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0003_account_sensitive_contract -> 0004_chart_of_accounts, Add the chart-of-accounts model and seed metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0004_chart_of_accounts -> 0005_categories, Add categories and category-assignment tables.
+INFO  [alembic.runtime.migration] Running upgrade 0005_categories -> 0006_positions, Add brokerage position tables with avg-cost accounting.
+________ test_trade_import_drives_position_engine_without_ledger_lines _________
+
+client = <starlette.testclient.TestClient object at 0xfbddd98ab320>
+
+    def test_trade_import_drives_position_engine_without_ledger_lines(client: TestClient) -> None:
+        _auth(client)
+        bindings = _accounts(client)
+        payload = {
+            "kind": "trades",
+            "csv_text": TRADES_CSV,
+            "column_mapping": TRADE_COLUMNS,
+            "account_bindings": {
+                "Brokerage A": bindings["Brokerage A"],
+>               "Bank A": bindings["Bank A"],
+                          ^^^^^^^^^^^^^^^^^^
+            },
+            "confirm": True,
+        }
+E       KeyError: 'Bank A'
+
+tests/api/test_imports.py:208: KeyError
+---------------------------- Captured stdout setup -----------------------------
+DEBUG_DB_PATH=/tmp/pytest-of-john/pytest-148/test_trade_import_drives_posit0/api-test.db
+DEBUG_FIXTURE_DB=/tmp/pytest-of-john/pytest-148/test_trade_import_drives_posit0/api-test.db
+DEBUG_RELOADED_DB=/tmp/pytest-of-john/pytest-148/test_trade_import_drives_posit0/api-test.db
+DEBUG_APP_DB=/tmp/pytest-of-john/pytest-148/test_trade_import_drives_posit0/api-test.db
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+INFO  [alembic.runtime.migration] Running upgrade 0001_users_auth_core -> 0002_users_last_login, Add users.last_login_at for ITER-03.
+INFO  [alembic.runtime.migration] Running upgrade 0002_users_last_login -> 0003_account_sensitive_contract, Add encrypted account-sensitive storage and active key metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0003_account_sensitive_contract -> 0004_chart_of_accounts, Add the chart-of-accounts model and seed metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0004_chart_of_accounts -> 0005_categories, Add categories and category-assignment tables.
+INFO  [alembic.runtime.migration] Running upgrade 0005_categories -> 0006_positions, Add brokerage position tables with avg-cost accounting.
+____________ test_dividend_and_fee_rows_post_balanced_transactions _____________
+
+client = <starlette.testclient.TestClient object at 0xfbddd97ab6b0>
+
+    def test_dividend_and_fee_rows_post_balanced_transactions(client: TestClient) -> None:
+        _auth(client)
+        bindings = _accounts(client)
+        payload = {
+            "kind": "trades",
+            "csv_text": TRADES_CSV,
+            "column_mapping": CASH_EVENT_COLUMNS,
+            "account_bindings": {
+                "Brokerage A": bindings["Brokerage A"],
+>               "Bank A": bindings["Bank A"],
+                          ^^^^^^^^^^^^^^^^^^
+            },
+            "confirm": True,
+        }
+E       KeyError: 'Bank A'
+
+tests/api/test_imports.py:244: KeyError
+---------------------------- Captured stdout setup -----------------------------
+DEBUG_DB_PATH=/tmp/pytest-of-john/pytest-148/test_dividend_and_fee_rows_pos0/api-test.db
+DEBUG_FIXTURE_DB=/tmp/pytest-of-john/pytest-148/test_dividend_and_fee_rows_pos0/api-test.db
+DEBUG_RELOADED_DB=/tmp/pytest-of-john/pytest-148/test_dividend_and_fee_rows_pos0/api-test.db
+DEBUG_APP_DB=/tmp/pytest-of-john/pytest-148/test_dividend_and_fee_rows_pos0/api-test.db
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+INFO  [alembic.runtime.migration] Running upgrade 0001_users_auth_core -> 0002_users_last_login, Add users.last_login_at for ITER-03.
+INFO  [alembic.runtime.migration] Running upgrade 0002_users_last_login -> 0003_account_sensitive_contract, Add encrypted account-sensitive storage and active key metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0003_account_sensitive_contract -> 0004_chart_of_accounts, Add the chart-of-accounts model and seed metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0004_chart_of_accounts -> 0005_categories, Add categories and category-assignment tables.
+INFO  [alembic.runtime.migration] Running upgrade 0005_categories -> 0006_positions, Add brokerage position tables with avg-cost accounting.
+__________ test_reimporting_the_same_trade_file_duplicates_everything __________
+
+client = <starlette.testclient.TestClient object at 0xfbddd9809880>
+
+    def test_reimporting_the_same_trade_file_duplicates_everything(client: TestClient) -> None:
+        _auth(client)
+        bindings = _accounts(client)
+        payload = {
+            "kind": "trades",
+            "csv_text": TRADES_CSV,
+            "column_mapping": CASH_EVENT_COLUMNS,
+            "account_bindings": {
+                "Brokerage A": bindings["Brokerage A"],
+>               "Bank A": bindings["Bank A"],
+                          ^^^^^^^^^^^^^^^^^^
+            },
+            "confirm": True,
+        }
+E       KeyError: 'Bank A'
+
+tests/api/test_imports.py:286: KeyError
+---------------------------- Captured stdout setup -----------------------------
+DEBUG_DB_PATH=/tmp/pytest-of-john/pytest-148/test_reimporting_the_same_trad0/api-test.db
+DEBUG_FIXTURE_DB=/tmp/pytest-of-john/pytest-148/test_reimporting_the_same_trad0/api-test.db
+DEBUG_RELOADED_DB=/tmp/pytest-of-john/pytest-148/test_reimporting_the_same_trad0/api-test.db
+DEBUG_APP_DB=/tmp/pytest-of-john/pytest-148/test_reimporting_the_same_trad0/api-test.db
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+INFO  [alembic.runtime.migration] Running upgrade 0001_users_auth_core -> 0002_users_last_login, Add users.last_login_at for ITER-03.
+INFO  [alembic.runtime.migration] Running upgrade 0002_users_last_login -> 0003_account_sensitive_contract, Add encrypted account-sensitive storage and active key metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0003_account_sensitive_contract -> 0004_chart_of_accounts, Add the chart-of-accounts model and seed metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0004_chart_of_accounts -> 0005_categories, Add categories and category-assignment tables.
+INFO  [alembic.runtime.migration] Running upgrade 0005_categories -> 0006_positions, Add brokerage position tables with avg-cost accounting.
+____________________ test_hard_row_error_aborts_everything _____________________
+
+client = <starlette.testclient.TestClient object at 0xfbddd96f9d00>
+
+    def test_hard_row_error_aborts_everything(client: TestClient) -> None:
+        _auth(client)
+        bindings = _accounts(client)
+        good_then_bad = """Trade Date,Side,Symbol,Units,Trade Price,Fee,Cash Account
+    2024-01-02,buy,AAPL,10,150.25,1.99,Bank A
+    2024-01-03,sell,AAPL,999,180.00,1.00,Bank A
+    """
+        payload = {
+            "kind": "trades",
+            "csv_text": good_then_bad,
+            "column_mapping": CASH_EVENT_COLUMNS,
+            "account_bindings": {
+                "Brokerage A": bindings["Brokerage A"],
+>               "Bank A": bindings["Bank A"],
+                          ^^^^^^^^^^^^^^^^^^
+            },
+            "confirm": True,
+        }
+E       KeyError: 'Bank A'
+
+tests/api/test_imports.py:327: KeyError
+---------------------------- Captured stdout setup -----------------------------
+DEBUG_DB_PATH=/tmp/pytest-of-john/pytest-148/test_hard_row_error_aborts_eve0/api-test.db
+DEBUG_FIXTURE_DB=/tmp/pytest-of-john/pytest-148/test_hard_row_error_aborts_eve0/api-test.db
+DEBUG_RELOADED_DB=/tmp/pytest-of-john/pytest-148/test_hard_row_error_aborts_eve0/api-test.db
+DEBUG_APP_DB=/tmp/pytest-of-john/pytest-148/test_hard_row_error_aborts_eve0/api-test.db
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+INFO  [alembic.runtime.migration] Running upgrade 0001_users_auth_core -> 0002_users_last_login, Add users.last_login_at for ITER-03.
+INFO  [alembic.runtime.migration] Running upgrade 0002_users_last_login -> 0003_account_sensitive_contract, Add encrypted account-sensitive storage and active key metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0003_account_sensitive_contract -> 0004_chart_of_accounts, Add the chart-of-accounts model and seed metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0004_chart_of_accounts -> 0005_categories, Add categories and category-assignment tables.
+INFO  [alembic.runtime.migration] Running upgrade 0005_categories -> 0006_positions, Add brokerage position tables with avg-cost accounting.
+__________ test_out_of_order_trade_rows_are_rejected_with_row_errors ___________
+
+client = <starlette.testclient.TestClient object at 0xfbddd9579eb0>
+
+    def test_out_of_order_trade_rows_are_rejected_with_row_errors(client: TestClient) -> None:
+        _auth(client)
+        bindings = _accounts(client)
+        out_of_order = """Trade Date,Side,Symbol,Units,Trade Price,Fee,Cash Account
+    2024-01-10,sell,AAPL,4,180.00,1.00,Bank A
+    2024-01-02,buy,AAPL,10,150.25,1.99,Bank A
+    """
+        payload = {
+            "kind": "trades",
+            "csv_text": out_of_order,
+            "column_mapping": CASH_EVENT_COLUMNS,
+            "account_bindings": {
+                "Brokerage A": bindings["Brokerage A"],
+>               "Bank A": bindings["Bank A"],
+                          ^^^^^^^^^^^^^^^^^^
+            },
+            "confirm": True,
+        }
+E       KeyError: 'Bank A'
+
+tests/api/test_imports.py:358: KeyError
+---------------------------- Captured stdout setup -----------------------------
+DEBUG_DB_PATH=/tmp/pytest-of-john/pytest-148/test_out_of_order_trade_rows_a0/api-test.db
+DEBUG_FIXTURE_DB=/tmp/pytest-of-john/pytest-148/test_out_of_order_trade_rows_a0/api-test.db
+DEBUG_RELOADED_DB=/tmp/pytest-of-john/pytest-148/test_out_of_order_trade_rows_a0/api-test.db
+DEBUG_APP_DB=/tmp/pytest-of-john/pytest-148/test_out_of_order_trade_rows_a0/api-test.db
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+INFO  [alembic.runtime.migration] Running upgrade 0001_users_auth_core -> 0002_users_last_login, Add users.last_login_at for ITER-03.
+INFO  [alembic.runtime.migration] Running upgrade 0002_users_last_login -> 0003_account_sensitive_contract, Add encrypted account-sensitive storage and active key metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0003_account_sensitive_contract -> 0004_chart_of_accounts, Add the chart-of-accounts model and seed metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0004_chart_of_accounts -> 0005_categories, Add categories and category-assignment tables.
+INFO  [alembic.runtime.migration] Running upgrade 0005_categories -> 0006_positions, Add brokerage position tables with avg-cost accounting.
+_____________ test_too_many_rows_is_refused_with_split_suggestion ______________
+
+client = <starlette.testclient.TestClient object at 0xfbddd967a060>
+
+    def test_too_many_rows_is_refused_with_split_suggestion(client: TestClient) -> None:
+        _auth(client)
+        header = "Trade Date,Side,Symbol,Units,Trade Price,Fee,Cash Account"
+        rows = "\n".join(
+            f"2024-01-02,buy,T{i},1,10,0,Bank A" for i in range(5001)
+        )
+        payload = {
+            "kind": "trades",
+            "csv_text": f"{header}\n{rows}",
+            "column_mapping": CASH_EVENT_COLUMNS,
+            "account_bindings": {"Bank A": 1},
+            "confirm": True,
+        }
+        response = _post_json(client, "/api/imports/commit", payload)
+>       assert response.status_code == 422
+E       assert 404 == 422
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_imports.py:387: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+DEBUG_DB_PATH=/tmp/pytest-of-john/pytest-148/test_too_many_rows_is_refused_0/api-test.db
+DEBUG_FIXTURE_DB=/tmp/pytest-of-john/pytest-148/test_too_many_rows_is_refused_0/api-test.db
+DEBUG_RELOADED_DB=/tmp/pytest-of-john/pytest-148/test_too_many_rows_is_refused_0/api-test.db
+DEBUG_APP_DB=/tmp/pytest-of-john/pytest-148/test_too_many_rows_is_refused_0/api-test.db
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+INFO  [alembic.runtime.migration] Running upgrade 0001_users_auth_core -> 0002_users_last_login, Add users.last_login_at for ITER-03.
+INFO  [alembic.runtime.migration] Running upgrade 0002_users_last_login -> 0003_account_sensitive_contract, Add encrypted account-sensitive storage and active key metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0003_account_sensitive_contract -> 0004_chart_of_accounts, Add the chart-of-accounts model and seed metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0004_chart_of_accounts -> 0005_categories, Add categories and category-assignment tables.
+INFO  [alembic.runtime.migration] Running upgrade 0005_categories -> 0006_positions, Add brokerage position tables with avg-cost accounting.
+____________________ test_oversized_file_is_refused[chunk0] ____________________
+
+client = <starlette.testclient.TestClient object at 0xfbddd97c6cc0>
+chunk = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx...xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'
+
+    @pytest.mark.parametrize("chunk", ["x" * (5 * 1024 * 1024 + 1)])
+    def test_oversized_file_is_refused(client: TestClient, chunk: str) -> None:
+        _auth(client)
+        payload = {
+            "kind": "trades",
+            "csv_text": chunk,
+            "confirm": True,
+        }
+        response = _post_json(client, "/api/imports/commit", payload)
+>       assert response.status_code == 422
+E       assert 404 == 422
+E        +  where 404 = <Response [404 Not Found]>.status_code
+
+tests/api/test_imports.py:400: AssertionError
+---------------------------- Captured stdout setup -----------------------------
+DEBUG_DB_PATH=/tmp/pytest-of-john/pytest-148/test_oversized_file_is_refused0/api-test.db
+DEBUG_FIXTURE_DB=/tmp/pytest-of-john/pytest-148/test_oversized_file_is_refused0/api-test.db
+DEBUG_RELOADED_DB=/tmp/pytest-of-john/pytest-148/test_oversized_file_is_refused0/api-test.db
+DEBUG_APP_DB=/tmp/pytest-of-john/pytest-148/test_oversized_file_is_refused0/api-test.db
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+INFO  [alembic.runtime.migration] Running upgrade 0001_users_auth_core -> 0002_users_last_login, Add users.last_login_at for ITER-03.
+INFO  [alembic.runtime.migration] Running upgrade 0002_users_last_login -> 0003_account_sensitive_contract, Add encrypted account-sensitive storage and active key metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0003_account_sensitive_contract -> 0004_chart_of_accounts, Add the chart-of-accounts model and seed metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0004_chart_of_accounts -> 0005_categories, Add categories and category-assignment tables.
+INFO  [alembic.runtime.migration] Running upgrade 0005_categories -> 0006_positions, Add brokerage position tables with avg-cost accounting.
+___________________ test_commit_writes_import_audit_entries ____________________
+
+client = <starlette.testclient.TestClient object at 0xfbddd9743d40>
+
+    def test_commit_writes_import_audit_entries(client: TestClient) -> None:
+        _auth(client)
+        bindings = _accounts(client)
+        _post_json(
+            client,
+            "/api/imports/commit",
+            {
+                "kind": "positions",
+                "csv_text": POSITIONS_CSV_SESSION,
+                "account_bindings": {"Brokerage A": bindings["Brokerage A"]},
+                "confirm": True,
+            },
+        )
+        _post_json(
+            client,
+            "/api/imports/commit",
+            {
+                "kind": "trades",
+                "csv_text": TRADES_CSV,
+                "column_mapping": CASH_EVENT_COLUMNS,
+                "account_bindings": {
+                    "Brokerage A": bindings["Brokerage A"],
+>                   "Bank A": bindings["Bank A"],
+                              ^^^^^^^^^^^^^^^^^^
+                },
+                "confirm": True,
+            },
+        )
+E       KeyError: 'Bank A'
+
+tests/api/test_imports.py:429: KeyError
+---------------------------- Captured stdout setup -----------------------------
+DEBUG_DB_PATH=/tmp/pytest-of-john/pytest-148/test_commit_writes_import_audi0/api-test.db
+DEBUG_FIXTURE_DB=/tmp/pytest-of-john/pytest-148/test_commit_writes_import_audi0/api-test.db
+DEBUG_RELOADED_DB=/tmp/pytest-of-john/pytest-148/test_commit_writes_import_audi0/api-test.db
+DEBUG_APP_DB=/tmp/pytest-of-john/pytest-148/test_commit_writes_import_audi0/api-test.db
+---------------------------- Captured stderr setup -----------------------------
+INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade  -> 0001_users_auth_core, Create users table for ITER-02 auth core.
+INFO  [alembic.runtime.migration] Running upgrade 0001_users_auth_core -> 0002_users_last_login, Add users.last_login_at for ITER-03.
+INFO  [alembic.runtime.migration] Running upgrade 0002_users_last_login -> 0003_account_sensitive_contract, Add encrypted account-sensitive storage and active key metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0003_account_sensitive_contract -> 0004_chart_of_accounts, Add the chart-of-accounts model and seed metadata.
+INFO  [alembic.runtime.migration] Running upgrade 0004_chart_of_accounts -> 0005_categories, Add categories and category-assignment tables.
+INFO  [alembic.runtime.migration] Running upgrade 0005_categories -> 0006_positions, Add brokerage position tables with avg-cost accounting.
+=============================== warnings summary ===============================
+.venv/lib/python3.12/site-packages/fastapi/testclient.py:1
+  /home/john/src/investflow/backend/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.12.15-final-0 _______________
+
+Name                          Stmts   Miss  Cover   Missing
+-----------------------------------------------------------
+app/__init__.py                   0      0   100%
+app/accounts.py                 174    109    37%   328, 332-335, 386-393, 397-404, 409, 412, 429, 478-506, 512-528, 532-586, 590-655
+app/auth.py                     234    103    56%   50, 66-69, 73-74, 94-95, 110-111, 115, 132, 148-168, 191, 217-223, 225, 231, 242, 248, 263, 286-296, 300-309, 313-314, 318-324, 328-343, 347-351, 355-358, 372-414, 423-445, 455, 457
+app/categories.py               157    132    16%   95, 99-102, 106-169, 173-177, 181-182, 186-191, 195-212, 216-243, 247-249, 253-254, 258-288, 292-296, 300-356, 360-371, 375-402
+app/crypto_store.py             100     88    12%   26-33, 47-90, 99-146, 150-152, 161-221
+app/dashboard.py                 86     70    19%   14, 18-23, 27-32, 36, 40-42, 46-51, 55-88, 92-225
+app/db/__init__.py                0      0   100%
+app/db/connection.py             24      1    96%   30
+app/main.py                      52      1    98%   43
+app/portfolio.py                247    229     7%   13-18, 22-40, 44-50, 54-58, 62-73, 79-111, 127-137, 143-176, 186-301, 335-339, 343-474
+app/positions.py                117     99    15%   23-35, 39-41, 45-71, 75-77, 81, 85-90, 94, 112-114, 120-162, 178-356
+app/providers.py                328    272    17%   19, 23, 27-39, 43-55, 59-76, 80-97, 101-102, 106-110, 114-140, 144-159, 163-178, 182-194, 206-230, 238-266, 270-283, 295-314, 318-339, 356-383, 396, 407, 417, 426, 438-476, 486-530, 539-574, 582-608, 620-626, 636, 645-647, 655-656, 672-696, 700-710, 716-729, 733-739
+app/reports.py                  487    432    11%   30, 34-37, 44-49, 53-55, 59-69, 73-76, 80-84, 88-101, 105-108, 112-135, 139-151, 155-175, 179-223, 246, 256-305, 330-347, 351-443, 455-541, 552-593, 597-630, 634-646, 650-654, 658-683, 687-700, 704-717, 721-742, 746-802, 818-862, 884-885, 889-1021, 1025-1063, 1071-1082, 1086, 1090, 1094-1113
+app/routers/__init__.py           0      0   100%
+app/routers/accounts.py         104     48    54%   37-41, 46-50, 54-56, 77-83, 88-94, 99-102, 107-113, 118-122, 131-136
+app/routers/auth.py              62     23    63%   42, 48, 50, 75-93, 98-100, 105-106
+app/routers/categories.py        68     31    54%   29-32, 44-49, 61-62, 67-69, 74-77, 84-87, 94-97, 104-107
+app/routers/dashboard.py         10      3    70%   14-16
+app/routers/healthz.py            6      1    83%   13
+app/routers/investments.py      170    107    37%   28-30, 36-61, 65-86, 143, 148-151, 162, 167-172, 177, 182-227, 237-240, 246, 261-271, 276-281, 286-288, 301-303, 322-336, 342-344
+app/routers/reports.py           42     29    31%   14-20, 25-32, 41-48, 57-70
+app/routers/settings.py         151    110    27%   42-45, 49-57, 61-67, 71-78, 82-102, 106-109, 113-122, 127-129, 141-160, 165-173, 184-187, 192-211, 216-245
+app/routers/transactions.py      94     42    55%   29-32, 50-55, 59-61, 74-79, 84-108, 113-115, 120-126, 135-142, 147-150, 155-158
+app/routers/users.py             49     26    47%   32-34, 38-41, 46-47, 52-59, 64-70, 79-93
+app/ta.py                        93     85     9%   8-18, 22-30, 34-53, 57-61, 67-124
+app/transactions.py             309    274    11%   17, 21, 25-31, 35-40, 44-46, 50-51, 67-80, 86-100, 104-162, 166-170, 174-178, 195, 216-225, 229-239, 243-262, 281-337, 356-375, 385-390, 399-425, 429-485, 489-494, 500-587, 591-612, 616-638, 655-750
+app/version.py                    1      0   100%
+-----------------------------------------------------------
+TOTAL                          3165   2315    27%
+FAIL Required test coverage of 85% not reached. Total coverage: 26.86%
+=========================== short test summary info ============================
+FAILED tests/api/test_imports.py::test_starter_templates_are_exposed_and_saveable
+FAILED tests/api/test_imports.py::test_positions_import_sets_quantity_and_avg_cost
+FAILED tests/api/test_imports.py::test_positions_import_flags_absent_holdings_and_requires_confirmation
+FAILED tests/api/test_imports.py::test_trade_import_drives_position_engine_without_ledger_lines
+FAILED tests/api/test_imports.py::test_dividend_and_fee_rows_post_balanced_transactions
+FAILED tests/api/test_imports.py::test_reimporting_the_same_trade_file_duplicates_everything
+FAILED tests/api/test_imports.py::test_hard_row_error_aborts_everything - Key...
+FAILED tests/api/test_imports.py::test_out_of_order_trade_rows_are_rejected_with_row_errors
+FAILED tests/api/test_imports.py::test_too_many_rows_is_refused_with_split_suggestion
+FAILED tests/api/test_imports.py::test_oversized_file_is_refused[chunk0] - as...
+FAILED tests/api/test_imports.py::test_commit_writes_import_audit_entries - K...
+=================== 11 failed, 1 passed, 1 warning in 1.89s ====================

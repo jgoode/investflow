@@ -1,0 +1,5 @@
+Trade Date,Side,Symbol,Units,Trade Price,Fee,Amount,Cash Account
+2024-01-02,buy,AAPL,10,150.25,1.99,,Brokerage A
+2024-01-02,dividend,AAPL,,,,12.50,Brokerage A
+2024-01-05,sell,AAPL,4,180.00,1.00,,Brokerage A
+2024-01-06,fee,AAPL,,,,3.00,Brokerage A

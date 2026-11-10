@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-10 (ITER-21 close review: DEF-003 opened + verified-closed; DEF-001/DEF-002 remain closed) |
+| **Last updated** | 2026-11-10 (ITER-22 close review: DEF-004 opened + verified-closed — test-suite dev-DB dependence; DEF-001/DEF-002/DEF-003 remain closed. Local dev-DB schema drift vs migration 0006 was an environment artifact, not a product defect — rebuilt via `alembic upgrade head`, noted in [04 §3](04-progress.md) ITER-22 entry) |
 
 ## 1. Definitions
 
@@ -62,6 +62,15 @@ verification (same date) produced **DEF-001** below.
 - **Fix plan:** pin the categories flow selector to `getByLabel("Flow", { exact: true })` (same accessible name, element unchanged); regression guard is the categories flow itself plus the new ITER-21 navbar reachability scenario which asserts the brand link by its accessible name. No UI/DOM change; no a11y regression (the brand label is correct).
 - **Verification:** 2026-11-10 — `make test-e2e` 6/6 green after fix (snapshot `docs/logs/iter-21/green-e2e.log`); re-open condition: any future aria-label introducing a substring collision with a form-control label.
 - **Linked:** [01 §12 FR-X4](01-requirements.md) (brand-link slice), [02 §5.2](02-architecture.md); ITER-20/ITER-21 rows in [04 §3](04-progress.md); no ADR (no spec change)
+
+### DEF-004 — Backend suite: helper-level tests read/write the dev DB (`INVESTFLOW_DB_PATH` fallback)
+- **Opened:** 2026-11-10 (ITER-22 close, `make test` gate rerun) · **Severity:** S3 (test-suite flakiness, no product impact) · **State:** verified-closed
+- **Discovered by:** `tests/api/test_portfolio.py::test_portfolio_helper_and_summary_edge_cases` asserting `build_portfolio_summary()` is empty — failed after the ITER-22 e2e run left real imported positions in `backend/data/investflow.db`; the new L1 importer dedupe test likewise wrote `import_rows` into the dev DB (no fixture isolation → default DB path).
+- **Layer/Component:** backend test suite (L1/L2 helper-level tests without the `client` fixture)
+- **Diagnosis:** tests that call domain functions directly (no `client` fixture) never set `INVESTFLOW_DB_PATH`, so `app.db.connection.connect()` falls back to the gitignored dev DB; any state created there (e2e leftovers, prior test writes) leaks into assertions and makes the suite order/environment-dependent. Latent since the suite always ran against an empty dev DB.
+- **Fix plan:** isolate both tests with `monkeypatch.setenv("INVESTFLOW_DB_PATH", str(tmp_path / …))` (the same env var the conftest client fixture uses); no product code change.
+- **Verification:** 2026-11-10 — `make test` green (124 backend passed) after fix; re-open condition: any new helper-level test that touches `connect()` without env isolation.
+- **Linked:** [04 §3](04-progress.md) ITER-22 entry (🐞 line); no ADR (no spec change)
 
 ### Entry template
 

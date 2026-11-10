@@ -1,6 +1,15 @@
+import path from "node:path";
+
 import { expect, test } from "@playwright/test";
 
 const BACKEND = "http://localhost:8000";
+
+/** Fixture CSVs live in e2e/fixtures; Playwright runs from the repo root, and
+ * import.meta.url is not usable in its CJS-transpiled specs. */
+function fixturePath(name: string): string {
+  return path.resolve(process.cwd(), "e2e", "fixtures", name);
+}
+
 
 test("healthz responds ok with a version", async ({ request }) => {
   const resp = await request.get(`${BACKEND}/api/healthz`);
@@ -132,6 +141,65 @@ test("navbar submenu reachability: brand link + Accounts submenu → transaction
   await nav.getByRole("link", { name: "Transactions" }).click();
   await expect(page).toHaveURL(/\/transactions$/);
   await expect(page.getByRole("heading", { name: "Transactions" })).toBeVisible();
+});
+
+test("investment import wizard: import positions + trades fixtures (FR-IMP-1)", async ({
+  page,
+}) => {
+  const username = `imp_${Date.now()}`;
+  const password = "correct-horse-10";
+
+  await page.goto("/register");
+  await page.getByRole("textbox", { name: "Username" }).fill(username);
+  await page.getByRole("textbox", { name: /^Password/ }).first().fill(password);
+  await page.getByRole("textbox", { name: /^Password confirmation/ }).fill(password);
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  // Reach the Import center through the Investments submenu (Nav regression stays green).
+  const nav = page.getByRole("navigation", { name: "Primary navigation" });
+  await nav.getByRole("link", { name: "Investments" }).hover();
+  await expect(nav.getByRole("link", { name: "Import" })).toBeVisible();
+  await nav.getByRole("link", { name: "Import" }).click();
+  await expect(page).toHaveURL(/\/investments\/import$/);
+  await expect(page.getByRole("heading", { name: /import/i })).toBeVisible();
+
+  // --- positions snapshot import (Brokerage A binding auto-selected) ---
+  await page.getByLabel("Import kind").selectOption("positions");
+  await page
+    .getByLabel("CSV file")
+    .setInputFiles(fixturePath("positions-snapshot.csv"));
+  await page.getByRole("button", { name: "Run preview" }).click();
+  await expect(page.getByText("Import preview")).toBeVisible();
+  await expect(page.getByText(/MSFT/).first()).toBeVisible();
+  await expect(page.getByText(/Brokerage A/).first()).toBeVisible();
+  await page.getByRole("button", { name: "Confirm import" }).click();
+  await expect(page.getByText(/Posted 1|imported/i)).toBeVisible();
+
+  // Imported snapshot drives the positions page.
+  await page.goto("/investments");
+  await expect(page.getByText(/MSFT/i).first()).toBeVisible();
+
+  // --- trade history import (brokerage binding auto-selected) ---
+  await page.goto("/investments/import");
+  await page.getByLabel("Import kind").selectOption("trades");
+  await page
+    .getByLabel("CSV file")
+    .setInputFiles(fixturePath("trade-history.csv"));
+  await page.getByRole("button", { name: "Run preview" }).click();
+  await expect(page.getByText("Import preview")).toBeVisible();
+  await page.getByRole("button", { name: "Confirm import" }).click();
+  await expect(page.getByText(/Posted \d+/)).toBeVisible();
+
+  // Dividend/fee rows landed as real ledger transactions (AC-IMP1e).
+  const versions = await page.request.get(
+    `${BACKEND}/api/transactions?date_from=2000-01-01&page_size=50`,
+  );
+  expect(versions.ok()).toBeTruthy();
+  const ledger = (await versions.json()).transactions as Array<{ description: string }>;
+  const descriptions = ledger.map((entry) => entry.description);
+  expect(descriptions.some((text) => /Dividend AAPL/i.test(text))).toBe(true);
+  expect(descriptions.some((text) => /Fee AAPL/i.test(text))).toBe(true);
 });
 
 test("reports monthly URL params are shareable and deterministic", async ({ page }) => {

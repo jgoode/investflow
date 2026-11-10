@@ -46,8 +46,10 @@ def _fetch_transaction_by_id(transaction_id: int) -> dict[str, Any] | None:
     return dict(row) if row is not None else None
 
 
-def _fetch_transaction_lines(transaction_id: int) -> list[sqlite3.Row]:
-    with connect() as conn:
+def _fetch_transaction_lines(
+    transaction_id: int, conn: sqlite3.Connection | None = None
+) -> list[sqlite3.Row]:
+    if conn is not None:
         return conn.execute(
             """
             SELECT tl.id AS line_id, tl.account_id, tl.direction, tl.amount_cents, tl.memo,
@@ -61,6 +63,8 @@ def _fetch_transaction_lines(transaction_id: int) -> list[sqlite3.Row]:
             """,
             (transaction_id,),
         ).fetchall()
+    with connect() as own_conn:
+        return _fetch_transaction_lines(transaction_id, conn=own_conn)
 
 
 def _ensure_leaf_account(account_id: int) -> dict[str, Any]:
@@ -212,9 +216,15 @@ def _log_audit(
     entity: str,
     entity_id: int | None,
     user_id: int | None,
+    conn: sqlite3.Connection | None = None,
 ) -> None:
-    ensure_transactions_tables()
-    with connect() as conn:
+    if conn is None:
+        ensure_transactions_tables()
+    else:
+        # Join the caller's open transaction (import atomicity, ITER-22).
+        # NOTE: no ensure_*_tables here — the caller's chain already created
+        # them, and a nested write on a second connection would deadlock the
+        # open write transaction.
         conn.execute(
             """
             INSERT INTO audit_log (user_id, action, entity, entity_id, summary, created_at)
@@ -222,7 +232,16 @@ def _log_audit(
             """,
             (user_id, action, entity, entity_id, summary, _now_ts()),
         )
-        conn.commit()
+        return
+    with connect() as own_conn:
+        own_conn.execute(
+            """
+            INSERT INTO audit_log (user_id, action, entity, entity_id, summary, created_at)
+            VALUES (?, ?, ?, ?, ?, ?)
+            """,
+            (user_id, action, entity, entity_id, summary, _now_ts()),
+        )
+        own_conn.commit()
 
 
 def _parse_date(value: str | None, *, default_days_ago: int = 90) -> tuple[str, str]:
@@ -425,64 +444,78 @@ def _parse_transaction_payload(
     return date_value, description, reference, normalized_lines
 
 
-def create_transaction(payload: dict[str, Any], *, created_by: int | None = None) -> dict[str, Any]:
-    ensure_transactions_tables()
+def post_transaction_on_connection(
+    conn: sqlite3.Connection, payload: dict[str, Any], *, created_by: int | None = None
+) -> dict[str, Any]:
+    """Insert a posted transaction + its lines on the caller's open connection.
+
+    The only sanctioned route to ``transaction_lines`` (docs/02 §4.5, T-1):
+    routers and services must post through here. The caller owns the
+    transaction (BEGIN IMMEDIATE + commit/rollback); no BEGIN and no commit
+    happen inside, so an import file can post many cash events atomically.
+    """
     date_value, description, reference, normalized_lines = _parse_transaction_payload(payload)
-    with connect() as conn:
-        conn.execute("BEGIN IMMEDIATE")
-        tx_cursor = conn.execute(
+    tx_cursor = conn.execute(
+        """
+        INSERT INTO transactions (
+            date, description, reference, status, created_by, created_at, updated_at
+        )
+        VALUES (?, ?, ?, 'posted', ?, ?, ?)
+        """,
+        (
+            date_value,
+            description,
+            reference,
+            created_by,
+            _now_ts(),
+            _now_ts(),
+        ),
+    )
+    last_row_id = tx_cursor.lastrowid
+    if last_row_id is None:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="transaction insertion failed",
+        )
+    tx_id = int(last_row_id)
+    for line in normalized_lines:
+        conn.execute(
             """
-            INSERT INTO transactions (
-                date, description, reference, status, created_by, created_at, updated_at
+            INSERT INTO transaction_lines (
+                transaction_id, account_id, direction, amount_cents, memo, category_id
             )
-            VALUES (?, ?, ?, 'posted', ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?)
             """,
             (
-                date_value,
-                description,
-                reference,
-                created_by,
-                _now_ts(),
-                _now_ts(),
+                tx_id,
+                line["account_id"],
+                line["direction"],
+                line["amount_cents"],
+                line.get("memo"),
+                line.get("category_id"),
             ),
         )
-        last_row_id = tx_cursor.lastrowid
-        if last_row_id is None:
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="transaction insertion failed",
-            )
-        tx_id = int(last_row_id)
-        for line in normalized_lines:
-            conn.execute(
-                """
-                INSERT INTO transaction_lines (
-                    transaction_id, account_id, direction, amount_cents, memo, category_id
-                )
-                VALUES (?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    tx_id,
-                    line["account_id"],
-                    line["direction"],
-                    line["amount_cents"],
-                    line.get("memo"),
-                    line.get("category_id"),
-                ),
-            )
+    tx_row = conn.execute("SELECT * FROM transactions WHERE id = ?", (tx_id,)).fetchone()
+    line_rows = _fetch_transaction_lines(tx_id, conn=conn)
+    return _serialize_transaction(tx_row, line_rows)
+
+
+def create_transaction(payload: dict[str, Any], *, created_by: int | None = None) -> dict[str, Any]:
+    ensure_transactions_tables()
+    with connect() as conn:
+        conn.execute("BEGIN IMMEDIATE")
+        tx = post_transaction_on_connection(conn, payload, created_by=created_by)
         conn.commit()
 
-    with connect() as conn:
-        tx_row = conn.execute("SELECT * FROM transactions WHERE id = ?", (tx_id,)).fetchone()
-        line_rows = _fetch_transaction_lines(tx_id)
+    tx_id = int(tx["id"])
     _log_audit(
         action="tx.post",
-        summary=f"posted {description}",
+        summary=f"posted {tx['description']}",
         entity="transactions",
         entity_id=tx_id,
         user_id=created_by,
     )
-    return _serialize_transaction(tx_row, line_rows)
+    return tx
 
 
 def get_transaction(transaction_id: int) -> dict[str, Any]:

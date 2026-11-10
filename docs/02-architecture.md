@@ -180,6 +180,14 @@ quantities/prices `*_q4` INTEGER (×10⁴). All Fks with `ON DELETE` per column;
 
 *Plus a `latest_quotes` small table* (`ticker` PK, `price_q4`, `asof`, `source`, `fetched_at`) for the 15-min freshness rule (AC-I2a).
 
+**import_mappings / import_batches / import_rows** *(import staging — ADR-008, migration 0007)*
+
+| table | columns | notes |
+|---|---|---|
+| import_mappings | id PK / name UNIQUE / kind / columns_json / created_by FK / created_at / updated_at | saved column-mapping templates (starter + user); raw CSV never persisted |
+| import_batches | id PK / kind CHECK(`positions\|trades\|price_history`) / file_name / status CHECK(`committed\|failed`) / counts_json / created_by FK / created_at | one row per finished import; counts only, no row payloads |
+| import_rows | id PK / batch_id FK ON DELETE CASCADE / row_index / row_hash / status CHECK(`posted\|duplicate\|removed`) / detail_json NULL (failure rows only) / created_at | the dedupe registry (AC-IMP1c): a committed batch's posted hashes make re-imported identical rows duplicates; idx `(batch_id)`, `(row_hash)` |
+
 **settings** *(typed KV; effects validated against enum table)*
 
 | column | notes |
@@ -291,6 +299,12 @@ post_transaction(lines, date, description, ...):
 
 Void: `status=void` (lines retained), reports filter by default (AC-T7). Edit = replace all lines,
 linked `updated_at`, audit `tx.edit` (FR-T).
+
+This is the **only** route to `transaction_lines` (T-1). For import atomicity (AC-IMP1c) the service
+exposes a connection-scoped variant: `post_transaction_on_connection(conn, payload, created_by)`
+inserts without `BEGIN`/`commit`, so the importer can commit a whole file (positions via
+`apply_trade_on_connection` + cash events via posting) on one connection under `BEGIN IMMEDIATE`
+with a single rollback point (ADR-008).
 
 ### 4.6 Investment services
 

@@ -72,6 +72,7 @@ Legend: `U`=L1, `I`=L2, `C`=L3, `E`=L4. `•` = primary home for that AC's test;
 | X2a–X2d datatable standardization | • | • | • | • | 18 | candidate scorecard + shared table wrapper migrations |
 | X3a–X3d navbar IA redesign | | • | • | • | 19 | required menu tree + no-dead-link route reachability |
 | X4a–X4d horizontal navbar IA refinement | | • | • | • | 20 | horizontal top-nav order + submenu label/route-alias reachability and keyboard semantics |
+| IMP1a–IMP1g portfolio CSV import | • | • | • | • | 22 | L1 parser/dedupe (q4/cents conversion, hash-tuple, replay order); L2 atomic import + dedupe + limits + audit; L3 wizard shell; L4 wizard E2E with fixture CSVs |
 | E1–E8 encryption | • | • | | | 4 (~16 diag) | §5.2 dedicated suite |
 | N1–N4 mega menu | | | • | • | 2,5,11 | keyboard nav test; route highlight |
 | NFR-2 auth on all paths | | • | | • | 2+ | guard matrix: every protected route returns 401 unauthed |
@@ -144,6 +145,21 @@ hover → Accounts submenu → Transactions). The FR-X3b/FR-X4b wording conflict
 flow's substring `getByLabel('Flow')` — was found at this gate rerun and closed with exact-match selectors.
 Route ownership, auth gating, ledger, and provider semantics unchanged; `make test`, `make test-e2e`,
 `make lint` green at close (backend coverage 85.06% vs 85% gate).*
+
+*ITER-22 close note: the IMP1a–IMP1g rows are now covered at their mapped layers — L1 importer-core suite
+(`backend/tests/unit/test_importer_core.py`, 21 tests: CSV parsing/limits, Decimal-only q4/cents conversion
+per NFR-10, mapping resolution + starter templates, deterministic hash-tuple, replay-order validation), L2
+import-API suite (`backend/tests/api/test_imports.py`, 12 tests: auth guard, templates/mappings CRUD, preview
+semantics, atomic commit with skip-and-report dedupe, positions replace-with-flag + absent-holding closure
+preserving realized P&L, trade rows through the avg-cost engine with **no ledger legs for buy/sell** per
+ADR-008, dividend/fee balanced cash events through the posting service, 5 MB/5,000-row limits with split
+suggestion, `import.*` audit entries), L3 wizard suite (`frontend/app/__tests__/import-page.test.tsx`,
+3 scenarios) with the Investments-submenu **Import** item pinned in the mega-menu suite, and the L4 wizard
+scenario (`e2e/smoke.spec.ts`: submenu reachability → positions snapshot import → positions page reflects it
+→ trade history import → dividend/fee transactions verified via API). AC-IMP1h (price-history) slipped to
+ITER-23 as pre-agreed — tracked in [01 §12](01-requirements.md) and [08 §3C](08-backlog.md); red snapshots in
+`docs/logs/iter-22/red-*.log`. Full gates green at close: backend 124 passed (coverage 85.66%), frontend 17
+passed, e2e 7/7, ruff/mypy/eslint/tsc clean.*
 
 ## 5. Dedicated suites
 

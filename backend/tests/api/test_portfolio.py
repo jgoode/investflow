@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+from pathlib import Path
+
+import pytest
 from fastapi.testclient import TestClient
 
 from app.portfolio import (
@@ -162,7 +165,16 @@ def test_portfolio_summary_contract_includes_weighted_returns_and_timeline() -> 
     assert summary["timeline"]["window"] in {"1M", "3M", "6M", "1Y"}
 
 
-def test_portfolio_helper_and_summary_edge_cases() -> None:
+def test_portfolio_helper_and_summary_edge_cases(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Isolate from the dev DB (DEF-004): a migrated temp DB guarantees the empty
+    # positions state asserted below — e2e runs leave real positions in the dev DB.
+    db_path = tmp_path / "portfolio-test.db"
+    monkeypatch.setenv("INVESTFLOW_DB_PATH", str(db_path))
+    from tests.conftest import _alembic_upgrade_head
+
+    _alembic_upgrade_head(db_path)
     assert _as_float("3.5") == 3.5
     assert _as_float({"bad": "value"}, 2.5) == 2.5
     assert _normalize_returns([1.0, "bad", float("nan"), 2.5]) == [1.5]

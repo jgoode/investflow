@@ -66,6 +66,9 @@ describe("mega menu", () => {
     expect(screen.getByRole("link", { name: "Portfolio" }).getAttribute("href")).toBe("/investments");
     expect(screen.getByRole("link", { name: "Analysis" }).getAttribute("href")).toBe("/investments");
     expect(screen.getByRole("link", { name: "Research" }).getAttribute("href")).toBe("/investments");
+    expect(screen.getByRole("link", { name: "Import" }).getAttribute("href")).toBe(
+      "/investments/import",
+    );
 
     fireEvent.focus(screen.getByRole("link", { name: "Settings" }));
     expect(screen.getByRole("link", { name: "Profile" }).getAttribute("href")).toBe("/settings");

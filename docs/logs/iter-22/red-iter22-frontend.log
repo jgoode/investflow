@@ -1,0 +1,662 @@
+
+ RUN  v3.2.7 /home/john/src/investflow/frontend
+
+ ❯ app/__tests__/mega-menu.test.tsx (5 tests | 1 failed) 915ms
+   ✓ mega menu > renders the nav directly and keeps route highlight with escape close 56ms
+   × mega menu > uses the required horizontal top-level IA and submenu route bindings 31ms
+     → Unable to find an accessible element with the role "link" and name "Import"
+
+Here are the accessible roles:
+
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"border-b border-base-300 bg-base-100 px-4 py-3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "InvestFlow home":
+  [36m<a[39m
+    [33maria-label[39m=[32m"InvestFlow home"[39m
+    [33mclass[39m=[32m"min-h-11 rounded-md px-2 py-2 text-lg font-semibold tracking-tight hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/dashboard"[39m
+  [36m/>[39m
+
+  Name "Dashboard":
+  [36m<a[39m
+    [33maria-current[39m=[32m"page"[39m
+    [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium bg-primary text-primary-content"[39m
+    [33mhref[39m=[32m"/dashboard"[39m
+  [36m/>[39m
+
+  Name "Accounts":
+  [36m<a[39m
+    [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/accounts"[39m
+  [36m/>[39m
+
+  Name "Investments":
+  [36m<a[39m
+    [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/investments"[39m
+  [36m/>[39m
+
+  Name "Portfolio":
+  [36m<a[39m
+    [33mclass[39m=[32m"block min-h-11 rounded-md px-3 py-2 text-sm hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/investments"[39m
+  [36m/>[39m
+
+  Name "Analysis":
+  [36m<a[39m
+    [33mclass[39m=[32m"block min-h-11 rounded-md px-3 py-2 text-sm hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/investments"[39m
+  [36m/>[39m
+
+  Name "Research":
+  [36m<a[39m
+    [33mclass[39m=[32m"block min-h-11 rounded-md px-3 py-2 text-sm hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/investments"[39m
+  [36m/>[39m
+
+  Name "Reporting":
+  [36m<a[39m
+    [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/reports"[39m
+  [36m/>[39m
+
+  Name "Settings":
+  [36m<a[39m
+    [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/settings"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  navigation:
+
+  Name "Primary navigation":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"Primary navigation"[39m
+    [33mclass[39m=[32m"relative flex-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"flex flex-wrap items-start gap-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"absolute left-0 top-full z-10 mt-0 min-w-52 rounded-md border border-base-300 bg-base-100 p-2 shadow-lg"[39m
+    [33mid[39m=[32m"investments-submenu"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"relative"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"relative"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"relative"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"relative"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"relative"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Logout":
+  [36m<button[39m
+    [33mclass[39m=[32m"btn btn-ghost btn-sm min-h-11"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<header[39m
+      [33mclass[39m=[32m"border-b border-base-300 bg-base-100 px-4 py-3"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto flex max-w-6xl items-center justify-between gap-4"[39m
+      [36m>[39m
+        [36m<a[39m
+          [33maria-label[39m=[32m"InvestFlow home"[39m
+          [33mclass[39m=[32m"min-h-11 rounded-md px-2 py-2 text-lg font-semibold tracking-tight hover:bg-base-200"[39m
+          [33mhref[39m=[32m"/dashboard"[39m
+        [36m>[39m
+          [0mInvestFlow[0m
+        [36m</a>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"Primary navigation"[39m
+          [33mclass[39m=[32m"relative flex-1"[39m
+        [36m>[39m
+          [36m<ul[39m
+            [33mclass[39m=[32m"flex flex-wrap items-start gap-2"[39m
+          [36m>[39m
+            [36m<li[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center rounded-md border border-base-200 bg-base-100"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33maria-current[39m=[32m"page"[39m
+                  [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium bg-primary text-primary-content"[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mDashboard[0m
+                [36m</a>[39m
+              [36m</div>[39m
+            [36m</li>[39m
+            [36m<li[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center rounded-md border border-base-200 bg-base-100"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+                  [33mhref[39m=[32m"/accounts"[39m
+                [36m>[39m
+                  [0mAccounts[0m
+                [36m</a>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                [36m>[39m
+                  [0mAccounts[0m
+                  [0m submenu[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</li>[39m
+            [36m<li[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center rounded-md border border-base-200 bg-base-100"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+                  [33mhref[39m=[32m"/investments"[39m
+                [36m>[39m
+                  [0mInvestments[0m
+                [36m</a>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                [36m>[39m
+                  [0mInvestments[0m
+                  [0m submenu[0m
+                [36m</span>[39m
+              [36m</div>[39m
+              [36m<ul[39m
+                [33mclass[39m=[32m"absolute left-0 top-full z-10 mt-0 min-w-52 rounded-md border border-base-300 bg-base-100 p-2 shadow-lg"[39m
+                [33mid[39m=[32m"investments-submenu"[39m
+              [36m>[39m
+                [36m<li>[39m
+                  [36m<a[39m
+                    [33mclass[39m=[32m"block min-h-11 rounded-md px-3 py-2 text-sm hover:bg-base-200"[39m
+                    [33mhref[39m=[32m"/investments"[39m
+                  [36m>[39m
+                    [0mPortfolio[0m
+                  [36m</a>[39m
+                [36m</li>[39m
+                [36m<li>[39m
+                  [36m<a[39m
+                    [33mclass[39m=[32m"block min-h-11 rounded-md px-3 py-2 text-sm hover:bg-base-200"[39m
+                    [33mhref[39m=[32m"/investments"[39m
+                  [36m>[39m
+                    [0mAnalysis[0m
+                  [36m</a>[39m
+                [36m</li>[39m
+                [36m<li>[39m
+                  [36m<a[39m
+                    [33mclass[39m=[32m"block min-h-11 rounded-md px-3 py-2 text-sm hover:bg-base-200"[39m
+                    [33mhref[39m=[32m"/investments"[39m
+                  [36m>[39m
+                    [0mResearch[0m
+                  [36m</a>[39m
+                [36m</li>[39m
+              [36m</ul>[39m
+            [36m</li>[39m
+            [36m<li[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center rounded-md border border-base-200 bg-base-100"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+                  [33mhref[39m=[32m"/reports"[39m
+                [36m>[39m
+                  [0mReporting[0m
+                [36m</a>[39m
+              [36m</div>[39m
+            [36m</li>[39m
+            [36m<li[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center rounded-md border border-base-200 bg-base-100"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+                  [33mhref[39m=[32m"/settings"[39m
+                [36m>[39m
+                  [0mSettings[0m
+                [36m</a>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                [36m>[39m
+                  [0mSettings[0m
+                  [0m submenu[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-3"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-sm opacity-70"[39m
+          [36m>[39m
+            [0malice[0m
+          [36m</span>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"btn btn-ghost btn-sm min-h-11"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0mLogout[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</header>[39m
+  [36m</div>[39m
+[36m</body>[39m
+   ✓ mega menu > returns focus to the group trigger when Escape closes the submenu (AC-N2/AC-X4d) 9ms
+   ✓ mega menu > uses a hover-safe close delay so pointer travel must not collapse the submenu (AC-X4d)  812ms
+   ✓ mega menu > stays keyboard-reachable after hover interaction and highlights the active item 6ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  app/__tests__/import-page.test.tsx [ app/__tests__/import-page.test.tsx ]
+Error: Failed to resolve import "../(app)/investments/import/page" from "app/__tests__/import-page.test.tsx". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/john/src/investflow/frontend/app/__tests__/import-page.test.tsx:4:0
+  4  |  const __vi_import_0__ = await import("react/jsx-dev-runtime");
+  5  |  const __vi_import_1__ = await import("@testing-library/react");
+  6  |  const __vi_import_2__ = await import("../(app)/investments/import/page");
+     |                                       ^
+  7  |  
+  8  |  
+ ❯ TransformPluginContext._formatLog node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:29250:43
+ ❯ TransformPluginContext.error node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:29247:14
+ ❯ normalizeUrl node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:27370:18
+ ❯ node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:27428:32
+ ❯ TransformPluginContext.transform node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:27396:4
+ ❯ EnvironmentPluginContainer.transform node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:29048:14
+ ❯ loadAndTransform node_modules/.pnpm/vite@7.3.7_@types+node@20.19.43_jiti@2.7.0_lightningcss@1.33.0/node_modules/vite/dist/node/chunks/config.js:22914:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  app/__tests__/mega-menu.test.tsx > mega menu > uses the required horizontal top-level IA and submenu route bindings
+TestingLibraryElementError: Unable to find an accessible element with the role "link" and name "Import"
+
+Here are the accessible roles:
+
+  banner:
+
+  Name "":
+  [36m<header[39m
+    [33mclass[39m=[32m"border-b border-base-300 bg-base-100 px-4 py-3"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  link:
+
+  Name "InvestFlow home":
+  [36m<a[39m
+    [33maria-label[39m=[32m"InvestFlow home"[39m
+    [33mclass[39m=[32m"min-h-11 rounded-md px-2 py-2 text-lg font-semibold tracking-tight hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/dashboard"[39m
+  [36m/>[39m
+
+  Name "Dashboard":
+  [36m<a[39m
+    [33maria-current[39m=[32m"page"[39m
+    [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium bg-primary text-primary-content"[39m
+    [33mhref[39m=[32m"/dashboard"[39m
+  [36m/>[39m
+
+  Name "Accounts":
+  [36m<a[39m
+    [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/accounts"[39m
+  [36m/>[39m
+
+  Name "Investments":
+  [36m<a[39m
+    [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/investments"[39m
+  [36m/>[39m
+
+  Name "Portfolio":
+  [36m<a[39m
+    [33mclass[39m=[32m"block min-h-11 rounded-md px-3 py-2 text-sm hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/investments"[39m
+  [36m/>[39m
+
+  Name "Analysis":
+  [36m<a[39m
+    [33mclass[39m=[32m"block min-h-11 rounded-md px-3 py-2 text-sm hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/investments"[39m
+  [36m/>[39m
+
+  Name "Research":
+  [36m<a[39m
+    [33mclass[39m=[32m"block min-h-11 rounded-md px-3 py-2 text-sm hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/investments"[39m
+  [36m/>[39m
+
+  Name "Reporting":
+  [36m<a[39m
+    [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/reports"[39m
+  [36m/>[39m
+
+  Name "Settings":
+  [36m<a[39m
+    [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+    [33mhref[39m=[32m"/settings"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  navigation:
+
+  Name "Primary navigation":
+  [36m<nav[39m
+    [33maria-label[39m=[32m"Primary navigation"[39m
+    [33mclass[39m=[32m"relative flex-1"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  list:
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"flex flex-wrap items-start gap-2"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<ul[39m
+    [33mclass[39m=[32m"absolute left-0 top-full z-10 mt-0 min-w-52 rounded-md border border-base-300 bg-base-100 p-2 shadow-lg"[39m
+    [33mid[39m=[32m"investments-submenu"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  listitem:
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"relative"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"relative"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"relative"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li />[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"relative"[39m
+  [36m/>[39m
+
+  Name "":
+  [36m<li[39m
+    [33mclass[39m=[32m"relative"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Logout":
+  [36m<button[39m
+    [33mclass[39m=[32m"btn btn-ghost btn-sm min-h-11"[39m
+    [33mtype[39m=[32m"button"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<header[39m
+      [33mclass[39m=[32m"border-b border-base-300 bg-base-100 px-4 py-3"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"mx-auto flex max-w-6xl items-center justify-between gap-4"[39m
+      [36m>[39m
+        [36m<a[39m
+          [33maria-label[39m=[32m"InvestFlow home"[39m
+          [33mclass[39m=[32m"min-h-11 rounded-md px-2 py-2 text-lg font-semibold tracking-tight hover:bg-base-200"[39m
+          [33mhref[39m=[32m"/dashboard"[39m
+        [36m>[39m
+          [0mInvestFlow[0m
+        [36m</a>[39m
+        [36m<nav[39m
+          [33maria-label[39m=[32m"Primary navigation"[39m
+          [33mclass[39m=[32m"relative flex-1"[39m
+        [36m>[39m
+          [36m<ul[39m
+            [33mclass[39m=[32m"flex flex-wrap items-start gap-2"[39m
+          [36m>[39m
+            [36m<li[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center rounded-md border border-base-200 bg-base-100"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33maria-current[39m=[32m"page"[39m
+                  [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium bg-primary text-primary-content"[39m
+                  [33mhref[39m=[32m"/dashboard"[39m
+                [36m>[39m
+                  [0mDashboard[0m
+                [36m</a>[39m
+              [36m</div>[39m
+            [36m</li>[39m
+            [36m<li[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center rounded-md border border-base-200 bg-base-100"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+                  [33mhref[39m=[32m"/accounts"[39m
+                [36m>[39m
+                  [0mAccounts[0m
+                [36m</a>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                [36m>[39m
+                  [0mAccounts[0m
+                  [0m submenu[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</li>[39m
+            [36m<li[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center rounded-md border border-base-200 bg-base-100"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+                  [33mhref[39m=[32m"/investments"[39m
+                [36m>[39m
+                  [0mInvestments[0m
+                [36m</a>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                [36m>[39m
+                  [0mInvestments[0m
+                  [0m submenu[0m
+                [36m</span>[39m
+              [36m</div>[39m
+              [36m<ul[39m
+                [33mclass[39m=[32m"absolute left-0 top-full z-10 mt-0 min-w-52 rounded-md border border-base-300 bg-base-100 p-2 shadow-lg"[39m
+                [33mid[39m=[32m"investments-submenu"[39m
+              [36m>[39m
+                [36m<li>[39m
+                  [36m<a[39m
+                    [33mclass[39m=[32m"block min-h-11 rounded-md px-3 py-2 text-sm hover:bg-base-200"[39m
+                    [33mhref[39m=[32m"/investments"[39m
+                  [36m>[39m
+                    [0mPortfolio[0m
+                  [36m</a>[39m
+                [36m</li>[39m
+                [36m<li>[39m
+                  [36m<a[39m
+                    [33mclass[39m=[32m"block min-h-11 rounded-md px-3 py-2 text-sm hover:bg-base-200"[39m
+                    [33mhref[39m=[32m"/investments"[39m
+                  [36m>[39m
+                    [0mAnalysis[0m
+                  [36m</a>[39m
+                [36m</li>[39m
+                [36m<li>[39m
+                  [36m<a[39m
+                    [33mclass[39m=[32m"block min-h-11 rounded-md px-3 py-2 text-sm hover:bg-base-200"[39m
+                    [33mhref[39m=[32m"/investments"[39m
+                  [36m>[39m
+                    [0mResearch[0m
+                  [36m</a>[39m
+                [36m</li>[39m
+              [36m</ul>[39m
+            [36m</li>[39m
+            [36m<li[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center rounded-md border border-base-200 bg-base-100"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+                  [33mhref[39m=[32m"/reports"[39m
+                [36m>[39m
+                  [0mReporting[0m
+                [36m</a>[39m
+              [36m</div>[39m
+            [36m</li>[39m
+            [36m<li[39m
+              [33mclass[39m=[32m"relative"[39m
+            [36m>[39m
+              [36m<div[39m
+                [33mclass[39m=[32m"flex items-center rounded-md border border-base-200 bg-base-100"[39m
+              [36m>[39m
+                [36m<a[39m
+                  [33mclass[39m=[32m"min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+                  [33mhref[39m=[32m"/settings"[39m
+                [36m>[39m
+                  [0mSettings[0m
+                [36m</a>[39m
+                [36m<span[39m
+                  [33mclass[39m=[32m"sr-only"[39m
+                [36m>[39m
+                  [0mSettings[0m
+                  [0m submenu[0m
+                [36m</span>[39m
+              [36m</div>[39m
+            [36m</li>[39m
+          [36m</ul>[39m
+        [36m</nav>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"flex items-center gap-3"[39m
+        [36m>[39m
+          [36m<span[39m
+            [33mclass[39m=[32m"text-sm opacity-70"[39m
+          [36m>[39m
+            [0malice[0m
+          [36m</span>[39m
+          [36m<button[39m
+            [33mclass[39m=[32m"btn btn-ghost btn-sm min-h-11"[39m
+            [33mtype[39m=[32m"button"[39m
+          [36m>[39m
+            [0mLogout[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</header>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ app/__tests__/mega-menu.test.tsx:69:19
+     67|     expect(screen.getByRole("link", { name: "Analysis" }).getAttribute…
+     68|     expect(screen.getByRole("link", { name: "Research" }).getAttribute…
+     69|     expect(screen.getByRole("link", { name: "Import" }).getAttribute("…
+       |                   ^
+     70|       "/investments/import",
+     71|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed (2)
+      Tests  1 failed | 4 passed (5)
+   Start at  16:22:19
+   Duration  1.65s (transform 67ms, setup 0ms, collect 179ms, tests 915ms, environment 781ms, prepare 89ms)
+

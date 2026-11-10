@@ -39,6 +39,7 @@ const MENU_GROUPS: MenuGroup[] = [
       { key: "portfolio", label: "Portfolio", href: "/investments" },
       { key: "analysis", label: "Analysis", href: "/investments" },
       { key: "research", label: "Research", href: "/investments" },
+      { key: "import", label: "Import", href: "/investments/import" },
     ],
   },
   { key: "reporting", label: "Reporting", href: "/reports" },
