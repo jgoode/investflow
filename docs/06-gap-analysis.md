@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — reviewed at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-09 close review) |
+| **Last updated** | 2026-11-10 (ITER-21 close review: no new gaps; navbar IA slice X3/X4 fully covered at L3/L4) |
 
 Gap analysis compares three layers and records what does (not) survive between them:
 
@@ -76,6 +76,5 @@ At each iteration close ([07 §2](07-iterative-prompts.md)):
 2. Review §3 register: promote rows with ready prerequisites to "scheduled (ITER-XX)".
 3. Confirm that §2 table entries untouched during the iteration are still accurate.
 4. Refresh the 3-layer picture (§1) status sentence below: *(update on close)* —
-   **Wants are fully spec'd (§2.1/§2.2 records deltas), Reality has 9 iterations done — ITER-01 through ITER-09 (✅ 2026-11-08):
-   reports core now has tested ledger-derived COA/summary/monthly/quarterly aggregation with void-default filtering,
-   URL-ready normalized parameters, and raw-line integrity re-aggregation checks; no new open gaps were introduced in ITER-09.**
+   **Wants are fully spec'd (§2.1/§2.2 records deltas), Reality has 21 iteration rows done — ITER-01 through ITER-21 (✅ 2026-11-10):
+   the navbar IA slice (FR-X3 + FR-X4) is now covered at L3 (`frontend/app/__tests__/mega-menu.test.tsx`, 5 mapped scenarios incl. Escape focus-return and hover close-delay) and L4 (navbar reachability scenario in `e2e/smoke.spec.ts`); the FR-X3b/FR-X4b label contradiction was resolved by ADR-007 (FR-X4 labels govern) rather than a gap; DEF-003 was found and closed at the ITER-21 gate rerun; no new open gaps were introduced in ITER-21.**

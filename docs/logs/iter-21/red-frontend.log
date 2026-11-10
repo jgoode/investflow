@@ -1,0 +1,168 @@
+
+ RUN  v3.2.7 /home/john/src/investflow/frontend
+
+ ❯ app/__tests__/mega-menu.test.tsx (5 tests | 1 failed) 923ms
+   ✓ mega menu > renders the nav directly and keeps route highlight with escape close 54ms
+   ✓ mega menu > uses the required horizontal top-level IA and submenu route bindings 35ms
+   × mega menu > returns focus to the group trigger when Escape closes the submenu (AC-N2/AC-X4d) 18ms
+     → expected <body><div>…(1)</div></body> to be <a …(2)></a> // Object.is equality
+   ✓ mega menu > uses a hover-safe close delay so pointer travel must not collapse the submenu (AC-X4d)  811ms
+   ✓ mega menu > stays keyboard-reachable after hover interaction and highlights the active item 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  app/__tests__/mega-menu.test.tsx > mega menu > returns focus to the group trigger when Escape closes the submenu (AC-N2/AC-X4d)
+AssertionError: expected <body><div>…(1)</div></body> to be <a …(2)></a> // Object.is equality
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[31m+ <body>[39m
+[31m+   <div>[39m
+[31m+     <header[39m
+[31m+       class="border-b border-base-300 bg-base-100 px-4 py-3"[39m
+[31m+     >[39m
+[31m+       <div[39m
+[31m+         class="mx-auto flex max-w-6xl items-center justify-between gap-4"[39m
+[31m+       >[39m
+[2m          <a[22m
+[31m+           aria-label="InvestFlow home"[39m
+[31m+           class="min-h-11 rounded-md px-2 py-2 text-lg font-semibold tracking-tight hover:bg-base-200"[39m
+[31m+           href="/dashboard"[39m
+[31m+         >[39m
+[31m+           InvestFlow[39m
+[31m+         </a>[39m
+[31m+         <nav[39m
+[31m+           aria-label="Primary navigation"[39m
+[31m+           class="relative flex-1"[39m
+[31m+         >[39m
+[31m+           <ul[39m
+[31m+             class="flex flex-wrap items-start gap-2"[39m
+[31m+           >[39m
+[31m+             <li[39m
+[31m+               class="relative"[39m
+[31m+             >[39m
+[31m+               <div[39m
+[31m+                 class="flex items-center rounded-md border border-base-200 bg-base-100"[39m
+[31m+               >[39m
+[31m+                 <a[39m
+[31m+                   aria-current="page"[39m
+[31m+                   class="min-h-11 rounded-l-md px-3 py-2 text-sm font-medium bg-primary text-primary-content"[39m
+[31m+                   href="/dashboard"[39m
+[31m+                 >[39m
+[31m+                   Dashboard[39m
+[31m+                 </a>[39m
+[31m+               </div>[39m
+[31m+             </li>[39m
+[31m+             <li[39m
+[31m+               class="relative"[39m
+[31m+             >[39m
+[31m+               <div[39m
+[31m+                 class="flex items-center rounded-md border border-base-200 bg-base-100"[39m
+[31m+               >[39m
+[31m+                 <a[39m
+[2m                    class="min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[22m
+[2m                    href="/accounts"[22m
+[2m                  >[22m
+[2m                    Accounts[22m
+[31m+                 </a>[39m
+[31m+                 <span[39m
+[31m+                   class="sr-only"[39m
+[31m+                 >[39m
+[31m+                   Accounts[39m
+[31m+                    submenu[39m
+[31m+                 </span>[39m
+[31m+               </div>[39m
+[31m+             </li>[39m
+[31m+             <li[39m
+[31m+               class="relative"[39m
+[31m+             >[39m
+[31m+               <div[39m
+[31m+                 class="flex items-center rounded-md border border-base-200 bg-base-100"[39m
+[31m+               >[39m
+[31m+                 <a[39m
+[31m+                   class="min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+[31m+                   href="/investments"[39m
+[31m+                 >[39m
+[31m+                   Investments[39m
+[31m+                 </a>[39m
+[31m+                 <span[39m
+[31m+                   class="sr-only"[39m
+[31m+                 >[39m
+[31m+                   Investments[39m
+[31m+                    submenu[39m
+[31m+                 </span>[39m
+[31m+               </div>[39m
+[31m+             </li>[39m
+[31m+             <li[39m
+[31m+               class="relative"[39m
+[31m+             >[39m
+[31m+               <div[39m
+[31m+                 class="flex items-center rounded-md border border-base-200 bg-base-100"[39m
+[31m+               >[39m
+[31m+                 <a[39m
+[31m+                   class="min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+[31m+                   href="/reports"[39m
+[31m+                 >[39m
+[31m+                   Reporting[39m
+[31m+                 </a>[39m
+[31m+               </div>[39m
+[31m+             </li>[39m
+[31m+             <li[39m
+[31m+               class="relative"[39m
+[31m+             >[39m
+[31m+               <div[39m
+[31m+                 class="flex items-center rounded-md border border-base-200 bg-base-100"[39m
+[31m+               >[39m
+[31m+                 <a[39m
+[31m+                   class="min-h-11 rounded-l-md px-3 py-2 text-sm font-medium hover:bg-base-200"[39m
+[31m+                   href="/settings"[39m
+[31m+                 >[39m
+[31m+                   Settings[39m
+[2m                  </a>[22m
+[31m+                 <span[39m
+[31m+                   class="sr-only"[39m
+[31m+                 >[39m
+[31m+                   Settings[39m
+[31m+                    submenu[39m
+[31m+                 </span>[39m
+[31m+               </div>[39m
+[31m+             </li>[39m
+[31m+           </ul>[39m
+[31m+         </nav>[39m
+[31m+         <div[39m
+[31m+           class="flex items-center gap-3"[39m
+[31m+         >[39m
+[31m+           <span[39m
+[31m+             class="text-sm opacity-70"[39m
+[31m+           >[39m
+[31m+             alice[39m
+[31m+           </span>[39m
+[31m+           <button[39m
+[31m+             class="btn btn-ghost btn-sm min-h-11"[39m
+[31m+             type="button"[39m
+[31m+           >[39m
+[31m+             Logout[39m
+[31m+           </button>[39m
+[31m+         </div>[39m
+[31m+       </div>[39m
+[31m+     </header>[39m
+[31m+   </div>[39m
+[31m+ </body>[39m
+
+ ❯ app/__tests__/mega-menu.test.tsx:89:36
+     87|     fireEvent.keyDown(nav, { key: "Escape" });
+     88|     expect(screen.queryByRole("link", { name: "Chart of Accounts" })).…
+     89|     expect(document.activeElement).toBe(accounts);
+       |                                    ^
+     90|   });
+     91| 
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  15:25:54
+   Duration  1.42s (transform 46ms, setup 0ms, collect 109ms, tests 923ms, environment 226ms, prepare 33ms)
+

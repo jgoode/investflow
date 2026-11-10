@@ -85,7 +85,7 @@ test("categories CRUD flow with default account", async ({ page }) => {
   await page.goto("/categories");
   await expect(page.getByRole("heading", { name: "Categories" })).toBeVisible();
   await page.getByLabel("Name").fill(categoryName);
-  await page.getByLabel("Flow").selectOption("expense");
+  await page.getByLabel("Flow", { exact: true }).selectOption("expense");
   await page.getByRole("button", { name: "Save category" }).click();
   await expect(page.getByText("Category created.")).toBeVisible();
 
@@ -93,6 +93,45 @@ test("categories CRUD flow with default account", async ({ page }) => {
   await expect(deleteButton).toBeVisible();
   await deleteButton.click();
   await expect(deleteButton).toHaveCount(0);
+});
+
+test("navbar submenu reachability: brand link + Accounts submenu → transactions", async ({
+  page,
+}) => {
+  const username = `nav_${Date.now()}`;
+  const password = "correct-horse-10";
+
+  await page.goto("/register");
+  await page.getByRole("textbox", { name: "Username" }).fill(username);
+  await page.getByRole("textbox", { name: /^Password/ }).first().fill(password);
+  await page.getByRole("textbox", { name: /^Password confirmation/ }).fill(password);
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  // Left brand link routes to /dashboard when launched from another page.
+  await page.goto("/settings");
+  await page.getByRole("link", { name: "InvestFlow home" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+
+  // Top-level order per FR-X4a.
+  const nav = page.getByRole("navigation", { name: "Primary navigation" });
+  const labels = await nav
+    .getByRole("link")
+    .evaluateAll((links) =>
+      links
+        .map((link) => link.textContent?.trim() ?? "")
+        .filter((label) =>
+          ["Dashboard", "Accounts", "Investments", "Reporting", "Settings"].includes(label),
+        ),
+    );
+  expect(labels).toEqual(["Dashboard", "Accounts", "Investments", "Reporting", "Settings"]);
+
+  // Hover opens the Accounts submenu; its items navigate to reachable pages.
+  await nav.getByRole("link", { name: "Accounts" }).hover();
+  await expect(nav.getByRole("link", { name: "Chart of Accounts" })).toBeVisible();
+  await nav.getByRole("link", { name: "Transactions" }).click();
+  await expect(page).toHaveURL(/\/transactions$/);
+  await expect(page.getByRole("heading", { name: "Transactions" })).toBeVisible();
 });
 
 test("reports monthly URL params are shareable and deterministic", async ({ page }) => {

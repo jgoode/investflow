@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-08 (ITER-09 close review: no new defects; DEF-001/DEF-002 remain closed) |
+| **Last updated** | 2026-11-10 (ITER-21 close review: DEF-003 opened + verified-closed; DEF-001/DEF-002 remain closed) |
 
 ## 1. Definitions
 
@@ -52,6 +52,16 @@ verification (same date) produced **DEF-001** below.
 - **Fix plan:** create `frontend/pnpm-workspace.yaml` with `allowBuilds: {esbuild: true}`; delete the dead `pnpm.onlyBuiltDependencies` field from `frontend/package.json`. Guard: CI-mode cold install (`CI=true pnpm install` from empty `node_modules`) passes, vitest suite still runs.
 - **Verification:** 2026-11-08 — local cold install + `CI=true` exit 0; next Actions run after push.
 - **Linked:** commits REC (fix + doc in same commit); follows DEF-001 (same CI surface); settings doc: pnpm.io/settings/build
+
+### DEF-003 — E2E: `getByLabel('Flow')` strict-mode collision with navbar brand link aria-label
+- **Opened:** 2026-11-10 (ITER-21 close, `make test-e2e` gate rerun) · **Severity:** S3 · **State:** verified-closed
+- **Discovered by:** `e2e/smoke.spec.ts` categories CRUD flow — `locator.selectOption: strict mode violation: getByLabel('Flow') resolved to 2 elements`
+- **Layer/Component:** e2e/helpers · frontend shell (navbar)
+- **Evidence:** `test-results/smoke-categories-CRUD-flow-with-default-account/error-context.md`; snapshot in `docs/logs/iter-21/red-frontend-first-run.log` narrative — resolved elements: `<a aria-label="InvestFlow home">` (navbar brand link) and the categories `<select aria-label="Flow">`
+- **Diagnosis:** ITER-20's left brand link (`aria-label="InvestFlow home"`) contains the substring "Flow"; Playwright `getByLabel` is substring-matching by default, so the pre-existing categories selector became ambiguous once the shell change landed (ITER-20 parked its E2E gate rerun, so this slipped to the ITER-21 closeout gate).
+- **Fix plan:** pin the categories flow selector to `getByLabel("Flow", { exact: true })` (same accessible name, element unchanged); regression guard is the categories flow itself plus the new ITER-21 navbar reachability scenario which asserts the brand link by its accessible name. No UI/DOM change; no a11y regression (the brand label is correct).
+- **Verification:** 2026-11-10 — `make test-e2e` 6/6 green after fix (snapshot `docs/logs/iter-21/green-e2e.log`); re-open condition: any future aria-label introducing a substring collision with a form-control label.
+- **Linked:** [01 §12 FR-X4](01-requirements.md) (brand-link slice), [02 §5.2](02-architecture.md); ITER-20/ITER-21 rows in [04 §3](04-progress.md); no ADR (no spec change)
 
 ### Entry template
 

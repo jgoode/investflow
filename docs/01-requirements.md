@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Active |
-| **Last updated** | 2026-11-10 |
+| **Last updated** | 2026-11-10 (FEAT-001 scheduled → FR-IMP-1 ACs for ITER-22 added) |
 | **Parent** | [00-overview](00-overview.md) |
 
 Requirement IDs: `FR-<area><n>` functional, `NFR-<n>` non-functional, `AC-<id>` acceptance criteria (Given/When/Then).
@@ -248,10 +248,32 @@ Navigation is restructured around a navbar parent with grouped submenus and rout
 Navigation is refined to use a **horizontal** top-level navbar while preserving route/auth ownership and
 the shell interaction model.
 
+> **Refinement note (ADR-007, 2026-11-10):** where FR-X3b and FR-X4b label the same submenus
+> differently, the **FR-X4 wording governs** — Investments submenu = *Portfolio, Analysis, Research*
+> and Settings submenu = *Backup and Downloads*. FR-X3 keeps its original wording as the superseded
+> draft; route bindings and auth gating are unchanged.
+
 - **AC-X4a** — Top-level horizontal order is exactly: **Dashboard · Accounts · Investments · Reporting · Settings**.
 - **AC-X4b** — Accounts submenu contains **Chart of Accounts, Categories, Transactions**; Investments submenu contains **Portfolio, Analysis, Research**; Settings submenu contains **Profile, Posting, Seed Management, Backup and Downloads, Users, Audit**.
 - **AC-X4c** — Every submenu item resolves to at least one reachable page (existing page or explicit placeholder), and route aliases remain consistent with shell contracts.
 - **AC-X4d** — Active-route highlighting plus keyboard/screen-reader submenu behavior satisfy FR-N and NFR-7 without changing auth-gating or ledger/provider semantics.
+
+### FR-IMP-1 — Portfolio CSV import (promoted from FEAT-001 backlog §3C, scheduled ITER-22)
+
+Importing **portfolio positions** and **portfolio trade transactions** (buy/sell/dividend/fee rows) from
+UTF-8 CSV into brokerage accounts, with a dry-run preview and atomic, all-or-nothing commitment (Q&A
+resolutions in [08 §3C.7](08-backlog.md) are binding; the price-history stretch is AC-IMP1h). UI lands at
+`/investments/import` (Portfolio tab) and is wired into the Investments submenu without changing existing
+route aliases or auth gating.
+
+- **AC-IMP1a** — *Mapping & account binding.* Column mapping happens in a wizard with saveable mapping templates (starters: *positions snapshot*, *trade history*, *bank statement*); every CSV account value maps explicitly to an existing InvestFlow **brokerage** account (create affordance gated on FR-C rules); accounts are never silently auto-created.
+- **AC-IMP1b** — *Dry-run preview.* Every import first produces a preview: parsed rows, would-post transaction legs and amounts, the duplicate-skip report, positions-import "absent holdings" flags, and a total cash-movement sanity check; nothing posts until explicit confirmation.
+- **AC-IMP1c** — *Atomicity & dedupe.* Each import is a single transaction: any hard row error aborts the whole file (no partial import); duplicates are soft-skipped — trades by hash-tuple `(date, ticker, type, qty, price, fee, cash-account)` matched against existing postings, positions by `(account, ticker)` replacement semantics — and both are listed in the applied report.
+- **AC-IMP1d** — *Positions import* sets quantity + average cost directly (overwriting the account's existing **open** positions per `(account, ticker)`, flagged absent holdings confirmed at preview; closed positions keep realized P&L; a warning notes the average-cost-lots semantics) without posting synthetic buy transactions.
+- **AC-IMP1e** — *Transactions import* posts through the **existing posting service** only (never writes `transaction_lines` directly; ledger invariants T-1 hold); dividend/fee rows are supported; replay order is enforced per `(account, ticker)` and out-of-order sell-before-buy rows are rejected with row errors, not auto-fixed.
+- **AC-IMP1f** — *Limits.* Synchronous processing only; files ≤ 5 MB and ≤ 5,000 rows; larger inputs are refused at upload with a split-file suggestion; no background-job infrastructure (Q-4).
+- **AC-IMP1g** — *Audit & reporting.* Each import records `audit_log` entries `import.positions` / `import.transactions` (entity = import batch id, row counts) and afterwards dashboards/reports reflect the imported state via the existing reporting engine.
+- **AC-IMP1h** — *(Stretch; may slip to ITER-23)* *Price-history import* feeds `price_cache` with `source='manual'` from a daily close/volume CSV, subject to the AC-I2c manual-price precedence rules.
 
 ## 13. Data model summary
 

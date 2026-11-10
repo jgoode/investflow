@@ -1,0 +1,19 @@
+pnpm exec playwright test
+[WebServer] INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+[WebServer] INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+[WebServer] INFO:     Started server process [655500]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+[WebServer] $ next dev --turbopack
+
+Running 6 tests using 2 workers
+
+  ✓  2 e2e/smoke.spec.ts:5:1 › healthz responds ok with a version (35ms)
+  ✓  1 e2e/smoke.spec.ts:14:1 › register → dashboard → logout → login journey (4.2s)
+  ✓  3 e2e/smoke.spec.ts:41:1 › users management flow: list + own-password change (5.9s)
+  ✓  4 e2e/smoke.spec.ts:73:1 › categories CRUD flow with default account (3.9s)
+  ✓  5 e2e/smoke.spec.ts:98:1 › navbar submenu reachability: brand link + Accounts submenu → transactions (4.5s)
+  ✓  6 e2e/smoke.spec.ts:137:1 › reports monthly URL params are shareable and deterministic (3.5s)
+
+  6 passed (16.4s)

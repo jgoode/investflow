@@ -378,9 +378,11 @@ Auth gating: `app/(app)/layout` → `getSession()` server component; no-auth →
 - Post-ITER-16 IA target groups: Dashboard, Accounts (Chart of Accounts/Categories/Transactions),
   Investments (Portfolio Research/Analysis), Reporting, Settings (Profile/Posting/Seed Management/
   Backup and Download/Users/Audit). Each submenu item must bind to a route (AC-X3c).
-- Post-ITER-19 refinement target (FR-X4): preserve the same top-level order in a horizontal navbar,
-  and refine labels to Investments (Portfolio/Analysis/Research) and Settings (Backup and Downloads).
-  Route owners and auth gating stay unchanged while aliases remain shell-consistent (AC-X4c/AC-X4d).
+- FR-X4 refinement (applied in ITER-20/ITER-21, ADR-007): the same top-level order is rendered as a horizontal navbar,
+  with labels refined to Investments (Portfolio/Analysis/Research) and Settings (Backup and Downloads) —
+  FR-X4b wording supersedes FR-X3b. Route owners and auth gating stay unchanged while aliases remain
+  shell-consistent (AC-X4c/AC-X4d). Escape closes the open submenu and returns focus to the group
+  trigger (AC-N2 reachability, verified in ITER-21).
 - Current interaction behavior (ITER-20 refinement): submenu groups open on hover/focus (not click-only), retain
   Escape-close support, and use a hover-safe close delay with flush submenu positioning to avoid pointer-gap collapse.
 - Mega menu is one shared component (not per-page navigation), rendered fully client-side; server still

@@ -36,9 +36,9 @@ Rules:
 |---|---|---|---|---|---|
 | **FEAT-003** | DaisyUI winter theme preset | UX styling | User request 2026-11-10 | S (≈0.5 iteration) | scheduled — ITER-17 |
 | **FEAT-004** | Data table standardization research + rollout | Frontend platform enhancement | User request 2026-11-10 | L (≈2–3 iterations, staged rollout) | scheduled — ITER-18 |
-| **FEAT-005** | Navbar information architecture redesign | UX/navigation | User request 2026-11-10 | M (≈1 iteration) | scheduled — ITER-19 |
+| **FEAT-005** | Navbar information architecture redesign | UX/navigation | User request 2026-11-10 | M (≈1 iteration) | included ✅ — ITER-19/ITER-20 (closed ITER-21) |
 | **FEAT-006** | Horizontal navbar IA refinement | UX/navigation | User request 2026-11-10 | S (≈0.5–1 iteration) | scheduled — ITER-20 |
-| **FEAT-001** | Portfolio CSV import (positions + transactions) | Future feature request | User request 2026-11-08 | M (≈1–2 iterations) | specified — Q&A resolved (§3C.7) |
+| **FEAT-001** | Portfolio CSV import (positions + transactions) | Future feature request | User request 2026-11-08 | M (≈1–2 iterations) | scheduled — ITER-22 (promoted to FR-IMP-1 in [01 §12](01-requirements.md)) |
 | **FEAT-002** | Non-investment opening balances + statement migration import (CSV) | Future feature request | User request 2026-11-08 (extends FEAT-001 scoping note §3C.5) | M (≈1–2 iterations, shared importer core) | specified — Q&A resolved (§3D.6) |
 | — | *(related, owned in [06-gap-analysis](06-gap-analysis.md):* G-001 budgets · G-002 FIFO lots · G-004 role granularity · G-005 manual assets · G-006 desktop packaging | items | session decisions | — | recorded-at-time-zero |
 
@@ -149,8 +149,10 @@ This item combines two linked phases:
 
 ## 3B. Feature request FEAT-005 — Navbar information architecture redesign
 
-> **Status: scheduled (ITER-19). Nothing below is implemented yet; this defines the upcoming navigation
-> refactor linked to the requirements/prompt pipeline.**
+> **Status: included ✅ (ITER-19 + ITER-20, closed at ITER-21). The navbar redesign below was implemented
+> as the navbar-parent menu (commit c38ea74) and refined into the horizontal navbar (commit 295476b);
+> submenu labels follow the FR-X4 wording per ADR-007 (Investments → Portfolio/Analysis/Research,
+> Settings → Backup and Downloads). Mapped L3/L4 gates are green (`docs/logs/iter-21/`).**
 
 ### 3B.1 Summary
 
@@ -248,8 +250,9 @@ and shell accessibility semantics.
 
 ## 3C. Feature request FEAT-001 — Portfolio CSV import
 
-> **Status: specified, unscheduled (status per §2). Nothing below is implemented; it is a design sketch
-> to be promoted into the requirements when scheduled.**
+> **Status: scheduled (ITER-22) 2026-11-10. §3C.3 sketch + §3C.7 Q&A resolutions were promoted into
+> `docs/01-requirements.md` §12 FR-IMP-1 (AC-IMP1a–IMP1h) at scheduling; the sketch below stays as the
+> provenance record.**
 
 ### 3C.1 Summary
 

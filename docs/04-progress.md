@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-10 (ITER-18 ✅ closed; ITER-20 🔴 in progress) |
+| **Last updated** | 2026-11-10 (ITER-19 ✅ · ITER-20 ✅ · ITER-21 ✅ closed) |
 
 ## 1. Status legend
 
@@ -46,8 +46,10 @@ with the next iteration's template.
 |---|---|---|---|---|---|
 | **ITER-17** | Winter theme baseline | DaisyUI winter default theme, shell/readability pass, keyboard/focus regression checks | FR-X1, NFR-7 | ✅ | — |
 | **ITER-18** | Data table standardization | Shared table foundation, staged rollout on users/transactions/accounts, a11y/perf gate verification | FR-X2, NFR-4, NFR-7 | ✅ | — |
-| **ITER-19** | Navbar IA redesign | Navbar-parent menu restructure, submenu route binding, no-dead-link coverage | FR-X3, FR-N, NFR-7 | 📋 | — |
-| **ITER-20** | Horizontal navbar IA refinement | Horizontal top-level navbar order, submenu label alignment, alias/reachability regression checks | FR-X4, FR-N, NFR-7 | 🔴 | — |
+| **ITER-19** | Navbar IA redesign | Navbar-parent menu restructure, submenu route binding, no-dead-link coverage | FR-X3, FR-N, NFR-7 | ✅ | — |
+| **ITER-20** | Horizontal navbar IA refinement | Horizontal top-level navbar order, submenu label alignment, alias/reachability regression checks | FR-X4, FR-N, NFR-7 | ✅ | — |
+| **ITER-21** | Navbar IA stabilization and closeout | FR-X4 validation, Escape focus-return fix, navbar L4 reachability scenario, full-gate closeout of ITER-19/ITER-20 | FR-X4, FR-N, NFR-7 | ✅ | DEF-003 (fixed) |
+| **ITER-22** | Portfolio CSV import | Import center `/investments/import` (Portfolio tab): mapping wizard + templates, dry-run preview, atomic positions/trades import via posting service, dedupe, audit entries (price-history stretch AC-IMP1h may slip to ITER-23) | FR-IMP-1 (AC-IMP1a–IMP1h) | 📋 | — |
 
 ## 3. Rolling progress log
 
@@ -65,13 +67,29 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
 
-### ITER-20 — Horizontal navbar IA refinement            (status: 🔴)
-Started: 2026-11-10 · Finished: —
+### ITER-21 — Navbar IA stabilization and closeout            (status: ✅)
+Started: 2026-11-10 · Finished: 2026-11-10
 
-- ✅ ACs completed with tests (in-session slice): top-level horizontal order and required submenu labels/routes are now wired and covered in `frontend/app/__tests__/mega-menu.test.tsx`; focused frontend regression remains green through the IA refinements
-- 🔧 Implementation notes: shell navigation moved from a top-level `Menu` trigger to an always-visible horizontal navbar; submenu interaction changed to hover/focus-first behavior, removed `+/-` indicators, added hover-safe close delay plus flush submenu alignment to avoid pointer-gap collapse; added `InvestFlow` brand link at navbar left bound to `/dashboard`
-- ❌ Tests currently red: none in focused navbar suite; full iteration gate rerun pending close
+- ✅ ACs completed with tests: **FR-X4a** horizontal top-level order (Dashboard · Accounts · Investments · Reporting · Settings) re-verified at L3; **FR-X4b** required submenu labels/routes re-verified at L3; **FR-X4c** submenu route bindings/aliases re-confirmed shell-consistent (no new routes/auth changes) and kept covered at L3 plus a new **L4 navbar reachability scenario**; **FR-X4d** active-route highlighting and keyboard/screen-reader submenu behavior strengthened — **Escape now returns focus to the group trigger** (AC-N2 focus-return), hover-safe close-delay persistence is regression-tested (L3) and keyboard reachability after hover is pinned
+- 🔧 Implementation notes: red-first captured in `docs/logs/iter-21/red-frontend.log` — the only genuine red was the AC-N2 Escape focus-return gap; the minimal fix in `frontend/app/(app)/mega-menu.tsx` adds a group-trigger ref map plus an Escape-close suppression flag so the trigger's own `onFocus` cannot re-open the group being closed; full gates re-run: backend pytest 91 passed · frontend vitest 14 passed · backend coverage 85.06% (gate 85%) · `make test-e2e` 6/6 green (incl. new navbar scenario) · ruff/mypy/eslint/tsc green; no backend, route, auth, ledger, or provider changes
+- 🐞 New defects: **DEF-003** (S3, E2E selector collision — ITER-20's `aria-label="InvestFlow home"` brand link made `getByLabel('Flow')` resolve two elements in the categories flow; fixed with exact-match selector, see [05](05-defects.md))
+- 📝 Doc deltas: [04](04-progress.md) ITER-19/ITER-20 rows → ✅ (user-approved retro close of ITER-19: FR-X3 slice landed in commit c38ea74, mapped gates completed under FR-X4 in ITER-21) and ITER-21 row added; [05](05-defects.md) DEF-003 opened+closed; [01 §12](01-requirements.md) FR-X3 refinement note (FR-X4 submenu labels govern); ADR-007; [02 §5.2](02-architecture.md) wording updated to "refinement applied"; [03 §4](03-test-plan.md) close note for X3/X4 rows; [08](08-backlog.md) FEAT-005 lifecycle → included ✅; [06 §1](06-gap-analysis.md) status sentence refreshed; [00](00-overview.md) untouched (no D-xx change)
+
+### ITER-19 — Navbar IA redesign (retro close, approved this session)            (status: ✅)
+Started: 2026-11-10 · Finished: 2026-11-10 (commit c38ea74; gates completed at ITER-21)
+
+- ✅ ACs completed with tests: **FR-X3a** navbar-parent top-level structure (matches FR-X4a order), **FR-X3b/c** grouped submenus with route-backed items and no dead links (superseding labels refined by FR-X4b per ADR-007), **FR-X3d** active-route highlight + submenu keyboard controls — covered at L3 (`frontend/app/__tests__/mega-menu.test.tsx`) with **FR-X4**-governing labels, and extended at L4 by the ITER-21 navbar reachability scenario
+- 🔧 Implementation notes: the FR-X3 navbar-parent restructure and the FR-X4 label refinement were executed in successive sessions (commits c38ea74 → 295476b); ITER-21 completed the full-gate closeout for both, per user-approved retro close
 - 🐞 New defects: none
+- 📝 Doc deltas: [04](04-progress.md) row 📋 → ✅; [01 §12](01-requirements.md) FR-X3 refinement note + ADR-007; [08](08-backlog.md) FEAT-005 lifecycle → included ✅
+
+### ITER-20 — Horizontal navbar IA refinement            (status: ✅)
+Started: 2026-11-10 · Finished: 2026-11-10 (full gates completed at ITER-21 close)
+
+- ✅ ACs completed with tests (in-session slice): top-level horizontal order and required submenu labels/routes are now wired and covered in `frontend/app/__tests__/mega-menu.test.tsx`; the mapped gates lacked E2E/day-one regression status at this session's close, completed by ITER-21
+- 🔧 Implementation notes: shell navigation moved from a top-level `Menu` trigger to an always-visible horizontal navbar; submenu interaction changed to hover/focus-first behavior, removed `+/-` indicators, added hover-safe close delay plus flush submenu alignment to avoid pointer-gap collapse; added `InvestFlow` brand link at navbar left bound to `/dashboard`
+- ❌ Tests currently red: none (ITER-21 gate rerun green)
+- 🐞 New defects: **DEF-003** discovered at ITER-21 close (brand-link aria-label selector collision in E2E; closed with exact-match selector)
 - 📝 Doc deltas: [02](02-architecture.md) §5.2 updated to reflect current navbar interaction model and left-brand link behavior
 
 ### ITER-18 — Data table standardization            (status: ✅)
@@ -283,6 +301,7 @@ Started: 2026-11-08 · Finished: 2026-11-08
 | ADR-004 | 2026-11-08 | Session revocation via `session_epoch` counter claim | simple, DB-driven logout/deactivation invalidation | [02 §4.3](02-architecture.md) |
 | ADR-005 | 2026-11-08 | Monorepo gains `e2e/` (Playwright L4) + root `package.json` (Playwright test runner home) + `.github/workflows/ci.yml`; toolchain realized as uv + Python 3.12 pin, pnpm, vitest 3.2.7, Playwright 1.x, Next 15.5/React 19.1, eslint 9 flat | [03 §2](03-test-plan.md) places L4 at repo-root `e2e/**` and the user approved a minimal GH Actions workflow; layout in [02 §2](02-architecture.md) updated, spec-level D-16 floors unchanged | [02 §2](02-architecture.md) |
 | ADR-006 | 2026-11-08 | User delete is implemented as soft-delete (`is_active=0`) and self deactivate/delete is denied | preserves user-history rows while still satisfying revocation and last-active protections; aligns with shared-book continuity expectations | [01 §1 FR-U4](01-requirements.md), [02 §3.1](02-architecture.md) |
+| ADR-007 | 2026-11-10 | FR-X4b submenu labels **supersede** FR-X3b (`Investments → Portfolio/Analysis/Research`, `Settings → Backup and Downloads`); FR-X3 keeps original record as the superseded draft | the implemented navbar follows FR-X4 (verified by L3/L4 in ITER-21); resolves the X3b/X4b AC contradiction recorded in [01 §12](01-requirements.md) without changing routes or auth | [01 §12](01-requirements.md), [02 §5.2](02-architecture.md) |
 
 *(Append rows as decisions arise — never rewrite history rows.)*
 
@@ -310,6 +329,8 @@ Started: 2026-11-08 · Finished: 2026-11-08
 | 18 | FR-X2 | 5.4, 5.3 |
 | 19 | FR-X3, FR-N | 5.1, 5.2 |
 | 20 | FR-X4, FR-N | 5.1, 5.2 |
+| 21 | FR-X4, FR-N, NFR-7 (regression gates) | 5.1, 5.2 (interaction model; no structural change) |
+| 22 | FR-IMP-1 | 3.1 (import_mappings/import_batches), 4.5 (posting service reuse), 5.1 (route `/investments/import`), 5.2 (Investments submenu wiring) |
 
 (served as "expected bootstrap" so sessions know exactly which docs the next iteration touches;
 update real rows on finish.)

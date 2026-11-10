@@ -3,14 +3,14 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-10 (ITER-18 closed; §4 → ITER-20) |
+| **Last updated** | 2026-11-10 (ITER-21 ✅ closed; §4 → ITER-22) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
 
 - §2 — the documentation roll-forward workflow (what to update after every iteration)
 - §3 — the in-session TDD execution loop
-- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-20)
+- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-22)
 - §5 — the stable prompt template used to generate §4 for later iterations
 
 ---
@@ -55,31 +55,44 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-20 — Horizontal navbar IA refinement**
+> **ITER-22 — Portfolio CSV import (FEAT-001)**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
-> `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-07 net worth, D-10 provider adapter, D-16 stack),
-> `docs/01-requirements.md` §13 FR-X4 and FR-N plus the related NFR-7 accessibility and shell constraints,
-> `docs/02-architecture.md` §5.1/§5.2 route-shell context and §5.3/§5.4 design-system guidance,
-> and `docs/03-test-plan.md` §4 matrix row for X4a–X4d plus the menu/a11y regression gates,
-> plus `docs/04-progress.md` ITER-20 row and the [04 §5](04-progress.md) mapping row.
+> `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-04 double-entry, D-07 net worth,
+> D-16 stack), `docs/01-requirements.md` §12 FR-IMP-1 (AC-IMP1a–IMP1h) and §5 FR-I1/FR-T posting baselines,
+> `docs/02-architecture.md` §3.1 (import_mappings/import_batches staging), §4.5 (posting service — the ONLY
+> route to `transaction_lines`), §4.9 (price_cache/manual precedence for the AC-IMP1h stretch), §5.1/§5.2
+> (route + Investments submenu wiring), and `docs/03-test-plan.md` §4 (add the IMP row: L1 parser/dedupe
+> + L2 atomic import + L4 wizard E2E), plus `docs/08-backlog.md` §3C (binding Q&A §3C.7).
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to FR-X4 acceptance criteria and the mapped navigation/accessibility regressions — ask me about any ambiguity; never assume.
+> scope only to FR-IMP-1 acceptance criteria — ask me about any ambiguity; never assume.
 >
 > **Deliverable:**
-> 1. Rework the shell navigation to a **horizontal** top-level menu in the exact order: Dashboard, Accounts, Investments, Reporting, Settings.
-> 2. Bind submenu entries exactly as specified: Accounts (Chart of Accounts, Categories, Transactions), Investments (Portfolio, Analysis, Research), Settings (Profile, Posting, Seed Management, Backup and Downloads, Users, Audit).
-> 3. Keep submenu route bindings, aliases, and dead-link coverage consistent with the shell contract while preserving route ownership and auth gating.
-> 4. Preserve route behavior, session context, and ledger/provider semantics while validating keyboard-only and a11y behavior per FR-N/NFR-7.
-> 5. Re-run mapped tests and repo regression gates (`make test`, `make test-e2e`, lint/types) and document the results.
+> 1. Backend importer core in `backend/app/services/importer/` (parser, mapping resolver, dry-run evaluator,
+>    deduper) posting **through the existing posting service only**; new `import_mappings`/`import_batches`
+>    tables via Alembic + audit `import.*` entries.
+> 2. Import API (L2): positions import (AC-IMP1d), trade transactions import with hash-tuple dedupe and
+>    `(account, ticker)` date-order replay (AC-IMP1e), atomic per-file semantics (AC-IMP1c), 5 MB / 5,000-row
+>    synchronous limits (AC-IMP1f).
+> 3. Frontend Import center at `/investments/import` (Portfolio tab): account mapping → column mapping →
+>    dry-run preview → confirm → result report, with starter templates (AC-IMP1a/AC-IMP1b); wire it into the
+>    Investments submenu without changing existing aliases or auth gating (AC-X4c/X4d regression must stay green).
+> 4. L4 wizard E2E with fixture CSVs (import positions + trades, see dashboard/report reflect them).
+> 5. Roll forward docs ([07 §2](07-iterative-prompts.md) R1–R8). Color the AC-IMP1h price-history stretch
+>    honestly — it may slip to ITER-23 without blocking ITER-22 closure.
 >
-> **Out of scope this iteration:** data-table redesign or broad list-screen rewrites, backend business-rule changes, provider/ledger semantics changes, or unrelated visual polish beyond the navbar IA and shell contract.
+> **Out of scope this iteration:** PDF/OFX/QIF ingestion, silent account/category auto-creation, background
+> job infra, multi-currency, non-investment statement import (FEAT-002's turf, separate iteration), navbar
+> or shell polish beyond the submenu menu-item addition.
 >
-> **Definition of done:** mapped-layer tests green for FR-X4, `make test` + `make test-e2e` green,
-> lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8 so the next prompt (§4) is ready.
+> **Definition of done:** FR-IMP-1 mapped-layer tests green (AC-IMP1h tracked if slipped), `make test` +
+> `make test-e2e` green, lint/types green, backend coverage ≥ 85%, no untriaged defects, docs rolled forward.
 >
-> **Known traps:** do not conflate navigation re-organization with route or auth changes; validate the horizontal menu and nested submenus under keyboard-only navigation; keep route aliases and shell conventions stable; keep the IA patch reversible and test-backed.
+> **Known traps:** never write `transaction_lines` directly (T-1 invariants; reuse `backend/app/transactions.py`);
+> integer-cents/q4 quantity conversions only (NFR-10 — no floats); sells-before-buys are rejected with row
+> errors, never auto-fixed; duplicates are skipped-with-report, not double-posted; positions replace open
+> holdings only with preview-flagged confirmation; closed positions' realized P&L survives.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 
@@ -130,7 +143,8 @@ ITER-02 are already green.
   keep focus/contrast regressions at zero)
 - ⏭ **ITER-18 — Data table standardization** (FR-X2, NFR-4/NFR-7; §5.3/§5.4; traps: choose OSS table via
   explicit scorecard, stage migrations users/transactions/accounts, avoid big-bang rewrite)
-- ⏭ **ITER-19 — Navbar IA redesign** (FR-X3 + FR-N; §5.1/§5.2; traps: exact hierarchy, no dead submenu links,
+- ✅ **ITER-19 — Navbar IA redesign** (FR-X3 + FR-N; §5.1/§5.2; traps: exact hierarchy, no dead submenu links,
   route highlight + keyboard semantics preserved)
-- ⏭ **ITER-20 — Horizontal navbar IA refinement** (FR-X4 + FR-N; §5.1/§5.2; traps: strict top-level order,
-  Investments label split to Portfolio/Analysis/Research, and Settings label update to Backup and Downloads) — current next iteration (see §4 above)
+- ✅ **ITER-20 — Horizontal navbar IA refinement** (FR-X4 + FR-N; §5.1/§5.2; traps: strict top-level order,
+  Investments label split to Portfolio/Analysis/Research, and Settings label update to Backup and Downloads) — closed at ITER-21 (gates/docs)
+- ✅ **ITER-21 — Navbar IA stabilization and closeout** (FR-X4 validation, Escape focus-return, navbar L4 reachability; ITER-19/20 closeout) — see §4 roll-forward history

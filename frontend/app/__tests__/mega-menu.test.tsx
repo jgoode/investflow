@@ -75,4 +75,59 @@ describe("mega menu", () => {
     expect(screen.getByRole("link", { name: "Users" }).getAttribute("href")).toBe("/users");
     expect(screen.getByRole("link", { name: "Audit" }).getAttribute("href")).toBe("/settings");
   });
+
+  it("returns focus to the group trigger when Escape closes the submenu (AC-N2/AC-X4d)", () => {
+    render(<MegaMenu username="alice" />);
+
+    const nav = screen.getByRole("navigation", { name: "Primary navigation" });
+    const accounts = screen.getByRole("link", { name: "Accounts" });
+    fireEvent.focus(accounts);
+    expect(screen.getByRole("link", { name: "Chart of Accounts" })).toBeTruthy();
+
+    fireEvent.keyDown(nav, { key: "Escape" });
+    expect(screen.queryByRole("link", { name: "Chart of Accounts" })).toBeNull();
+    expect(document.activeElement).toBe(accounts);
+  });
+
+  it("uses a hover-safe close delay so pointer travel must not collapse the submenu (AC-X4d)", async () => {
+    render(<MegaMenu username="alice" />);
+
+    const investments = screen.getByRole("link", { name: "Investments" });
+    fireEvent.focus(investments);
+    expect(screen.getByRole("link", { name: "Analysis" })).toBeTruthy();
+
+    const li = investments.closest("li") as HTMLElement;
+    const submenu = screen.getByRole("link", { name: "Analysis" }).closest("ul") as HTMLElement;
+
+    // Leaving the group immediately must not close the submenu yet (delay window).
+    fireEvent.mouseLeave(li);
+    expect(screen.getByRole("link", { name: "Analysis" })).toBeTruthy();
+
+    // Moving into the submenu cancels the pending close.
+    fireEvent.mouseEnter(submenu);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(screen.getByRole("link", { name: "Analysis" })).toBeTruthy();
+
+    // Leaving again (with no re-entry) closes it after the delay.
+    fireEvent.mouseLeave(submenu);
+    await new Promise((resolve) => setTimeout(resolve, 400));
+    expect(screen.queryByRole("link", { name: "Analysis" })).toBeNull();
+  });
+
+  it("stays keyboard-reachable after hover interaction and highlights the active item", () => {
+    render(<MegaMenu username="alice" />);
+
+    const investments = screen.getByRole("link", { name: "Investments" });
+    const li = investments.closest("li") as HTMLElement;
+    fireEvent.mouseEnter(li);
+    const analysis = screen.getByRole("link", { name: "Analysis" });
+    expect(analysis).toBeTruthy();
+
+    // Keyboard focus must still be able to open and use the submenu after hover.
+    fireEvent.focus(analysis);
+    expect(analysis.getAttribute("aria-current")).toBeNull();
+
+    const portfolio = screen.getByRole("link", { name: "Portfolio" });
+    expect(portfolio).toBeTruthy();
+  });
 });

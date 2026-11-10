@@ -65,6 +65,8 @@ export function MegaMenu({ username }: { username: string }) {
   const pathname = usePathname();
   const router = useRouter();
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const groupLinkRefs = useRef<Map<string, HTMLAnchorElement>>(new Map());
+  const escapeCloseRef = useRef(false);
   const [openGroup, setOpenGroup] = useState<string | null>(() => {
     const activeGroup = MENU_GROUPS.find((group) => {
       if (group.items) {
@@ -88,6 +90,11 @@ export function MegaMenu({ username }: { username: string }) {
   }
 
   function handleGroupFocus(groupKey: string) {
+    const suppressed = escapeCloseRef.current;
+    escapeCloseRef.current = false;
+    if (suppressed) {
+      return;
+    }
     if (closeTimerRef.current) {
       clearTimeout(closeTimerRef.current);
       closeTimerRef.current = null;
@@ -109,6 +116,7 @@ export function MegaMenu({ username }: { username: string }) {
     return () => {
       if (closeTimerRef.current) {
         clearTimeout(closeTimerRef.current);
+        closeTimerRef.current = null;
       }
     };
   }, []);
@@ -128,7 +136,20 @@ export function MegaMenu({ username }: { username: string }) {
           className="relative flex-1"
           onKeyDown={(event) => {
             if (event.key === "Escape") {
+              const openKey = openGroup;
               setOpenGroup(null);
+              if (openKey) {
+                // Return focus to the group trigger (AC-N2); suppress the
+                // trigger's own onFocus re-open introduced by this focus call.
+                escapeCloseRef.current = true;
+                groupLinkRefs.current.get(openKey)?.focus();
+                // Backstop in case the focus() call produced no focus event
+                // (e.g. the trigger was already the active element).
+                closeTimerRef.current = setTimeout(() => {
+                  escapeCloseRef.current = false;
+                  closeTimerRef.current = null;
+                }, 0);
+              }
             }
           }}
         >
@@ -155,6 +176,13 @@ export function MegaMenu({ username }: { username: string }) {
                       }`}
                       aria-current={groupIsActive ? "page" : undefined}
                       href={group.href}
+                      ref={(element) => {
+                        if (element) {
+                          groupLinkRefs.current.set(group.key, element);
+                        } else {
+                          groupLinkRefs.current.delete(group.key);
+                        }
+                      }}
                       onClick={() => {
                         setOpenGroup(null);
                       }}

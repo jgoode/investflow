@@ -134,6 +134,17 @@ constraints hold, line assignment plumbing works, and category delete re-points 
 includes Categories navigation; L4 scenario (`e2e/smoke.spec.ts`) covers category create/delete via the minimal
 category screen while preserving the crypto regression battery in parallel backend runs.*
 
+*ITER-21 close note (completes the ITER-19/ITER-20 gate closeout): the X3a–X3d and X4a–X4d navbar rows are
+now covered at their mapped layers — frontend L3 menu-shell suite (`frontend/app/__tests__/mega-menu.test.tsx`,
+5 scenarios: horizontal IA order, submenu route bindings/aliases, Escape close **with focus returned to the
+group trigger** per AC-N2, hover-safe close-delay persistence, keyboard reachability after hover) and the new
+L4 navbar reachability scenario (`e2e/smoke.spec.ts`: brand link → `/dashboard`, top-level order assertion,
+hover → Accounts submenu → Transactions). The FR-X3b/FR-X4b wording conflict is resolved by ADR-007
+(FR-X4 labels govern). DEF-003 — brand-link `aria-label="InvestFlow home"` colliding with the categories
+flow's substring `getByLabel('Flow')` — was found at this gate rerun and closed with exact-match selectors.
+Route ownership, auth gating, ledger, and provider semantics unchanged; `make test`, `make test-e2e`,
+`make lint` green at close (backend coverage 85.06% vs 85% gate).*
+
 ## 5. Dedicated suites
 
 ### 5.1 Auth/session suite (Iterations 2–3)
