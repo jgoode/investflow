@@ -71,6 +71,7 @@ Legend: `U`=L1, `I`=L2, `C`=L3, `E`=L4. `•` = primary home for that AC's test;
 | X1a–X1c theme preset (winter) | | • | • | • | 17 | shell default theme + a11y/focus regression checks |
 | X2a–X2d datatable standardization | • | • | • | • | 18 | candidate scorecard + shared table wrapper migrations |
 | X3a–X3d navbar IA redesign | | • | • | • | 19 | required menu tree + no-dead-link route reachability |
+| X4a–X4d horizontal navbar IA refinement | | • | • | • | 20 | horizontal top-nav order + submenu label/route-alias reachability and keyboard semantics |
 | E1–E8 encryption | • | • | | | 4 (~16 diag) | §5.2 dedicated suite |
 | N1–N4 mega menu | | | • | • | 2,5,11 | keyboard nav test; route highlight |
 | NFR-2 auth on all paths | | • | | • | 2+ | guard matrix: every protected route returns 401 unauthed |

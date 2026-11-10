@@ -243,6 +243,16 @@ Navigation is restructured around a navbar parent with grouped submenus and rout
 - **AC-X3c** — Every submenu item resolves to at least one reachable page (existing page or explicit placeholder), with no dead links.
 - **AC-X3d** — Active-route highlighting and submenu keyboard controls satisfy FR-N/NFR-7 behavior.
 
+### FR-X4 — Horizontal navbar IA refinement
+
+Navigation is refined to use a **horizontal** top-level navbar while preserving route/auth ownership and
+the shell interaction model.
+
+- **AC-X4a** — Top-level horizontal order is exactly: **Dashboard · Accounts · Investments · Reporting · Settings**.
+- **AC-X4b** — Accounts submenu contains **Chart of Accounts, Categories, Transactions**; Investments submenu contains **Portfolio, Analysis, Research**; Settings submenu contains **Profile, Posting, Seed Management, Backup and Downloads, Users, Audit**.
+- **AC-X4c** — Every submenu item resolves to at least one reachable page (existing page or explicit placeholder), and route aliases remain consistent with shell contracts.
+- **AC-X4d** — Active-route highlighting plus keyboard/screen-reader submenu behavior satisfy FR-N and NFR-7 without changing auth-gating or ledger/provider semantics.
+
 ## 13. Data model summary
 
 Detailed field tables live in [02-architecture](02-architecture.md) §3. Entity list:

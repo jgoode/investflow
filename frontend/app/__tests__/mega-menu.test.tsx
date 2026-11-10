@@ -23,28 +23,41 @@ describe("mega menu", () => {
     const dashboard = screen.getByRole("link", { name: "Dashboard" });
     expect(dashboard.getAttribute("aria-current")).toBe("page");
 
+    const accountsToggle = screen.getByRole("button", { name: "Toggle Accounts submenu" });
+    fireEvent.click(accountsToggle);
+    expect(screen.getByRole("link", { name: "Chart of Accounts" }).getAttribute("href")).toBe(
+      "/accounts",
+    );
+
     fireEvent.keyDown(screen.getByRole("navigation"), { key: "Escape" });
     expect(screen.queryByRole("navigation")).toBeNull();
   });
 
-  it("shows Accounts, Categories, Users, and Settings as enabled destinations", () => {
+  it("uses the required parent/child IA and reachable submenu routes", () => {
     render(<MegaMenu username="alice" />);
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
 
-    const accountsLink = screen.getByRole("link", { name: "Accounts" });
-    expect(accountsLink).toBeTruthy();
-    expect(screen.queryByText("Accounts (coming)")).toBeNull();
+    expect(screen.getByRole("link", { name: "Dashboard" }).getAttribute("href")).toBe("/dashboard");
+    expect(screen.getByRole("link", { name: "Accounts" }).getAttribute("href")).toBe("/accounts");
+    expect(screen.getByRole("link", { name: "Investments" }).getAttribute("href")).toBe("/investments");
+    expect(screen.getByRole("link", { name: "Reporting" }).getAttribute("href")).toBe("/reports");
+    expect(screen.getByRole("link", { name: "Settings" }).getAttribute("href")).toBe("/settings");
 
-    const categoriesLink = screen.getByRole("link", { name: "Categories" });
-    expect(categoriesLink).toBeTruthy();
-    expect(screen.queryByText("Categories (coming)")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Toggle Accounts submenu" }));
+    expect(screen.getByRole("link", { name: "Chart of Accounts" }).getAttribute("href")).toBe("/accounts");
+    expect(screen.getByRole("link", { name: "Categories" }).getAttribute("href")).toBe("/categories");
+    expect(screen.getByRole("link", { name: "Transactions" }).getAttribute("href")).toBe("/transactions");
 
-    const usersLink = screen.getByRole("link", { name: "Users" });
-    expect(usersLink).toBeTruthy();
-    expect(screen.queryByText("Users (coming)")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Toggle Investments submenu" }));
+    expect(screen.getByRole("link", { name: "Portfolio Research" }).getAttribute("href")).toBe("/investments");
+    expect(screen.getByRole("link", { name: "Analysis" }).getAttribute("href")).toBe("/investments");
 
-    const settingsLink = screen.getByRole("link", { name: "Settings" });
-    expect(settingsLink.getAttribute("href")).toBe("/settings");
-    expect(screen.queryByText("Settings (coming)")).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Toggle Settings submenu" }));
+    expect(screen.getByRole("link", { name: "Profile" }).getAttribute("href")).toBe("/settings");
+    expect(screen.getByRole("link", { name: "Posting" }).getAttribute("href")).toBe("/settings");
+    expect(screen.getByRole("link", { name: "Seed Management" }).getAttribute("href")).toBe("/settings");
+    expect(screen.getByRole("link", { name: "Backup and Download" }).getAttribute("href")).toBe("/settings");
+    expect(screen.getByRole("link", { name: "Users" }).getAttribute("href")).toBe("/users");
+    expect(screen.getByRole("link", { name: "Audit" }).getAttribute("href")).toBe("/settings");
   });
 });

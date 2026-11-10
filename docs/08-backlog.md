@@ -37,6 +37,7 @@ Rules:
 | **FEAT-003** | DaisyUI winter theme preset | UX styling | User request 2026-11-10 | S (≈0.5 iteration) | scheduled — ITER-17 |
 | **FEAT-004** | Data table standardization research + rollout | Frontend platform enhancement | User request 2026-11-10 | L (≈2–3 iterations, staged rollout) | scheduled — ITER-18 |
 | **FEAT-005** | Navbar information architecture redesign | UX/navigation | User request 2026-11-10 | M (≈1 iteration) | scheduled — ITER-19 |
+| **FEAT-006** | Horizontal navbar IA refinement | UX/navigation | User request 2026-11-10 | S (≈0.5–1 iteration) | scheduled — ITER-20 |
 | **FEAT-001** | Portfolio CSV import (positions + transactions) | Future feature request | User request 2026-11-08 | M (≈1–2 iterations) | specified — Q&A resolved (§3C.7) |
 | **FEAT-002** | Non-investment opening balances + statement migration import (CSV) | Future feature request | User request 2026-11-08 (extends FEAT-001 scoping note §3C.5) | M (≈1–2 iterations, shared importer core) | specified — Q&A resolved (§3D.6) |
 | — | *(related, owned in [06-gap-analysis](06-gap-analysis.md):* G-001 budgets · G-002 FIFO lots · G-004 role granularity · G-005 manual assets · G-006 desktop packaging | items | session decisions | — | recorded-at-time-zero |
@@ -209,6 +210,41 @@ menu structure:
 | Q-1 | Use navbar as parent | Navigation refactor is centered on a navbar parent component with grouped submenus |
 | Q-2 | Exact hierarchy required | Menu structure is locked to the tree documented in §3B.1 |
 | Q-3 | No dead submenu items | Each submenu must link to at least one reachable page |
+
+## 3E. Feature request FEAT-006 — Horizontal navbar IA refinement
+
+> **Status: scheduled (ITER-20).**
+
+### 3E.1 Summary
+
+Refine the navbar IA to a **horizontal** top-level menu while preserving route ownership, auth gating,
+and shell accessibility semantics.
+
+### 3E.2 Locked hierarchy
+
+- Dashboard
+- Accounts
+  - Chart of Accounts
+  - Categories
+  - Transactions
+- Investments
+  - Portfolio
+  - Analysis
+  - Research
+- Reporting
+- Settings
+  - Profile
+  - Posting
+  - Seed Management
+  - Backup and Downloads
+  - Users
+  - Audit
+
+### 3E.3 Constraints
+
+- No backend/API business-rule changes.
+- Keep route aliases consistent with shell contracts and eliminate dead submenu links.
+- Preserve keyboard and screen-reader behavior to satisfy FR-N and NFR-7.
 
 ## 3C. Feature request FEAT-001 — Portfolio CSV import
 

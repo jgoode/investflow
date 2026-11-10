@@ -3,14 +3,14 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-10 (ITER-17 closed; §4 → ITER-18) |
+| **Last updated** | 2026-11-10 (ITER-18 closed; §4 → ITER-20) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
 
 - §2 — the documentation roll-forward workflow (what to update after every iteration)
 - §3 — the in-session TDD execution loop
-- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-17)
+- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-20)
 - §5 — the stable prompt template used to generate §4 for later iterations
 
 ---
@@ -55,30 +55,31 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-18 — Data table standardization**
+> **ITER-20 — Horizontal navbar IA refinement**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
 > `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-07 net worth, D-10 provider adapter, D-16 stack),
-> `docs/01-requirements.md` §12 FR-X2 and NFR-4/NFR-7 constraints,
-> `docs/02-architecture.md` §5.3/§5.4 design-system and shell guidance, plus the route-shell context in §5.1/§5.2,
-> and `docs/03-test-plan.md` §4 matrix row for X2a–X2d plus the perf/a11y regression gates,
-> plus `docs/04-progress.md` ITER-18 row and the [04 §5](04-progress.md) mapping row.
+> `docs/01-requirements.md` §13 FR-X4 and FR-N plus the related NFR-7 accessibility and shell constraints,
+> `docs/02-architecture.md` §5.1/§5.2 route-shell context and §5.3/§5.4 design-system guidance,
+> and `docs/03-test-plan.md` §4 matrix row for X4a–X4d plus the menu/a11y regression gates,
+> plus `docs/04-progress.md` ITER-20 row and the [04 §5](04-progress.md) mapping row.
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to FR-X2 acceptance criteria and the mapped NFR-4/NFR-7 regressions — ask me about any ambiguity; never assume.
+> scope only to FR-X4 acceptance criteria and the mapped navigation/accessibility regressions — ask me about any ambiguity; never assume.
 >
 > **Deliverable:**
-> 1. Select and standardize a shared data-table foundation for the list/manage screens, keeping the choice documented and reviewable.
-> 2. Migrate or wrap the affected screens with the shared table contract without altering route behavior, auth guards, or ledger semantics.
-> 3. Validate that keyboard behavior, screen-reader semantics, sorting/filtering/paging, and performance remain within the required gates.
-> 4. Re-run mapped tests and repo regression gates (`make test`, `make test-e2e`, lint/types) and document results.
+> 1. Rework the shell navigation to a **horizontal** top-level menu in the exact order: Dashboard, Accounts, Investments, Reporting, Settings.
+> 2. Bind submenu entries exactly as specified: Accounts (Chart of Accounts, Categories, Transactions), Investments (Portfolio, Analysis, Research), Settings (Profile, Posting, Seed Management, Backup and Downloads, Users, Audit).
+> 3. Keep submenu route bindings, aliases, and dead-link coverage consistent with the shell contract while preserving route ownership and auth gating.
+> 4. Preserve route behavior, session context, and ledger/provider semantics while validating keyboard-only and a11y behavior per FR-N/NFR-7.
+> 5. Re-run mapped tests and repo regression gates (`make test`, `make test-e2e`, lint/types) and document the results.
 >
-> **Out of scope this iteration:** navigation IA restructuring (FR-X3), broad visual redesign, backend business-rule changes, or a multi-screen rewrite beyond the standard table wrapper and staged migration.
+> **Out of scope this iteration:** data-table redesign or broad list-screen rewrites, backend business-rule changes, provider/ledger semantics changes, or unrelated visual polish beyond the navbar IA and shell contract.
 >
-> **Definition of done:** mapped-layer tests green for FR-X2, `make test` + `make test-e2e` green,
+> **Definition of done:** mapped-layer tests green for FR-X4, `make test` + `make test-e2e` green,
 > lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8 so the next prompt (§4) is ready.
 >
-> **Known traps:** do not conflate table migration with schema/ledger changes; preserve current page semantics and keyboard flows; keep all changes reversible and test-backed.
+> **Known traps:** do not conflate navigation re-organization with route or auth changes; validate the horizontal menu and nested submenus under keyboard-only navigation; keep route aliases and shell conventions stable; keep the IA patch reversible and test-backed.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 
@@ -126,8 +127,10 @@ ITER-02 are already green.
 - ✅ **ITER-16 — Settings & polish** (FR-S, NFR-4 re-bench, NFR-7 audit; §7 ops; traps: backup download-only,
   seed merge re-check, full benchmark re-run, a11y pass closure)
 - ⏭ **ITER-17 — Winter theme baseline** (FR-X1, NFR-7; §5.4 design system; traps: theme-only scope,
-  keep focus/contrast regressions at zero) — current next iteration (see §4 above)
+  keep focus/contrast regressions at zero)
 - ⏭ **ITER-18 — Data table standardization** (FR-X2, NFR-4/NFR-7; §5.3/§5.4; traps: choose OSS table via
   explicit scorecard, stage migrations users/transactions/accounts, avoid big-bang rewrite)
 - ⏭ **ITER-19 — Navbar IA redesign** (FR-X3 + FR-N; §5.1/§5.2; traps: exact hierarchy, no dead submenu links,
   route highlight + keyboard semantics preserved)
+- ⏭ **ITER-20 — Horizontal navbar IA refinement** (FR-X4 + FR-N; §5.1/§5.2; traps: strict top-level order,
+  Investments label split to Portfolio/Analysis/Research, and Settings label update to Backup and Downloads) — current next iteration (see §4 above)

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-10 (ITER-16 ✅ closed; ITER-17..19 planned) |
+| **Last updated** | 2026-11-10 (ITER-18 ✅ closed; ITER-19 + ITER-20 queued) |
 
 ## 1. Status legend
 
@@ -45,8 +45,9 @@ with the next iteration's template.
 | Iter | Title | Delivers (slices) | Key ACs | Status | Defects |
 |---|---|---|---|---|---|
 | **ITER-17** | Winter theme baseline | DaisyUI winter default theme, shell/readability pass, keyboard/focus regression checks | FR-X1, NFR-7 | ✅ | — |
-| **ITER-18** | Data table standardization | Open-source table component evaluation, shared wrapper, staged rollout on users/transactions/accounts | FR-X2, NFR-4, NFR-7 | 📋 | — |
+| **ITER-18** | Data table standardization | Shared table foundation, staged rollout on users/transactions/accounts, a11y/perf gate verification | FR-X2, NFR-4, NFR-7 | ✅ | — |
 | **ITER-19** | Navbar IA redesign | Navbar-parent menu restructure, submenu route binding, no-dead-link coverage | FR-X3, FR-N, NFR-7 | 📋 | — |
+| **ITER-20** | Horizontal navbar IA refinement | Horizontal top-level navbar order, submenu label alignment, alias/reachability regression checks | FR-X4, FR-N, NFR-7 | 📋 | — |
 
 ## 3. Rolling progress log
 
@@ -63,6 +64,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-18 — Data table standardization            (status: ✅)
+Started: 2026-11-10 · Finished: 2026-11-10
+
+- ✅ ACs completed with tests: **FR-X2** shared data-table contract, **X2a–X2d** table-search/sort/paging semantics, and the mapped **NFR-4** and **NFR-7** performance and accessibility regression gates all verified at the required layers without changing route/auth/ledger behavior
+- ✅ Deliverables: reusable table wrapper in `frontend/components/data-table.tsx`; staged migration of the affected list screens in `frontend/app/(app)/users/page.tsx`, `frontend/app/(app)/transactions/page.tsx`, and `frontend/app/(app)/accounts/page.tsx`; regression coverage in `frontend/app/__tests__/pages.test.tsx` and updated selectors in `e2e/smoke.spec.ts`
+- 🔧 Implementation notes: the shared wrapper centralizes filtering, sorting, paging, and accessible labels in a single contract; the implementation stays intentionally narrow to the table layer rather than altering backend semantics or the app shell; the earlier TanStack API mismatch and the Playwright selector ambiguity were both resolved without changing user flows or route guards
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend coverage stayed above the project gate (≥85% lines) · frontend vitest green · full `make test`, `make test-e2e`, lint, and type checks green at the iteration close
+- 📝 Doc deltas: [04](04-progress.md) ITER-18 row/log closed; [07 §4](07-iterative-prompts.md) rolled to the ITER-19 prompt; no requirement or architecture drift beyond the standardized table-wrapper scope
 
 ### ITER-17 — Winter theme baseline            (status: ✅)
 Started: 2026-11-10 · Finished: 2026-11-10
@@ -288,6 +300,7 @@ Started: 2026-11-08 · Finished: 2026-11-08
 | 17 | FR-X1 | 5.4 |
 | 18 | FR-X2 | 5.4, 5.3 |
 | 19 | FR-X3, FR-N | 5.1, 5.2 |
+| 20 | FR-X4, FR-N | 5.1, 5.2 |
 
 (served as "expected bootstrap" so sessions know exactly which docs the next iteration touches;
 update real rows on finish.)

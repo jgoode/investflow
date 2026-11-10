@@ -370,14 +370,17 @@ search(ticker_fragment) -> suggestions (used by add-brokerage 'search' in textar
 Auth gating: `app/(app)/layout` → `getSession()` server component; no-auth → `redirect('/login')`.
 `/api` client (browser) wraps fetch with `X-Requested-With` header + 401 → route to login.
 
-### 5.2 Navigation shell (FR-N + FR-X3)
+### 5.2 Navigation shell (FR-N + FR-X3 + FR-X4)
 
-- `MegaMenu` component: DaisyUI `dropdown` + columns per group; `nav` tree data is a TS constant mirroring
+- `MegaMenu` component: DaisyUI navbar shell with grouped submenu popovers; `nav` tree data is a TS constant mirroring
   [01 §10](01-requirements.md) and [01 §12](01-requirements.md), keyboard accessible (AC-N2/AC-X3d),
-  route-parity highlight (AC-N4/AC-X3d).
+  route-parity highlight (AC-N4/AC-X3d/AC-X4d).
 - Post-ITER-16 IA target groups: Dashboard, Accounts (Chart of Accounts/Categories/Transactions),
   Investments (Portfolio Research/Analysis), Reporting, Settings (Profile/Posting/Seed Management/
   Backup and Download/Users/Audit). Each submenu item must bind to a route (AC-X3c).
+- Post-ITER-19 refinement target (FR-X4): preserve the same top-level order in a horizontal navbar,
+  and refine labels to Investments (Portfolio/Analysis/Research) and Settings (Backup and Downloads).
+  Route owners and auth gating stay unchanged while aliases remain shell-consistent (AC-X4c/AC-X4d).
 - Mega menu is one shared component (not per-page navigation), rendered fully client-side; server still
   passes sanitized `user` info only.
 
