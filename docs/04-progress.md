@@ -44,7 +44,7 @@ with the next iteration's template.
 
 | Iter | Title | Delivers (slices) | Key ACs | Status | Defects |
 |---|---|---|---|---|---|
-| **ITER-17** | Winter theme baseline | DaisyUI winter default theme, shell/readability pass, keyboard/focus regression checks | FR-X1, NFR-7 | 📋 | — |
+| **ITER-17** | Winter theme baseline | DaisyUI winter default theme, shell/readability pass, keyboard/focus regression checks | FR-X1, NFR-7 | ✅ | — |
 | **ITER-18** | Data table standardization | Open-source table component evaluation, shared wrapper, staged rollout on users/transactions/accounts | FR-X2, NFR-4, NFR-7 | 📋 | — |
 | **ITER-19** | Navbar IA redesign | Navbar-parent menu restructure, submenu route binding, no-dead-link coverage | FR-X3, FR-N, NFR-7 | 📋 | — |
 
@@ -63,6 +63,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-17 — Winter theme baseline            (status: ✅)
+Started: 2026-11-10 · Finished: 2026-11-10
+
+- ✅ ACs completed with tests: **FR-X1** default winter shell theme, **AC-X1a** shell resolution, **AC-X1b** focus/contrast/keyboard regression checks, and **AC-X1c** no route/auth/ledger behavior drift under the winter preset; the authenticated app shell resolves through a single theme source-of-truth without altering underlying business logic or provider semantics
+- ✅ Deliverables: theme source-of-truth in `frontend/app/theme.ts`; default shell attribute in `frontend/app/layout.tsx`; winter-safe global focus/accessibility baseline in `frontend/app/globals.css`; regression coverage in `frontend/app/__tests__/pages.test.tsx` and the existing keyboard-safe menu checks in `frontend/app/__tests__/mega-menu.test.tsx`
+- 🔧 Implementation notes: the theme is centralized at the app shell level rather than spread across pages, the global CSS preserves winter readability without introducing a broad theme system or user override semantics, and the existing mega-menu keyboard flow remains unchanged under the new default
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 85.06% lines (`pytest-cov` gate 85%) · frontend vitest green (10/10 tests) · `make test`, `make test-e2e`, and `make lint` green at the iteration close
+- 📝 Doc deltas: [04](04-progress.md) ITER-17 row/log closed; [07 §4](07-iterative-prompts.md) rolled to the ITER-18 prompt; no requirement/architecture drift beyond the winter baseline scope
 
 ### ITER-16 — Settings & polish            (status: ✅)
 Started: 2026-11-10 · Finished: 2026-11-10

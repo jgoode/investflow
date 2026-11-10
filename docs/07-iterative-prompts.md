@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-10 (ITER-16 closed; §4 → ITER-17) |
+| **Last updated** | 2026-11-10 (ITER-17 closed; §4 → ITER-18) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
@@ -55,30 +55,30 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-17 — Winter theme baseline**
+> **ITER-18 — Data table standardization**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
 > `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-07 net worth, D-10 provider adapter, D-16 stack),
-> `docs/01-requirements.md` §12 FR-X1 and NFR-7 constraints,
-> `docs/02-architecture.md` §5.4 design-system theme guidance and route-shell context in §5.1/§5.2,
-> plus `docs/03-test-plan.md` §4 matrix row for X1a–X1c and the regression gates for NFR-7,
-> plus `docs/04-progress.md` ITER-17 row and the [04 §5](04-progress.md) mapping row.
+> `docs/01-requirements.md` §12 FR-X2 and NFR-4/NFR-7 constraints,
+> `docs/02-architecture.md` §5.3/§5.4 design-system and shell guidance, plus the route-shell context in §5.1/§5.2,
+> and `docs/03-test-plan.md` §4 matrix row for X2a–X2d plus the perf/a11y regression gates,
+> plus `docs/04-progress.md` ITER-18 row and the [04 §5](04-progress.md) mapping row.
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to FR-X1 acceptance criteria and the mapped NFR-7 regressions — ask me about any ambiguity; never assume.
+> scope only to FR-X2 acceptance criteria and the mapped NFR-4/NFR-7 regressions — ask me about any ambiguity; never assume.
 >
 > **Deliverable:**
-> 1. Set DaisyUI `winter` as the default authenticated-shell theme baseline through a single source of truth in frontend shell/config.
-> 2. Validate readability/accessibility on high-traffic screens under the winter theme (focus-visible, contrast, keyboard flow unchanged).
-> 3. Keep behavior-only changes out of scope: no business logic, auth, provider, or ledger semantics changes.
+> 1. Select and standardize a shared data-table foundation for the list/manage screens, keeping the choice documented and reviewable.
+> 2. Migrate or wrap the affected screens with the shared table contract without altering route behavior, auth guards, or ledger semantics.
+> 3. Validate that keyboard behavior, screen-reader semantics, sorting/filtering/paging, and performance remain within the required gates.
 > 4. Re-run mapped tests and repo regression gates (`make test`, `make test-e2e`, lint/types) and document results.
 >
-> **Out of scope this iteration:** data-table migrations (FR-X2), navigation IA restructuring (FR-X3), new backend settings semantics, or speculative visual redesign beyond the winter baseline.
+> **Out of scope this iteration:** navigation IA restructuring (FR-X3), broad visual redesign, backend business-rule changes, or a multi-screen rewrite beyond the standard table wrapper and staged migration.
 >
-> **Definition of done:** mapped-layer tests green for FR-X1, `make test` + `make test-e2e` green,
+> **Definition of done:** mapped-layer tests green for FR-X2, `make test` + `make test-e2e` green,
 > lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8 so the next prompt (§4) is ready.
 >
-> **Known traps:** do not conflate theme rollout with component rewrites; preserve existing route behavior and auth guards; keep all changes reversible and test-backed.
+> **Known traps:** do not conflate table migration with schema/ledger changes; preserve current page semantics and keyboard flows; keep all changes reversible and test-backed.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 

@@ -1,8 +1,10 @@
 import { cleanup, render, screen } from "@testing-library/react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import DashboardPage from "../(app)/dashboard/page";
 import InvestmentsPage from "../(app)/investments/page";
+import RootLayout from "../layout";
 import Home from "../page";
 import { validateLogin, validateRegister } from "@/lib/validation";
 
@@ -21,6 +23,17 @@ describe("root route (/)", () => {
     render(<Home />);
 
     expect(redirectFn).toHaveBeenCalledWith("/dashboard");
+  });
+
+  it("uses the DaisyUI winter theme as the app shell default", () => {
+    const html = renderToStaticMarkup(
+      <RootLayout>
+        <div>content</div>
+      </RootLayout>,
+    );
+
+    expect(html).toContain('data-theme="winter"');
+    expect(html).toContain('lang="en"');
   });
 });
 
