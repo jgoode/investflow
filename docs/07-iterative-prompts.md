@@ -3,14 +3,14 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-10 (ITER-16 closed; next prompt to be scoped) |
+| **Last updated** | 2026-11-10 (ITER-16 closed; §4 → ITER-17) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
 
 - §2 — the documentation roll-forward workflow (what to update after every iteration)
 - §3 — the in-session TDD execution loop
-- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-16)
+- §4 — **the copy-paste-ready prompt for the next iteration** (currently ITER-17)
 - §5 — the stable prompt template used to generate §4 for later iterations
 
 ---
@@ -55,29 +55,30 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-16 — Settings & polish**
+> **ITER-17 — Winter theme baseline**
 >
 > You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
 > `docs/00-overview.md` (decisions D-02 shared book, D-03 equal users, D-07 net worth, D-10 provider adapter, D-16 stack),
-> `docs/01-requirements.md` §7 FR-S and the NFR-7 / NFR-4 checks tied to settings and performance polish,
-> `docs/02-architecture.md` §7 operations/settings and any provider-defaults or seed-management precedents,
-> plus `docs/03-test-plan.md` §4 matrix rows for FR-S plus the earlier regression gates,
-> plus the auth/security guard notes, `docs/04-progress.md` ITER-16 row and the [04 §5](04-progress.md) mapping row.
+> `docs/01-requirements.md` §12 FR-X1 and NFR-7 constraints,
+> `docs/02-architecture.md` §5.4 design-system theme guidance and route-shell context in §5.1/§5.2,
+> plus `docs/03-test-plan.md` §4 matrix row for X1a–X1c and the regression gates for NFR-7,
+> plus `docs/04-progress.md` ITER-17 row and the [04 §5](04-progress.md) mapping row.
 >
 > **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to the settings/polish ACs and regression checks named in the requirements/test-plan for FR-S, NFR-7, and NFR-4 — ask me about any ambiguity; never assume.
+> scope only to FR-X1 acceptance criteria and the mapped NFR-7 regressions — ask me about any ambiguity; never assume.
 >
 > **Deliverable:**
-> 1. Add the settings surfaces for profile, provider defaults, posting defaults, seed management, backup/download, and audit viewing without changing ledger semantics.
-> 2. Finish the accessibility and visual polish pass for the high-traffic screens and ensure the settings/polish flows remain keyboard-safe and readable.
-> 3. Re-run the relevant benchmark and regression validations to confirm the repo’s test, lint, and type gates remain green after the polish pass.
+> 1. Set DaisyUI `winter` as the default authenticated-shell theme baseline through a single source of truth in frontend shell/config.
+> 2. Validate readability/accessibility on high-traffic screens under the winter theme (focus-visible, contrast, keyboard flow unchanged).
+> 3. Keep behavior-only changes out of scope: no business logic, auth, provider, or ledger semantics changes.
+> 4. Re-run mapped tests and repo regression gates (`make test`, `make test-e2e`, lint/types) and document results.
 >
-> **Out of scope this iteration:** new business features beyond FR-S / NFR-7 / NFR-4, provider arbitration beyond existing fallback semantics, or speculative UX cleanup unrelated to the settings and quality pass.
+> **Out of scope this iteration:** data-table migrations (FR-X2), navigation IA restructuring (FR-X3), new backend settings semantics, or speculative visual redesign beyond the winter baseline.
 >
-> **Definition of done:** mapped-layer tests green for the settings/polish slice, `make test` + `make test-e2e` green,
+> **Definition of done:** mapped-layer tests green for FR-X1, `make test` + `make test-e2e` green,
 > lint/types green, no untriaged defects, then roll-forward workflow [07 §2](07-iterative-prompts.md) R1–R8 so the next prompt (§4) is ready.
 >
-> **Known traps:** preserve the existing provider/fallback precedence and book/account semantics, keep backup actions download-only unless the spec explicitly says otherwise, and do not broaden the settings scope beyond the established FR-S and NFR regressions.
+> **Known traps:** do not conflate theme rollout with component rewrites; preserve existing route behavior and auth guards; keep all changes reversible and test-backed.
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 
@@ -118,7 +119,15 @@ ITER-02 are already green.
   property tests per 03 §4 row, oversell 422, quantity ×10⁴ scaling)
 - ✅ **ITER-13 — Market data adapter** (FR-I2; §4.9 providers; traps: 15-minute freshness, manual precedence,
   stale-badge behavior)
+- ✅ **ITER-14 — Position detail + news + TA** (FR-I3/I4/I5; §4.6; traps: insufficient-data handling,
+  deterministic TA fixtures, provider-failure degrade path)
 - ✅ **ITER-15 — Portfolio analysis + optimization** (FR-I6/I7; §4.7 mvo; traps: ≥120-day gate AC-I7c,
   constraint infeasibility wording, advisory-only disclaimer) — closed in this roll-forward pass
-- ⏭ **ITER-16 — Settings & polish** (FR-S, NFR-4 re-bench, NFR-7 audit; §7 ops; traps: backup download-only,
-  seed merge re-check, full benchmark re-run, a11y pass closure) — current next iteration (see §4 above)
+- ✅ **ITER-16 — Settings & polish** (FR-S, NFR-4 re-bench, NFR-7 audit; §7 ops; traps: backup download-only,
+  seed merge re-check, full benchmark re-run, a11y pass closure)
+- ⏭ **ITER-17 — Winter theme baseline** (FR-X1, NFR-7; §5.4 design system; traps: theme-only scope,
+  keep focus/contrast regressions at zero) — current next iteration (see §4 above)
+- ⏭ **ITER-18 — Data table standardization** (FR-X2, NFR-4/NFR-7; §5.3/§5.4; traps: choose OSS table via
+  explicit scorecard, stage migrations users/transactions/accounts, avoid big-bang rewrite)
+- ⏭ **ITER-19 — Navbar IA redesign** (FR-X3 + FR-N; §5.1/§5.2; traps: exact hierarchy, no dead submenu links,
+  route highlight + keyboard semantics preserved)

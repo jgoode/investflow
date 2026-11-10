@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Active |
-| **Last updated** | 2026-11-08 (ITER-01 layout reality applied — ADR-005) |
+| **Last updated** | 2026-11-10 (post-ITER-16 extension planning applied) |
 | **Parent** | [00-overview](00-overview.md) · Decisions D-01…D-16 |
 
 ## 1. System overview
@@ -352,20 +352,32 @@ search(ticker_fragment) -> suggestions (used by add-brokerage 'search' in textar
   /accounts/new|edit
   /transactions     list → /transactions/new  /transactions/[id]
   /investments      overview: accounts & positions
+  /investments/research         portfolio research landing (or redirect to portfolio page)
+  /investments/analysis         portfolio analysis/optimization surfaces
   /investments/positions/[id]    → info news TA graphs (position screen)
   /investments/portfolio         analysis + optimization tabs
   /reports         Chooser page ↔ /reports/[kind] with URL params
   /users            FR-U4
   /settings         Profile / Data / Providers / Seeds / Audit tabs (FR-S)
+  /settings/profile
+  /settings/posting
+  /settings/seed
+  /settings/backup
+  /settings/users
+  /settings/audit
 ```
 
 Auth gating: `app/(app)/layout` → `getSession()` server component; no-auth → `redirect('/login')`.
 `/api` client (browser) wraps fetch with `X-Requested-With` header + 401 → route to login.
 
-### 5.2 Mega menu (FR-N)
+### 5.2 Navigation shell (FR-N + FR-X3)
 
 - `MegaMenu` component: DaisyUI `dropdown` + columns per group; `nav` tree data is a TS constant mirroring
-  [01 §10](01-requirements.md), keyboard accessible (AC-N2), route-parity highlight (AC-N4).
+  [01 §10](01-requirements.md) and [01 §12](01-requirements.md), keyboard accessible (AC-N2/AC-X3d),
+  route-parity highlight (AC-N4/AC-X3d).
+- Post-ITER-16 IA target groups: Dashboard, Accounts (Chart of Accounts/Categories/Transactions),
+  Investments (Portfolio Research/Analysis), Reporting, Settings (Profile/Posting/Seed Management/
+  Backup and Download/Users/Audit). Each submenu item must bind to a route (AC-X3c).
 - Mega menu is one shared component (not per-page navigation), rendered fully client-side; server still
   passes sanitized `user` info only.
 
@@ -378,7 +390,9 @@ Auth gating: `app/(app)/layout` → `getSession()` server component; no-auth →
 ### 5.4 Design system
 
 - Tailwind 4 with DaisyUI 5 components (btn, card, table, drawer, modal, tabs, select, slider, chart-lib).
-- Theme: DaisyUI `light` + `dark` (system-follow toggle in Settings later only; v1 light).
+- Theme: DaisyUI `winter` baseline (FR-X1), with future user overrides handled through Settings.
+- Data tables: shared `DataTable` wrapper/adapters (FR-X2) over the selected open-source table engine; screen
+  pages consume the wrapper rather than bespoke table implementations.
 - Priority components: `Money` (int-cents formatted), `RevealField` (**encrypted masked**, AC-E6),
   `BalanceChart`, `FlowTable` (tx table with criterion), `CategoryPicker`.
 - Typography: system-ui; contrast AA (NFR-7); min slot size 44px (AC-N3).

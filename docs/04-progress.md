@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-10 (ITER-16 ✅ closed) |
+| **Last updated** | 2026-11-10 (ITER-16 ✅ closed; ITER-17..19 planned) |
 
 ## 1. Status legend
 
@@ -39,6 +39,14 @@ with the next iteration's template.
 | **ITER-14** | Position detail + news + TA | Position screen (info, sparkline), news fetch+cache, baseline indicators + lightweight-charts graphs, fixture validation, insufficient-data handling | FR-I3, FR-I4, FR-I5 | ✅ | — |
 | **ITER-15** | Portfolio analysis + optimization | Portfolio page (weights, allocation, return timeline graphs), risk metrics, MVO frontier/max-Sharpe/min-var, constraint fields, disclaimer | FR-I6, FR-I7 | ✅ | — |
 | **ITER-16** | Settings & polish | Settings tabs (profile/currency/provider/posting defaults/seed mgmt/backup/audit viewer), a11y + styling pass, full test-suite + benchmark re-run, README quickstart | FR-S, NFR-7, NFR-4 re-bench | ✅ | — |
+
+## 2A. Post-core extension queue (scheduled from backlog)
+
+| Iter | Title | Delivers (slices) | Key ACs | Status | Defects |
+|---|---|---|---|---|---|
+| **ITER-17** | Winter theme baseline | DaisyUI winter default theme, shell/readability pass, keyboard/focus regression checks | FR-X1, NFR-7 | 📋 | — |
+| **ITER-18** | Data table standardization | Open-source table component evaluation, shared wrapper, staged rollout on users/transactions/accounts | FR-X2, NFR-4, NFR-7 | 📋 | — |
+| **ITER-19** | Navbar IA redesign | Navbar-parent menu restructure, submenu route binding, no-dead-link coverage | FR-X3, FR-N, NFR-7 | 📋 | — |
 
 ## 3. Rolling progress log
 
@@ -266,6 +274,9 @@ Started: 2026-11-08 · Finished: 2026-11-08
 | 14 | FR-I3/I4/I5 | 4.6 ta |
 | 15 | FR-I6/I7 | 4.7 |
 | 16 | FR-S, NFR-7 | 7, 2 |
+| 17 | FR-X1 | 5.4 |
+| 18 | FR-X2 | 5.4, 5.3 |
+| 19 | FR-X3, FR-N | 5.1, 5.2 |
 
 (served as "expected bootstrap" so sessions know exactly which docs the next iteration touches;
 update real rows on finish.)

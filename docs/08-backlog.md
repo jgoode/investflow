@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Living document — reviewed at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2, step R8) |
-| **Last updated** | 2026-11-08 |
+| **Last updated** | 2026-11-10 |
 
 ## 1. Purpose
 
@@ -34,16 +34,188 @@ Rules:
 
 | ID | Title | Type | Origin | Size | Status |
 |---|---|---|---|---|---|
-| **FEAT-001** | Portfolio CSV import (positions + transactions) | Future feature request | User request 2026-11-08 | M (≈1–2 iterations) | specified — Q&A resolved (§3.7) |
-| **FEAT-002** | Non-investment opening balances + statement migration import (CSV) | Future feature request | User request 2026-11-08 (extends FEAT-001 scoping note §3.5) | M (≈1–2 iterations, shared importer core) | specified — Q&A resolved (§3A.6) |
+| **FEAT-003** | DaisyUI winter theme preset | UX styling | User request 2026-11-10 | S (≈0.5 iteration) | scheduled — ITER-17 |
+| **FEAT-004** | Data table standardization research + rollout | Frontend platform enhancement | User request 2026-11-10 | L (≈2–3 iterations, staged rollout) | scheduled — ITER-18 |
+| **FEAT-005** | Navbar information architecture redesign | UX/navigation | User request 2026-11-10 | M (≈1 iteration) | scheduled — ITER-19 |
+| **FEAT-001** | Portfolio CSV import (positions + transactions) | Future feature request | User request 2026-11-08 | M (≈1–2 iterations) | specified — Q&A resolved (§3C.7) |
+| **FEAT-002** | Non-investment opening balances + statement migration import (CSV) | Future feature request | User request 2026-11-08 (extends FEAT-001 scoping note §3C.5) | M (≈1–2 iterations, shared importer core) | specified — Q&A resolved (§3D.6) |
 | — | *(related, owned in [06-gap-analysis](06-gap-analysis.md):* G-001 budgets · G-002 FIFO lots · G-004 role granularity · G-005 manual assets · G-006 desktop packaging | items | session decisions | — | recorded-at-time-zero |
 
-## 3. Feature request FEAT-001 — Portfolio CSV import
+## 3. Feature request FEAT-003 — DaisyUI winter theme preset
+
+> **Status: scheduled (ITER-17). Nothing below is implemented yet; this specification now feeds the
+> iteration prompt and requirements track.**
+
+### 3.1 Summary
+
+Add a user-facing theme option to apply the DaisyUI **"winter"** palette as the default app shell theme.
+This is a styling-only enhancement intended to improve readability and visual polish without changing
+accounting semantics, user permissions, or scheduling flow.
+
+### 3.2 User stories
+
+- US-1 — As a user, I want a light, calm default theme so the app feels easier to read during long working sessions.
+- US-2 — As a user, I want the theme choice to be centralized and consistent across the shell, cards, tables, and settings screens.
+- US-3 — As a maintainer, I want a single theme preset so future styling updates remain low-risk and easy to revert.
+
+### 3.3 Functional sketch (to promote into FR/ACs at scheduling)
+
+| Area | Provisional behavior |
+|---|---|
+| Theme preset | Set DaisyUI theme data attribute to `winter` in the global frontend shell, with a single source of truth for the theme name/override. |
+| Theme persistence | Persist the selected theme in a user setting if the settings system already supports user preferences; otherwise keep it as a simple app-level default until the settings backend is expanded. |
+| Scope | Apply to the shared shell and primary data surfaces only; no changes to ledger logic, report calculations, or provider precedence. |
+| Accessibility | Keep contrast and focus ring states readable under the winter palette, and verify keyboard navigation remains intact across the high-traffic screens. |
+| Default behavior | If no explicit theme is saved yet, the app boots with the `winter` preset; user overrides remain possible later under the settings screen. |
+
+### 3.4 Architectural impact
+
+- Frontend-only styling change in the App Router shell and/or global CSS/theme config.
+- No backend or data-model changes required unless a user-preference settings field is explicitly added.
+- Validation: L3 frontend render tests plus a quick visual smoke check under the new theme. No ledger or business-rule impact.
+
+### 3.5 Explicit non-goals for FEAT-003
+
+- No custom theme authoring system or multiple competing palettes beyond the chosen preset.
+- No change to existing accounting semantics or provider logic.
+- No speculative redesign work outside the theme toggle/default preset.
+
+### 3.6 Q&A record (2026-11-10 backlog session)
+
+| Q# | Answer | Resolved to |
+|---|---|---|
+| Q-1 | Keep it small and scoped | Add a single DaisyUI winter theme preset as a backlog item; do not broaden into a full theme system yet |
+| Q-2 | Prefer a single default | Use `winter` as the default preset unless a user-specific override is later added in Settings |
+| Q-3 | No backend dependency | This remains a frontend styling enhancement unless user settings are intentionally expanded later |
+
+## 3A. Feature request FEAT-004 — Data table standardization research + rollout
+
+> **Status: scheduled (ITER-18). Nothing below is implemented yet; this item defines the upcoming research +
+> implementation track now linked to the requirements/prompt pipeline.**
+
+### 3A.1 Summary
+
+Research and select the best-fit open-source data table component for InvestFlow's existing frontend
+stack, then implement it as the standard listing/management surface across high-traffic CRUD screens
+(users, transactions, accounts, categories, and similar list-heavy views).
+
+This item combines two linked phases:
+
+1. **Research/selection phase** — evaluate candidate open-source table libraries against project criteria.
+2. **Rollout phase** — replace bespoke list/table implementations where appropriate with the selected
+   standard component, using a staged migration to control risk.
+
+### 3A.2 User stories
+
+- US-1 — As a user, I want consistent sorting/filtering/pagination behaviors across list screens so the app is easier to learn.
+- US-2 — As a user, I want keyboard-safe, readable tables with predictable focus and row actions for day-to-day bookkeeping work.
+- US-3 — As a maintainer, I want one standard table system so list screens are easier to extend and test.
+
+### 3A.3 Functional sketch (to promote into FR/ACs at scheduling)
+
+| Area | Provisional behavior |
+|---|---|
+| Evaluation criteria | Compare candidates for compatibility with Next.js/React/Tailwind+DaisyUI stack, accessibility, keyboard behavior, virtualization/performance, column flexibility, row actions, licensing, maintenance activity, and testability. |
+| Selection deliverable | Produce a scored recommendation with rationale and migration notes; record trade-offs and rejected alternatives. |
+| Initial rollout scope | Apply first to the highest-impact list/manage surfaces: Users, Transactions, Accounts; then extend to other list-heavy screens in follow-up slices. |
+| UX consistency | Standardize shared behaviors (sorting, filtering, paging, empty/loading/error states, row-action affordances) with minimal per-screen overrides. |
+| Accessibility | Preserve or improve NFR-7 behavior (focus order, keyboard navigation, semantics/labels, readable contrast under active theme). |
+| Performance guardrails | Validate large-list behavior and interaction responsiveness to avoid regressions against NFR-4 expectations. |
+| Integration constraints | Keep existing domain behavior and API contracts intact; this is a presentation/component-platform upgrade, not a business-logic rewrite. |
+
+### 3A.4 Architectural impact
+
+- Frontend component-platform work: selected table library integration, shared wrapper/adapters, and
+  targeted migrations in App Router screens.
+- Potential lightweight design-system additions for shared table patterns (toolbar, filters, pagination,
+  row actions), while keeping screen-specific business logic unchanged.
+- Testing impact: L3 component/page test updates plus L4 smoke updates where table interaction behavior changes.
+
+### 3A.5 Explicit non-goals for FEAT-004
+
+- No backend/API schema redesign driven solely by table component preferences.
+- No unbounded "replace every table at once" big-bang migration.
+- No speculative redesign of unrelated pages that are not list/manage surfaces.
+- No changes to ledger semantics, posting invariants, or provider precedence.
+
+### 3A.6 Q&A record (2026-11-10 backlog session)
+
+| Q# | Answer | Resolved to |
+|---|---|---|
+| Q-1 | Include both research and implementation | Backlog item includes selection + staged rollout, promoted to requirements when scheduled |
+| Q-2 | Broad coverage intent | Target list/manage surfaces (users, transactions, accounts, etc.) with phased delivery rather than one giant cutover |
+| Q-3 | Open-source only | Candidate set restricted to actively maintained open-source table components compatible with project stack |
+
+## 3B. Feature request FEAT-005 — Navbar information architecture redesign
+
+> **Status: scheduled (ITER-19). Nothing below is implemented yet; this defines the upcoming navigation
+> refactor linked to the requirements/prompt pipeline.**
+
+### 3B.1 Summary
+
+Redo the application navigation using the **navbar as the parent component** and adopt the following
+menu structure:
+
+- Dashboard
+- Accounts
+  - Chart of Accounts
+  - Categories
+  - Transactions
+- Investments
+  - Portfolio Research
+  - Analysis
+- Reporting
+- Settings
+  - Profile
+  - Posting
+  - Seed Management
+  - Backup and Download
+  - Users
+  - Audit
+
+### 3B.2 User stories
+
+- US-1 — As a user, I want a cleaner top-level navigation structure so I can find common workflows faster.
+- US-2 — As a user, I want grouped submenus that match task areas (Accounts, Investments, Settings) to reduce context switching.
+- US-3 — As a maintainer, I want one canonical menu definition so links and route ownership are consistent across the shell.
+
+### 3B.3 Functional sketch (to promote into FR/ACs at scheduling)
+
+| Area | Provisional behavior |
+|---|---|
+| Parent component | Navbar is the single parent navigation component; grouped items render as submenus under it. |
+| Menu hierarchy | Use the exact hierarchy from §3B.1, including `Portfolio Research` as one submenu item under Investments. |
+| Route binding | **Every submenu item must point to at least one page** (existing page or dedicated placeholder page) and must not be a dead link. |
+| Active states | Top-level and submenu entries show active/expanded state based on current route for orientation. |
+| Keyboard/a11y | Submenu open/close and focus traversal remain keyboard-safe and screen-reader understandable (NFR-7). |
+| Backward compatibility | Preserve existing business behavior and auth guards; this is IA/navigation restructuring only. |
+
+### 3B.4 Architectural impact
+
+- Frontend shell/menu refactor in navbar and route mapping layer.
+- Potential creation of small placeholder pages where needed to satisfy route binding for each submenu item.
+- L3 test updates for navigation behavior and link coverage; L4 smoke updates for route reachability.
+
+### 3B.5 Explicit non-goals for FEAT-005
+
+- No ledger, posting, reporting, or provider-logic changes.
+- No backend API contract changes.
+- No broad visual redesign beyond navigation structure and required submenu behavior.
+
+### 3B.6 Q&A record (2026-11-10 backlog session)
+
+| Q# | Answer | Resolved to |
+|---|---|---|
+| Q-1 | Use navbar as parent | Navigation refactor is centered on a navbar parent component with grouped submenus |
+| Q-2 | Exact hierarchy required | Menu structure is locked to the tree documented in §3B.1 |
+| Q-3 | No dead submenu items | Each submenu must link to at least one reachable page |
+
+## 3C. Feature request FEAT-001 — Portfolio CSV import
 
 > **Status: specified, unscheduled (status per §2). Nothing below is implemented; it is a design sketch
 > to be promoted into the requirements when scheduled.**
 
-### 3.1 Summary
+### 3C.1 Summary
 
 Support importing **portfolio positions** and **portfolio transactions** for brokerage/investment accounts
 from **CSV files**, so that holdings and their buy/sell history can be established in bulk instead of
@@ -62,14 +234,14 @@ Two distinct CSV flavors in one feature:
    with `source='manual'`, subject to the manual-price precedence rules already documented for
    AC-I2c.
 
-### 3.2 User stories
+### 3C.2 User stories
 
 - US-1 — As a user switching from another app/broker, I want to import my current holdings so the net-worth dashboard is correct on day one.
 - US-2 — As the same user, I want to import my trade history so realized/unrealized P&L and the avg-cost engine match my broker.
 - US-3 — Near-miss safety: I want a **dry-run preview with row-level errors** and no partial import — all rows valid or nothing posted (atomic per file).
-- US-4 — Re-import handling: I want to know rows I re-import won't double-post (idempotency story, §3.6).
+- US-4 — Re-import handling: I want to know rows I re-import won't double-post (idempotency story, §3C.6).
 
-### 3.3 Functional sketch (to promote into FR/ACs at scheduling)
+### 3C.3 Functional sketch (to promote into FR/ACs at scheduling)
 
 | Area | Provisional behavior |
 |---|---|
@@ -84,14 +256,14 @@ Two distinct CSV flavors in one feature:
 | Avg-cost interplay | Positions set avg cost directly (with a warning linking lots semantics). Trade history must arrive **in date order per (account, ticker)** — the importer enforces replay ordering and rejects out-of-order sell-before-buy rows with clear errors |
 | Reporting impact | After an import, dashboards/reports reflect imported state; audit log records `import.positions` / `import.transactions` (entity = file import id, row counts) per `audit_log` design in [02 §3.1](02-architecture.md) |
 
-### 3.4 Architectural impact
+### 3C.4 Architectural impact
 
 - New tables: `import_mappings(name, columns_json, created_by)`, `import_batches(id, kind, file_ref, status, counts_json, created_at/…)` (lightweight staging: raw CSV is **not** persisted wholesale by default — only counts + failure rows).
 - New service: `services/importer/` (parsers, mapping resolver, dry-run evaluator, post-through-posting-service — never writes `transaction_lines` directly, preserving ledger invariants).
 - Frontend: a single **Import center** `/investments/import` (Q-10) with tabs *Portfolio* and *Statements & Balances*: account mapping → column mapping → preview → confirm → result report; wired into the Investments mega-menu group.
 - New Make/script targets: `make seed-import-templates` optional; tests at L1 (parser/dedupe math), L2 (atomic import via API), L4 (wizard E2E with fixture files).
 
-### 3.5 Explicit non-goals for FEAT-001
+### 3C.5 Explicit non-goals for FEAT-001
 
 - No PDF/OFX/QIF/broker-API statement ingestion (CSV only).
 - No auto-creation of accounts/categories beyond explicit user affirmation in the wizard.
@@ -99,21 +271,21 @@ Two distinct CSV flavors in one feature:
 - No multi-currency ([06 G-003](06-gap-analysis.md)); CSV amounts assume book currency.
 - **Migration-tool status**: superseded by FEAT-002 — the pair (FEAT-001 + FEAT-002) is the full
   "migrate from my previous app / bank statements" path; FEAT-001 alone covers only the investment side
-  ([08 §3A](08-backlog.md)).
+  ([08 §3D](08-backlog.md)).
 
-### 3.6 Open questions (answered 2026-11-08 — resolutions in §3.7)
+### 3C.6 Open questions (answered 2026-11-08 — resolutions in §3C.7)
 
-Answered in the 2026-11-08 backlog Q&A session — see §3.7.
+Answered in the 2026-11-08 backlog Q&A session — see §3C.7.
 
 | Q# | Question | Affects |
 |---|---|---|
-| Q-1 | Is dedupe-by-hash the desired re-import behavior, or "no dedupe, refuse exact duplicates with row errors"? | §3.3 dup handling |
-| Q-2 | Should positions import replace the account's existing positions or merge (warn-only on qty mismatch)? | §3.3, audit trail |
+| Q-1 | Is dedupe-by-hash the desired re-import behavior, or "no dedupe, refuse exact duplicates with row errors"? | §3C.3 dup handling |
+| Q-2 | Should positions import replace the account's existing positions or merge (warn-only on qty mismatch)? | §3C.3, audit trail |
 | Q-3 | Stretch order-scoped extras: price-history CSV, dividends-as-transactions mapping — in or out of the scheduled form? | scope size/counts |
 | Q-4 | Max file size / row count for the import UI (sync API vs background job)? | architecture impact |
 | Q-5 | Which "starter mapping templates" are wanted by name (broker-specific examples)? | template library |
 
-### 3.7 Q&A record (2026-11-08 backlog session)
+### 3C.7 Q&A record (2026-11-08 backlog session)
 
 Answers are binding design input; they are promoted into `01-requirements.md` FR/AC ids only when the
 feature is scheduled ([§4 Maintenance](#4-maintenance)).
@@ -128,13 +300,13 @@ feature is scheduled ([§4 Maintenance](#4-maintenance)).
 
 ---
 
-## 3A. Feature request FEAT-002 — Non-investment opening balances + statement migration import (CSV)
+## 3D. Feature request FEAT-002 — Non-investment opening balances + statement migration import (CSV)
 
 > **Status: specified, unscheduled. Shares the importer core of FEAT-001; nothing below is implemented.
 > Together, FEAT-001 + FEAT-002 constitute the full "migrate from my previous app / bank statements" path —
-> supersedes the earlier statement in §3.5 of FEAT-001 that migration was not in scope.**
+> supersedes the earlier statement in §3C.5 of FEAT-001 that migration was not in scope.**
 
-### 3A.1 Summary
+### 3D.1 Summary
 
 Import **opening balances** and **historical statement transactions** for the non-investment side of the
 book — bank, cash, credit-card, and loan accounts — from CSV, so a household ledger can be rebuilt from
@@ -149,7 +321,7 @@ Two flavors:
    explicit debit/credit columns), optional category label, optional transfer flag. Importer converts each
    row to a quick-post-style transaction through the posting service; user confirms category mapping.
 
-### 3A.2 User stories
+### 3D.2 User stories
 
 - US-1 — As a household switching apps, I want to seed every bank/cash/credit/loan account with its opening balance so net worth + history start true.
 - US-2 — As the same user, I want months of bank CSV statements imported as normal transactions I can edit/categorize later, not a frozen shadow ledger.
@@ -157,7 +329,7 @@ Two flavors:
 - US-4 — I want re-runs to be safe: imported rows must not silently double-post.
 - US-5 — I want import provenance visible: which transactions came from which file, and the ability to back out a whole import run.
 
-### 3A.3 Functional sketch (to promote into FR/ACs at scheduling)
+### 3D.3 Functional sketch (to promote into FR/ACs at scheduling)
 
 | Area | Provisional behavior |
 |---|---|
@@ -171,7 +343,7 @@ Two flavors:
 | Atomicity | Per-file transaction; dry-run preview with leg preview, category proposals, dedupe report, and total inflow/outflow sanity check before confirm |
 | Limits & order | No date-order requirement (unlike FEAT-001 trades); same sync + size caps as FEAT-001 (5 MB / 5,000 rows, Q-4) |
 
-### 3A.4 Architectural impact
+### 3D.4 Architectural impact
 
 - Extends FEAT-001's `services/importer/` with a `statements` module (row converters, category resolver,
   transfer-detector); reuses `import_mappings`, `import_batches`, wizard UI pattern.
@@ -183,14 +355,14 @@ Two flavors:
 - Tests: L1 row-converter/category-resolver/transfer-detector units; L2 atomic import + rollback-to-void;
   L4 wizard E2E with fixture bank CSVs (including a credit-card statement with a payment match).
 
-### 3A.5 Explicit non-goals for FEAT-002
+### 3D.5 Explicit non-goals for FEAT-002
 
 - No PDF/OFX/QIF parsing (CSV only, same as FEAT-001).
 - No auto-reconciliation against a target balance file (out of declared scope; if wanted later, its own item).
 - No investment statement ingestion in FEAT-002 (FEAT-001's turf).
 - No automatic expense-categorization heuristics beyond user-confirmed exact label matching.
 
-### 3A.6 Q&A record (2026-11-08 backlog session)
+### 3D.6 Q&A record (2026-11-08 backlog session)
 
 | Q# | Answer | Resolved to |
 |---|---|---|
@@ -200,9 +372,9 @@ Two flavors:
 | Q-9 | Skip (same as Q-1) | Hash-tuple skip + dedupe report, identical posture to FEAT-001 |
 | Q-10 | Combined Import center | One wizard at `/investments/import` with tabs *Portfolio* (FEAT-001) + *Statements & Balances* (FEAT-002); shared mapping-template system (per Q-5: generic starters) |
 
-### 3A.7 Consistency updates from the Q&A
+### 3D.7 Consistency updates from the Q&A
 
-- FEAT-001 §3.5 non-goal ("not a guaranteed migration path") is **overridden**: with FEAT-002 approved,
+- FEAT-001 §3C.5 non-goal ("not a guaranteed migration path") is **overridden**: with FEAT-002 approved,
   the pair covers the full migration path (investments + non-investment balances/statements).
 - §4 Maintenance table below is the single source of scheduling state.
 
@@ -210,7 +382,7 @@ Two flavors:
 
 - Opened: 2026-11-08 with FEAT-001 (user request).
 - Review cadence: end of each iteration ([07 §2](07-iterative-prompts.md) R8) — promote/schedule only on the user's instruction.
-- When FEAT-001 is scheduled: promote §3.3 rows into new FR-IMP-* requirements with ACs; replace this row's
+- When FEAT-001 is scheduled: promote §3C.3 rows into new FR-IMP-* requirements with ACs; replace this row's
   Status → included; add the roadmap row(s) in [04 §2](04-progress.md); queue a corresponding prompt template in
   [07 §6](07-iterative-prompts.md).
 - Related initial-scoping note: [06 GAP G-007](06-gap-analysis.md) is superseded by FEAT-001 as the working

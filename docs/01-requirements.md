@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Active |
-| **Last updated** | 2026-11-08 |
+| **Last updated** | 2026-11-10 |
 | **Parent** | [00-overview](00-overview.md) |
 
 Requirement IDs: `FR-<area><n>` functional, `NFR-<n>` non-functional, `AC-<id>` acceptance criteria (Given/When/Then).
@@ -211,13 +211,45 @@ Top bar with the classic mega menu; keyboard accessible, mobile-collapsed into s
 | **NFR-10** | **Money & quantity integrity.** Integer cents and scaled integers (§ AC-I1c) everywhere; a lint/property test forbids `float` in money/quantity arithmetic paths. | Static grep + property tests |
 | **NFR-11** | **Portability.** Runs on Linux/windows/macOS dev environments with pinned versions (`pyproject`/`package-lock`); ports configurable; SQLite WAL mode enabled; no OS-specific features in v1. | Matrix smoke run |
 
-## 12. Data model summary
+## 12. Post-ITER-16 UX/platform enhancements (scheduled extensions)
+
+These requirements are promoted from backlog items FEAT-003/004/005 and scheduled as post-core
+iterations (ITER-17..ITER-19).
+
+### FR-X1 — Theme preset (winter baseline)
+
+The app shell defaults to DaisyUI **winter** theme while preserving accessibility and keeping user/business
+semantics unchanged.
+
+- **AC-X1a** — Given no user theme override exists, When an authenticated page loads, Then the shell theme resolves to `winter`.
+- **AC-X1b** — Given keyboard-only navigation, When theme is applied, Then focus-visible, contrast, and hit-target behaviors remain compliant with NFR-7 on high-traffic screens.
+- **AC-X1c** — Given existing pages, When the winter preset is enabled, Then no route behavior, auth guard, or ledger interaction changes.
+
+### FR-X2 — Data table standardization
+
+List/manage screens use one standardized open-source table foundation with shared interaction behavior.
+
+- **AC-X2a** — A research decision record selects the table component against explicit criteria (accessibility, keyboard behavior, performance, licensing, maintenance, stack fit).
+- **AC-X2b** — Users, Transactions, and Accounts screens migrate to the shared table wrapper with consistent sorting/filtering/paging and row-action affordances.
+- **AC-X2c** — Large-list interaction remains within NFR-4 expectations and does not regress keyboard or screen-reader behavior (NFR-7).
+- **AC-X2d** — Migration is staged (no big-bang): each converted screen ships with L3 regression tests and at least one L4 reachability check.
+
+### FR-X3 — Navbar information architecture redesign
+
+Navigation is restructured around a navbar parent with grouped submenus and route-backed submenu items.
+
+- **AC-X3a** — Top-level structure is exactly: **Dashboard · Accounts · Investments · Reporting · Settings**.
+- **AC-X3b** — Accounts submenu contains **Chart of Accounts, Categories, Transactions**; Investments submenu contains **Portfolio Research, Analysis**; Settings submenu contains **Profile, Posting, Seed Management, Backup and Download, Users, Audit**.
+- **AC-X3c** — Every submenu item resolves to at least one reachable page (existing page or explicit placeholder), with no dead links.
+- **AC-X3d** — Active-route highlighting and submenu keyboard controls satisfy FR-N/NFR-7 behavior.
+
+## 13. Data model summary
 
 Detailed field tables live in [02-architecture](02-architecture.md) §3. Entity list:
 
 `users · accounts · account_sensitive (encrypted fields, 1:1 with accounts) · categories · transactions · transaction_lines · positions (avg-cost, per account+ticker) · price_cache · settings · audit_log · alembic_version`
 
-## 13. Requirements-to-scope cross-check
+## 14. Requirements-to-scope cross-check
 
 | Original ask | Covered by | Notes |
 |---|---|---|

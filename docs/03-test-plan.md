@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Active |
-| **Last updated** | 2026-11-08 |
+| **Last updated** | 2026-11-10 |
 | **Parents** | [01-requirements](01-requirements.md) (AC ids) · [02-architecture](02-architecture.md) |
 | **Process** | Strict TDD — every requirement is implemented **failing-test-first** within its iteration (D-15) |
 
@@ -68,6 +68,9 @@ Legend: `U`=L1, `I`=L2, `C`=L3, `E`=L4. `•` = primary home for that AC's test;
 | R1–R10 reports/export | • | • | | • | 9,10 | derived-vs-raw ledger equal; xlsx/pdf cross-check per §5.3 |
 | D1–D5 dashboard | | • | • | • | 11 | ≤ 2 batched calls (AC-D3); drill deep links |
 | S1–S8 settings | • | • | | • | 16 | provider key masked; seed merge; backup byte-consistent |
+| X1a–X1c theme preset (winter) | | • | • | • | 17 | shell default theme + a11y/focus regression checks |
+| X2a–X2d datatable standardization | • | • | • | • | 18 | candidate scorecard + shared table wrapper migrations |
+| X3a–X3d navbar IA redesign | | • | • | • | 19 | required menu tree + no-dead-link route reachability |
 | E1–E8 encryption | • | • | | | 4 (~16 diag) | §5.2 dedicated suite |
 | N1–N4 mega menu | | | • | • | 2,5,11 | keyboard nav test; route highlight |
 | NFR-2 auth on all paths | | • | | • | 2+ | guard matrix: every protected route returns 401 unauthed |
