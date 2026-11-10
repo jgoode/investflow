@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-10 (ITER-18 ✅ closed; ITER-19 + ITER-20 queued) |
+| **Last updated** | 2026-11-10 (ITER-18 ✅ closed; ITER-20 🔴 in progress) |
 
 ## 1. Status legend
 
@@ -47,7 +47,7 @@ with the next iteration's template.
 | **ITER-17** | Winter theme baseline | DaisyUI winter default theme, shell/readability pass, keyboard/focus regression checks | FR-X1, NFR-7 | ✅ | — |
 | **ITER-18** | Data table standardization | Shared table foundation, staged rollout on users/transactions/accounts, a11y/perf gate verification | FR-X2, NFR-4, NFR-7 | ✅ | — |
 | **ITER-19** | Navbar IA redesign | Navbar-parent menu restructure, submenu route binding, no-dead-link coverage | FR-X3, FR-N, NFR-7 | 📋 | — |
-| **ITER-20** | Horizontal navbar IA refinement | Horizontal top-level navbar order, submenu label alignment, alias/reachability regression checks | FR-X4, FR-N, NFR-7 | 📋 | — |
+| **ITER-20** | Horizontal navbar IA refinement | Horizontal top-level navbar order, submenu label alignment, alias/reachability regression checks | FR-X4, FR-N, NFR-7 | 🔴 | — |
 
 ## 3. Rolling progress log
 
@@ -64,6 +64,15 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-20 — Horizontal navbar IA refinement            (status: 🔴)
+Started: 2026-11-10 · Finished: —
+
+- ✅ ACs completed with tests (in-session slice): top-level horizontal order and required submenu labels/routes are now wired and covered in `frontend/app/__tests__/mega-menu.test.tsx`; focused frontend regression remains green through the IA refinements
+- 🔧 Implementation notes: shell navigation moved from a top-level `Menu` trigger to an always-visible horizontal navbar; submenu interaction changed to hover/focus-first behavior, removed `+/-` indicators, added hover-safe close delay plus flush submenu alignment to avoid pointer-gap collapse; added `InvestFlow` brand link at navbar left bound to `/dashboard`
+- ❌ Tests currently red: none in focused navbar suite; full iteration gate rerun pending close
+- 🐞 New defects: none
+- 📝 Doc deltas: [02](02-architecture.md) §5.2 updated to reflect current navbar interaction model and left-brand link behavior
 
 ### ITER-18 — Data table standardization            (status: ✅)
 Started: 2026-11-10 · Finished: 2026-11-10
