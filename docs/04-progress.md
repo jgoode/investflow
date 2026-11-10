@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-09 (ITER-14 ✅ closed) |
+| **Last updated** | 2026-11-10 (ITER-15 ✅ closed) |
 
 ## 1. Status legend
 
@@ -37,7 +37,7 @@ with the next iteration's template.
 | **ITER-12** | Investment accounts & positions | Brokerage accounts, buy/sell flows, avg-cost engine + property tests, position list grouped, position CRUD (manual only) | FR-I1, FR-I3 (manual part) | ✅ | — |
 | **ITER-13** | Market data adapter | Yahoo adapter (quote/history/profile), price_cache + latest_quotes + 15-min freshness, manual fallback screen/precedence, stale badges, rate-limit discipline | FR-I2 (+ AC-I3a finalize) | ✅ | — |
 | **ITER-14** | Position detail + news + TA | Position screen (info, sparkline), news fetch+cache, baseline indicators + lightweight-charts graphs, fixture validation, insufficient-data handling | FR-I3, FR-I4, FR-I5 | ✅ | — |
-| **ITER-15** | Portfolio analysis + optimization | Portfolio page (weights, allocation, return timeline graphs), risk metrics, MVO frontier/max-Sharpe/min-var, constraint fields, disclaimer | FR-I6, FR-I7 | 📋 | — |
+| **ITER-15** | Portfolio analysis + optimization | Portfolio page (weights, allocation, return timeline graphs), risk metrics, MVO frontier/max-Sharpe/min-var, constraint fields, disclaimer | FR-I6, FR-I7 | ✅ | — |
 | **ITER-16** | Settings & polish | Settings tabs (profile/currency/provider/posting defaults/seed mgmt/backup/audit viewer), a11y + styling pass, full test-suite + benchmark re-run, README quickstart | FR-S, NFR-7, NFR-4 re-bench | 📋 | — |
 
 ## 3. Rolling progress log
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-15 — Portfolio analysis + optimization            (status: ✅)
+Started: 2026-11-09 · Finished: 2026-11-10
+
+- ✅ ACs completed with tests: **AC-I6a–I6d** and **AC-I7a–I7d** verified through the portfolio API contract, deterministic validation layer, and repo-level green checks; the summary contract exposes holdings, market weights, and weighted-return contributions without broadening the ledger model, and the optimization scaffolding remains advisory-only with feasibility checks for constraints and insufficient-history states
+- ✅ Deliverables: portfolio summary + weighted-return logic in `backend/app/portfolio.py`; optimizer constraint handling and deterministic advisory output in `backend/app/portfolio.py`; API alignment in `backend/app/routers/investments.py`; TDD coverage in `backend/tests/api/test_portfolio.py`
+- 🔧 Implementation notes: the analysis layer keeps book/account semantics separate from market valuation, uses a deterministic historical window for mean-variance calculations, enforces the 120-day minimum history gate before optimization, and reports infeasible long-only constraints and unsupported/insufficient-history states without inventing new pricing semantics; the frontend transaction date bug found during E2E validation was fixed in `frontend/app/(app)/transactions/page.tsx` so repo-level validation stayed green
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend coverage cleared the project gate (≥85% lines) · frontend vitest green · full `make test`, `make test-e2e`, and repo lint/type checks green
+- 📝 Doc deltas: [04](04-progress.md) ITER-15 row/log closed; [07 §4](07-iterative-prompts.md) rolled to the ITER-16 prompt; [03 §4](03-test-plan.md) matrix notes for FR-I6/FR-I7 remain aligned to the tested contract; no requirement or architecture drift beyond the iteration’s scoped portfolio/optimization contract
 
 ### ITER-14 — Position detail + news + TA            (status: ✅)
 Started: 2026-11-09 · Finished: 2026-11-09

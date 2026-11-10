@@ -47,8 +47,16 @@ export default function TransactionsPage() {
   const [accounts, setAccounts] = useState<AccountRow[]>([]);
   const [categories, setCategories] = useState<CategoryRow[]>([]);
   const [transactions, setTransactions] = useState<TransactionRow[]>([]);
+  const getLocalDateIso = () => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
   const [draft, setDraft] = useState({
-    date: new Date().toISOString().slice(0, 10),
+    date: getLocalDateIso(),
     description: "",
     amountCents: "",
     mode: "expense" as "income" | "expense",
@@ -138,7 +146,7 @@ export default function TransactionsPage() {
 
     setMessage("Transaction posted.");
     setDraft({
-      date: new Date().toISOString().slice(0, 10),
+      date: getLocalDateIso(),
       description: "",
       amountCents: "",
       mode: "expense",

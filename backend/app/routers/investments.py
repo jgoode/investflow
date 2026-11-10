@@ -6,8 +6,14 @@ from fastapi import APIRouter, HTTPException, Request, status
 from pydantic import BaseModel, Field, field_validator
 
 from app.db.connection import connect
+from app.portfolio import (
+    build_portfolio_summary,
+    compute_portfolio_risk_metrics,
+    optimize_portfolio_weights,
+)
 from app.positions import apply_manual_trade, ensure_positions_tables, list_positions
 from app.providers import (
+    YahooFinanceAdapter,
     fetch_news_via_provider,
     fetch_profile_via_provider,
     get_latest_quote,
@@ -154,6 +160,76 @@ class ManualQuotePayload(BaseModel):
     @classmethod
     def validate_ticker(cls, value: str) -> str:
         return value.strip().upper()
+
+
+@router.get("/portfolio")
+def get_portfolio_summary(request: Request) -> dict[str, Any]:
+    if not getattr(request.state, "current_user", None):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized")
+    payload = build_portfolio_summary()
+    if not payload["summary"]["account_totals"]:
+        payload["risk_metrics"] = compute_portfolio_risk_metrics([], benchmark_returns=[], rf=0.02)
+    return payload
+
+
+@router.get("/portfolio/analysis")
+def get_portfolio_analysis(request: Request) -> dict[str, Any]:
+    return get_portfolio_summary(request)
+
+
+@router.post("/portfolio/optimize")
+def optimize_portfolio(request: Request, payload: dict[str, Any] | None = None) -> dict[str, Any]:
+    if not getattr(request.state, "current_user", None):
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="unauthorized")
+    data = payload or {}
+    current_weights = (
+        data.get("current_weights") if isinstance(data.get("current_weights"), dict) else {}
+    )
+    constraints = data.get("constraints") if isinstance(data.get("constraints"), dict) else {}
+    tickers = data.get("tickers") or []
+    if not tickers:
+        with connect() as conn:
+            tickers = [
+                str(row["ticker"]).upper()
+                for row in conn.execute(
+                    """
+                    SELECT ticker
+                    FROM positions
+                    WHERE status = 'open'
+                    GROUP BY ticker
+                    ORDER BY ticker
+                    """
+                ).fetchall()
+            ]
+    assets: list[dict[str, Any]] = []
+    for ticker in tickers:
+        history = YahooFinanceAdapter().get_history(str(ticker))
+        closes = [
+            float(item.get("close_q4") or 0.0) / 10_000.0
+            for item in history
+            if item.get("close_q4")
+        ]
+        if closes:
+            daily_returns = []
+            for previous, current in zip(closes[:-1], closes[1:], strict=False):
+                if previous == 0:
+                    daily_returns.append(0.0)
+                else:
+                    daily_returns.append((current / previous) - 1.0)
+            assets.append({"ticker": str(ticker).upper(), "returns": daily_returns})
+    if not assets:
+        return {
+            "status": "insufficient_history",
+            "message": "No historical data available for the selected tickers.",
+            "shortfall_tickers": sorted({str(item).upper() for item in tickers}),
+            "disclaimer": "The optimization outputs are advisory-only and not investment advice.",
+        }
+    return optimize_portfolio_weights(
+        assets,
+        current_weights=current_weights,
+        constraints=constraints,
+        rf=float(data.get("rf", 0.02)),
+    )
 
 
 @router.get("/positions")

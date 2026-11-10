@@ -112,6 +112,11 @@ export names/content parity with the API payloads; backend L1 report-engine cove
 pins deterministic ledger-plus-position valuation behavior, and the repo-wide `make test`/`make test-e2e`/`make lint`
 set remains green for the iteration close. *
 
+*ITER-15 close note: I6a–I6d and I7a–I7d rows are now covered at mapped layers — backend L2 portfolio suite
+(`backend/tests/api/test_portfolio.py`) verifies the portfolio summary contract, weighted-return contributions,
+constraint feasibility, insufficient-history handling, and advisory-only optimization output; the repo-wide
+`make test`/`make test-e2e` and lint/type gates remain green for the iteration close.*
+
 *ITER-07 close note: T1–T3/T5/T9 rows are now covered at mapped layers — backend L2 transaction suite
 (`backend/tests/api/test_transactions.py`) verifies quick income/expense posting, split-line balancing,
 imbalance rejection, list/filter paging, and account-number masking without altering encrypted sensitive-field
