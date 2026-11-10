@@ -52,6 +52,7 @@ test("users management flow: list + own-password change", async ({ page }) => {
 
   await page.goto("/users");
   await expect(page.getByRole("heading", { name: "Users" })).toBeVisible();
+  await page.getByLabel("Users table filter").fill(username);
   await expect(page.getByRole("cell", { name: username })).toBeVisible();
 
   await page.getByLabel(/^Current password$/).fill(oldPassword);
@@ -114,7 +115,7 @@ test("reports monthly URL params are shareable and deterministic", async ({ page
 
   await page.goto("/transactions");
   await page.getByLabel("Mode").selectOption("income");
-  await page.getByLabel("Description").fill("Salary report seed");
+  await page.getByLabel("Description", { exact: true }).fill("Salary report seed");
   await page.getByLabel("Posting account").selectOption({ label: "Bank A" });
   await page.getByLabel("Category").selectOption({ label: "Salary" });
   await page.getByLabel("Amount (cents)").fill("12345");

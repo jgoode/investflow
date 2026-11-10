@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import DataTable from "@/components/data-table";
 import { apiUrl } from "@/lib/api";
 
 type AccountRow = {
@@ -163,29 +164,23 @@ export default function AccountsPage() {
         </div>
       </form>
 
-      <div className="mt-8 overflow-x-auto">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Code</th>
-              <th>Name</th>
-              <th>Type</th>
-              <th>Subtype</th>
-              <th>Archived</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <tr key={row.id}>
-                <td>{row.code}</td>
-                <td>{row.name}</td>
-                <td>{row.type}</td>
-                <td>{row.subtype}</td>
-                <td>{row.is_archived ? "yes" : "no"}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-8">
+        <DataTable
+          ariaLabel="Accounts table"
+          columns={[
+            { accessorKey: "code", header: "Code" },
+            { accessorKey: "name", header: "Name" },
+            { accessorKey: "type", header: "Type" },
+            { accessorKey: "subtype", header: "Subtype" },
+            {
+              accessorKey: "is_archived",
+              header: "Archived",
+              cell: (row) => (row.is_archived ? "yes" : "no"),
+            },
+          ]}
+          data={rows}
+          pageSize={10}
+        />
       </div>
     </main>
   );

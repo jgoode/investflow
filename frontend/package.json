@@ -10,6 +10,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@tanstack/react-table": "^9.3.1",
     "next": "15.5.29",
     "react": "19.1.0",
     "react-dom": "19.1.0"
@@ -19,11 +20,11 @@
     "@tailwindcss/postcss": "^4",
     "@testing-library/dom": "^10.4.2",
     "@testing-library/react": "^16.3.3",
-    "@vitest/coverage-v8": "^3.2.7",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.2.0",
+    "@vitest/coverage-v8": "^3.2.7",
     "daisyui": "^5.7.50",
     "eslint": "^9",
     "eslint-config-next": "15.5.29",

@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import DataTable from "@/components/data-table";
 import { apiUrl } from "@/lib/api";
 
 type UserRow = {
@@ -136,37 +137,47 @@ export default function UsersPage() {
       {message ? <p className="mt-4 text-success">{message}</p> : null}
       {error ? <p className="mt-4 text-error">{error}</p> : null}
 
-      <div className="mt-6 overflow-x-auto">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Display name</th>
-              <th>Active</th>
-              <th>Created</th>
-              <th>Last login</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedUsers.map((row) => {
-              const isSelf = me?.id === row.id;
-              return (
-                <tr key={row.id} className={row.is_active ? "" : "opacity-60"}>
-                  <td>{row.username}</td>
-                  <td>
-                    <input
-                      className="input input-bordered input-sm min-h-11 w-full max-w-xs"
-                      value={displayDrafts[row.id] ?? ""}
-                      onChange={(event) =>
-                        setDisplayDrafts((prev) => ({ ...prev, [row.id]: event.target.value }))
-                      }
-                    />
-                  </td>
-                  <td>{row.is_active ? "yes" : "no"}</td>
-                  <td>{ts(row.created_at)}</td>
-                  <td>{ts(row.last_login_at)}</td>
-                  <td className="flex flex-wrap gap-2">
+      <div className="mt-6">
+        <DataTable
+          ariaLabel="Users table"
+          columns={[
+            { accessorKey: "username", header: "Username" },
+            {
+              accessorKey: "display_name",
+              header: "Display name",
+              cell: (row) => (
+                <input
+                  className="input input-bordered input-sm min-h-11 w-full max-w-xs"
+                  value={displayDrafts[row.id] ?? ""}
+                  onChange={(event) =>
+                    setDisplayDrafts((prev) => ({ ...prev, [row.id]: event.target.value }))
+                  }
+                />
+              ),
+            },
+            {
+              accessorKey: "is_active",
+              header: "Active",
+              cell: (row) => (row.is_active ? "yes" : "no"),
+            },
+            {
+              accessorKey: "created_at",
+              header: "Created",
+              cell: (row) => ts(row.created_at),
+            },
+            {
+              accessorKey: "last_login_at",
+              header: "Last login",
+              cell: (row) => ts(row.last_login_at),
+            },
+            {
+              accessorKey: "id",
+              header: "Actions",
+              sortable: false,
+              cell: (row) => {
+                const isSelf = me?.id === row.id;
+                return (
+                  <div className="flex flex-wrap gap-2">
                     <button
                       type="button"
                       className="btn btn-xs min-h-11"
@@ -194,12 +205,14 @@ export default function UsersPage() {
                     >
                       Delete
                     </button>
-                  </td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                  </div>
+                );
+              },
+            },
+          ]}
+          data={sortedUsers}
+          pageSize={10}
+        />
       </div>
 
       <section className="mt-8 max-w-md">

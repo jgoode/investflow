@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import DataTable from "@/components/data-table";
 import { apiUrl } from "@/lib/api";
 
 type AccountRow = {
@@ -240,41 +241,31 @@ export default function TransactionsPage() {
         </div>
       </form>
 
-      <div className="mt-10 overflow-x-auto">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Description</th>
-              <th>Lines</th>
-            </tr>
-          </thead>
-          <tbody>
-            {transactions.length === 0 ? (
-              <tr>
-                <td colSpan={3} className="py-4 text-center opacity-70">
-                  No transactions in the current range.
-                </td>
-              </tr>
-            ) : (
-              transactions.map((row) => (
-                <tr key={row.id}>
-                  <td>{row.date}</td>
-                  <td>{row.description}</td>
-                  <td>
-                    <ul className="space-y-1 text-sm">
-                      {row.lines.map((line) => (
-                        <li key={line.id}>
-                          {line.direction} {money(line.amount_cents)} · {line.account_name} ({line.account_number_mask})
-                        </li>
-                      ))}
-                    </ul>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+      <div className="mt-10">
+        <DataTable
+          ariaLabel="Transactions table"
+          columns={[
+            { accessorKey: "date", header: "Date" },
+            { accessorKey: "description", header: "Description" },
+            {
+              accessorKey: "lines",
+              header: "Lines",
+              sortable: false,
+              cell: (row) => (
+                <ul className="space-y-1 text-sm">
+                  {row.lines.map((line) => (
+                    <li key={line.id}>
+                      {line.direction} {money(line.amount_cents)} · {line.account_name} ({line.account_number_mask})
+                    </li>
+                  ))}
+                </ul>
+              ),
+            },
+          ]}
+          data={transactions}
+          emptyState="No transactions in the current range."
+          pageSize={10}
+        />
       </div>
     </main>
   );

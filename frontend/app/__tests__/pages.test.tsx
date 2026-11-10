@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -6,6 +6,7 @@ import DashboardPage from "../(app)/dashboard/page";
 import InvestmentsPage from "../(app)/investments/page";
 import RootLayout from "../layout";
 import Home from "../page";
+import DataTable from "@/components/data-table";
 import { validateLogin, validateRegister } from "@/lib/validation";
 
 vi.mock("next/navigation", () => ({
@@ -65,6 +66,42 @@ describe("brokerage position page", () => {
 
     expect((await screen.findAllByRole("option", { name: /brokerage a/i })).length).toBeGreaterThan(0);
     expect(screen.getByLabelText(/account/i)).toHaveProperty("tagName", "SELECT");
+  });
+});
+
+describe("shared data table", () => {
+  it("supports search, sorting, and paging with accessible table semantics", () => {
+    const rows = [
+      { id: 1, name: "Charlie", status: "active" },
+      { id: 2, name: "Alpha", status: "inactive" },
+      { id: 3, name: "Bravo", status: "active" },
+      { id: 4, name: "Delta", status: "inactive" },
+    ];
+
+    render(
+      <DataTable
+        ariaLabel="Users table"
+        columns={[
+          { accessorKey: "name", header: "Name" },
+          { accessorKey: "status", header: "Status" },
+        ]}
+        data={rows}
+        pageSize={2}
+      />,
+    );
+
+    const filterInput = screen.getByPlaceholderText(/filter rows/i);
+    fireEvent.change(filterInput, { target: { value: "alp" } });
+
+    expect(screen.queryByText("Charlie")).toBeNull();
+    expect(screen.getByText("Alpha")).toBeTruthy();
+
+    fireEvent.click(screen.getByRole("button", { name: /sort by name/i }));
+    const firstRowName = screen.getAllByRole("row")[1].querySelector("td")?.textContent;
+    expect(firstRowName).toBe("Alpha");
+
+    expect(screen.getByRole("button", { name: /next page/i })).toBeTruthy();
+    expect(screen.getByText(/page 1 of 1/i)).toBeTruthy();
   });
 });
 
