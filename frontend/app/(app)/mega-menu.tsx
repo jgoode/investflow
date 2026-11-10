@@ -14,7 +14,7 @@ const GROUPS = [
   { key: "categories", label: "Categories", href: "/categories", enabled: true },
   { key: "investments", label: "Investments", href: "/investments", enabled: true },
   { key: "users", label: "Users", href: "/users", enabled: true },
-  { key: "settings", label: "Settings", href: "/settings", enabled: false },
+  { key: "settings", label: "Settings", href: "/settings", enabled: true },
 ] as const;
 
 export function MegaMenu({ username }: { username: string }) {

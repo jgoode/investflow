@@ -19,6 +19,7 @@ from app.routers.dashboard import router as dashboard_router
 from app.routers.healthz import router as healthz_router
 from app.routers.investments import router as investments_router
 from app.routers.reports import router as reports_router
+from app.routers.settings import router as settings_router
 from app.routers.transactions import router as transactions_router
 from app.routers.users import router as users_router
 from app.version import __version__
@@ -64,6 +65,7 @@ def create_app() -> FastAPI:
     app.include_router(investments_router)
     app.include_router(dashboard_router)
     app.include_router(reports_router)
+    app.include_router(settings_router)
     return app
 
 

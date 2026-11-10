@@ -27,7 +27,7 @@ describe("mega menu", () => {
     expect(screen.queryByRole("navigation")).toBeNull();
   });
 
-  it("shows Accounts, Categories, and Users as enabled destinations", () => {
+  it("shows Accounts, Categories, Users, and Settings as enabled destinations", () => {
     render(<MegaMenu username="alice" />);
     fireEvent.click(screen.getByRole("button", { name: "Menu" }));
 
@@ -42,5 +42,9 @@ describe("mega menu", () => {
     const usersLink = screen.getByRole("link", { name: "Users" });
     expect(usersLink).toBeTruthy();
     expect(screen.queryByText("Users (coming)")).toBeNull();
+
+    const settingsLink = screen.getByRole("link", { name: "Settings" });
+    expect(settingsLink.getAttribute("href")).toBe("/settings");
+    expect(screen.queryByText("Settings (coming)")).toBeNull();
   });
 });

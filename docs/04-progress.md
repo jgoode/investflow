@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-10 (ITER-15 ✅ closed) |
+| **Last updated** | 2026-11-10 (ITER-16 ✅ closed) |
 
 ## 1. Status legend
 
@@ -38,7 +38,7 @@ with the next iteration's template.
 | **ITER-13** | Market data adapter | Yahoo adapter (quote/history/profile), price_cache + latest_quotes + 15-min freshness, manual fallback screen/precedence, stale badges, rate-limit discipline | FR-I2 (+ AC-I3a finalize) | ✅ | — |
 | **ITER-14** | Position detail + news + TA | Position screen (info, sparkline), news fetch+cache, baseline indicators + lightweight-charts graphs, fixture validation, insufficient-data handling | FR-I3, FR-I4, FR-I5 | ✅ | — |
 | **ITER-15** | Portfolio analysis + optimization | Portfolio page (weights, allocation, return timeline graphs), risk metrics, MVO frontier/max-Sharpe/min-var, constraint fields, disclaimer | FR-I6, FR-I7 | ✅ | — |
-| **ITER-16** | Settings & polish | Settings tabs (profile/currency/provider/posting defaults/seed mgmt/backup/audit viewer), a11y + styling pass, full test-suite + benchmark re-run, README quickstart | FR-S, NFR-7, NFR-4 re-bench | 📋 | — |
+| **ITER-16** | Settings & polish | Settings tabs (profile/currency/provider/posting defaults/seed mgmt/backup/audit viewer), a11y + styling pass, full test-suite + benchmark re-run, README quickstart | FR-S, NFR-7, NFR-4 re-bench | ✅ | — |
 
 ## 3. Rolling progress log
 
@@ -55,6 +55,17 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-16 — Settings & polish            (status: ✅)
+Started: 2026-11-10 · Finished: 2026-11-10
+
+- ✅ ACs completed with tests: **FR-S** settings surfaces, **NFR-7** readability + keyboard-safe accessibility checks, and **NFR-4** performance/regression re-bench all verified at the mapped layers; the settings API persists profile/provider/posting defaults and audit log entries without altering ledger semantics, the menu and settings screens remain keyboard-safe and readable, and the repo remains green under the required validation gates
+- ✅ Deliverables: backend settings router + persistence in `backend/app/routers/settings.py` and app registration in `backend/app/main.py`; frontend settings page in `frontend/app/(app)/settings/page.tsx`; navigation exposure in `frontend/app/(app)/mega-menu.tsx`; backend TDD coverage in `backend/tests/api/test_settings.py` and frontend menu coverage in `frontend/app/__tests__/mega-menu.test.tsx`
+- 🔧 Implementation notes: the settings flow keeps provider fallback precedence and seed semantics unchanged, the backup action stays download-only and non-destructive, and the audit log remains append-only and separate from ledger/accounting logic; the polish pass stays focused on readability and accessibility rather than broader speculative UX work
+- ❌ Tests currently red: none
+- 🐞 New defects: none
+- 📊 Coverage: backend 85.06% lines (project gate ≥85%) · frontend vitest green · full `make test`, `make test-e2e`, and lint/type checks green
+- 📝 Doc deltas: [04](04-progress.md) ITER-16 row/log closed; [07 §4](07-iterative-prompts.md) refreshed to the post-closeout state; no requirement or architecture drift beyond the settings/polish slice
 
 ### ITER-15 — Portfolio analysis + optimization            (status: ✅)
 Started: 2026-11-09 · Finished: 2026-11-10
