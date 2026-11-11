@@ -119,3 +119,5 @@ ITER-02 are already green.
 - ✅ **ITER-20 — Horizontal navbar IA refinement** (FR-X4 + FR-N; §5.1/§5.2; traps: strict top-level order,
   Investments label split to Portfolio/Analysis/Research, and Settings label update to Backup and Downloads) — closed at ITER-21 (gates/docs)
 - ✅ **ITER-21 — Navbar IA stabilization and closeout** (FR-X4 validation, Escape focus-return, navbar L4 reachability; ITER-19/20 closeout) — see §4 roll-forward history
+- ✅ **ITER-22 — Portfolio CSV import (promoted from FEAT-001 backlog §3C, scheduled ITER-22)
+- ✅ **ITER-23 — Price-history CSV import (AC-IMP1h)
