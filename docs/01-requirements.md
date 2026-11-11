@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Active |
-| **Last updated** | 2026-11-10 (ITER-23: FR-IMP-1 AC-IMP1h landed — FR-IMP-1 complete per ADR-009) |
+| **Last updated** | 2026-11-11 (FEAT-002 promoted into §12 FR-IMP-2 and scheduled as ITER-24 per ADR-010; ITER-23: FR-IMP-1 AC-IMP1h landed — FR-IMP-1 complete per ADR-009) |
 | **Parent** | [00-overview](00-overview.md) |
 
 Requirement IDs: `FR-<area><n>` functional, `NFR-<n>` non-functional, `AC-<id>` acceptance criteria (Given/When/Then).
@@ -295,11 +295,55 @@ route aliases or auth gating.
 > AC-I2c manual precedence holds (manual `latest_quotes` rows are served before staleness checks and
 > provider rows do not overwrite them while they are current). FR-IMP-1 is now complete.
 
+### FR-IMP-2 — Non-investment opening balances + statement migration import (promoted from FEAT-002 backlog §3D, scheduled ITER-24)
+
+Importing **opening balances** and **historical statement transactions** for the non-investment side of the
+book — bank, cash, credit-card, and loan accounts — from UTF-8 CSV, so a household ledger can be rebuilt
+from another app or bank export history rather than entered one-by-one. Investments stay FR-IMP-1's job.
+Shares the FR-IMP-1 importer core (`services/importer/`), mapping-template system, and staging tables;
+posting goes through the existing posting service only (invariant T-1). Q&A resolutions in
+[08 §3D.6](08-backlog.md) are binding; the UI lands in the Import center's **Statements & Balances** tab
+(Q-10: one wizard at `/investments/import`, tabs *Portfolio* + *Statements & Balances*).
+
+- **AC-IMP2a** — *Account binding.* Each CSV row (or column value) maps explicitly to one existing
+  InvestFlow **non-investment leaf account**; the binding UI lists only FR-C-valid leaf accounts; accounts
+  are never silently auto-created. Credit-card statements bind to liability accounts with negation
+  semantics handled by the row converter (AC-IMP2c).
+- **AC-IMP2b** — *Opening balances.* One balancing transaction per import run — every bound account leg
+  against the seeded **Equity ▸ Opening Balance** account; leg totals tie out to the CSV sum (invariant
+  T-1); refuses to run against non-empty accounts unless a deliberate safety flag adds a second
+  confirmation (single audit entry; one void reverses the whole run).
+- **AC-IMP2c** — *Row conversion.* Signed-amount CSV convention: negative = debit bank/outflow → Expense;
+  positive = deposit → Income; an explicit debit/credit direction-column flavor is supported. Credit-card
+  payment rows matching another bound account are offered as transfers (AC-T4 shape) instead of expenses,
+  per user confirmation in preview.
+- **AC-IMP2d** — *Categories.* CSV category labels match case-insensitively against existing FR-K
+  categories; unmatched labels get **one global decision per label** in preview (create / map to existing /
+  leave uncategorized) — never silently auto-created.
+- **AC-IMP2e** — *Dates.* ISO or locale-formatted input is normalized to ISO at parse; statement rows obey
+  the normal posting window (AC-T3 / `posting.future_days` setting) unchanged — a future-dated statement
+  row is a row error, no import exemption.
+- **AC-IMP2f** — *Reference & provenance.* Every imported transaction stores `import_batch_id` + source row
+  number (schema addition, proven by ITER-24 tests); a batch detail view lists its transactions; a
+  **reverse batch** operation stages `void` on all its rows — never mass-delete (AC-T7 philosophy).
+- **AC-IMP2g** — *Dedupe.* Hash-tuple `(date, account, description-normalized, amount)` skip-and-report
+  against the committed `import_rows` registry — identical posture to AC-IMP1c.
+- **AC-IMP2h** — *Atomicity & preview.* Per-file transaction; dry-run preview with leg preview, category
+  proposals, dedupe report, and total inflow/outflow sanity check before confirm; any hard row error aborts
+  the whole file (nothing half-imported).
+- **AC-IMP2i** — *Limits & order.* Synchronous processing only; **no date-order requirement** (unlike
+  FR-IMP-1 trades); same caps as FR-IMP-1 (5 MB / 5,000 rows; larger inputs refused at upload with a
+  split-file suggestion); no background-job infrastructure (Q-4).
+
 ## 13. Data model summary
 
 Detailed field tables live in [02-architecture](02-architecture.md) §3. Entity list:
 
 `users · accounts · account_sensitive (encrypted fields, 1:1 with accounts) · categories · transactions · transaction_lines · positions (avg-cost, per account+ticker) · price_cache · import_mappings / import_batches / import_rows (import staging, ADR-008) · settings · audit_log · alembic_version`
+
+*(FR-IMP-2, scheduled ITER-24, adds `transactions.import_batch_id FK→import_batches NULL` for import
+provenance — spec addition to [02 §3.1](02-architecture.md) to be applied with ADR-proved tests in
+ITER-24.)*
 
 ## 14. Requirements-to-scope cross-check
 

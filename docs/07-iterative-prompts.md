@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-10 (ITER-23 ✅ closed; §4 → next iteration **unscheduled** — pending user backlog review) |
+| **Last updated** | 2026-11-11 (ITER-23 ✅ closed; FEAT-002 scheduled → §4 regenerated for ITER-24) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
@@ -55,15 +55,51 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **⚠ Not scheduled yet.** The ITER-23 prompt was spent; the roadmap queue ([04 §2A](04-progress.md)) is
-> exhausted. The only specified-but-unscheduled backlog item is **FEAT-002** (non-investment opening
-> balances + statement migration import — [08 §3D](08-backlog.md), shares the importer core of FEAT-001).
-> Per the backlog lifecycle rule (scheduling is the user's call, [08 §4](08-backlog.md)), §4 stays a
-> placeholder until the user schedules the next iteration in a backlog-review session. When scheduled:
-> promote the §3D.3 rows into `01-requirements.md` FR/AC ids, add the roadmap row in 04 §2A, and regenerate
-> this §4 from the template in §5 below.
-
-*(No paste-ready prompt is current. Run the scheduling step first — see the note above.)*
+> **ITER-24 — Non-investment statement import (FEAT-002, FR-IMP-2)**
+>
+> You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
+> `docs/00-overview.md` (D-04 double-entry, D-07 net worth, D-16 stack), `docs/01-requirements.md` §12
+> FR-IMP-2 (AC-IMP2a–IMP2i) plus FR-IMP-1 provenance (ADR-008/ADR-009 in [04 §4](04-progress.md)),
+> `docs/02-architecture.md` §3.1 (import staging tables + `transactions` provenance plan), §4.5 (posting
+> service — the only route to `transaction_lines`, conn-scoped variant), `docs/03-test-plan.md` §4 (IMP
+> row — extend coverage to FR-IMP-2), and `docs/08-backlog.md` §3D (provenance; Q&A §3D.6 binding).
+>
+> **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
+> scope only to AC-IMP2a–IMP2i — ask me about any ambiguity; never assume.
+>
+> **Deliverable:**
+> 1. Extend the importer core (`backend/app/services/importer/`) with the **statements** kinds: opening
+>    balances (AC-IMP2b — one balancing transaction per run against seeded `Equity ▸ Opening Balance`,
+>    non-empty-account safety flag) and statement transactions (AC-IMP2a/2c/2e — signed-amount + explicit
+>    direction flavors, ISO/locale date normalization, posting-window row errors), reusing the existing
+>    parser limits (5 MB / 5,000 rows), Decimal-only conversion, mapping resolver, and staging tables.
+> 2. Category resolver + transfer detector (AC-IMP2d/2c): case-insensitive label match; one global
+>    decision per unmatched label (create / map / uncategorize); credit-card payment matches offered as
+>    AC-T4 transfers with preview confirmation.
+> 3. Provenance (AC-IMP2f): migration adds `transactions.import_batch_id FK→import_batches NULL` + source
+>    row number; batch detail view; reverse-batch operation stages `void` on all its rows (never
+>    delete); hash-registry dedupe (AC-IMP2g); atomic per-file preview + commit through the posting
+>    service only (AC-IMP2h).
+> 4. Frontend: enable the **Statements & Balances** tab in the `/investments/import` wizard (account
+>    binding to non-investment leaf accounts, preview with legs/category proposals/dedupe/sanity totals);
+>    no new shell routes.
+> 5. L4 E2E: import bank-statement fixtures (incl. a credit-card statement with a payment match) and see
+>    transactions, provenance, and reverse-batch behavior reflect them.
+> 6. Roll forward docs ([07 §2](07-iterative-prompts.md) R1–R8).
+>
+> **Out of scope this iteration:** PDF/OFX/QIF parsing, background jobs, multi-currency, automatic
+> expense-categorization beyond user-confirmed exact label matching, investment-statement ingestion
+> (FR-IMP-1's turf).
+>
+> **Definition of done:** AC-IMP2a–IMP2i mapped-layer tests green, `make test` + `make test-e2e` green,
+> lint/types green, backend coverage ≥ 85%, no untriaged defects, docs rolled forward.
+>
+> **Known traps:** reuse the importer package — do not fork a second parser; the posting service is the
+> only route to `transaction_lines` (T-1, use the conn-scoped variant for atomicity); opening balances
+> post **one** balancing transaction vs `Equity ▸ Opening Balance` (never synthetic value games, ADR-002);
+> reverse batch = staged `void`, never delete (AC-T7); dedupe matches the committed `import_rows` registry;
+> no date-order requirement for statements (unlike trades); sync-only limits 5 MB / 5,000 rows; future-dated
+> rows are row errors (no posting-window exemption).
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 

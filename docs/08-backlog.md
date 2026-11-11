@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Living document — reviewed at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2, step R8) |
-| **Last updated** | 2026-11-10 |
+| **Last updated** | 2026-11-11 (FEAT-002 scheduled — ITER-24, ADR-010; FEAT-001 complete) |
 
 ## 1. Purpose
 
@@ -39,7 +39,7 @@ Rules:
 | **FEAT-005** | Navbar information architecture redesign | UX/navigation | User request 2026-11-10 | M (≈1 iteration) | included ✅ — ITER-19/ITER-20 (closed ITER-21) |
 | **FEAT-006** | Horizontal navbar IA refinement | UX/navigation | User request 2026-11-10 | S (≈0.5–1 iteration) | scheduled — ITER-20 |
 | **FEAT-001** | Portfolio CSV import (positions + transactions) | Future feature request | User request 2026-11-08 | M (≈1–2 iterations) | included ✅ — ITER-22 (AC-IMP1a–IMP1g) + ITER-23 (AC-IMP1h price-history; ADR-009) — **feature complete** |
-| **FEAT-002** | Non-investment opening balances + statement migration import (CSV) | Future feature request | User request 2026-11-08 (extends FEAT-001 scoping note §3C.5) | M (≈1–2 iterations, shared importer core) | specified — Q&A resolved (§3D.6) |
+| **FEAT-002** | Non-investment opening balances + statement migration import (CSV) | Future feature request | User request 2026-11-08 (extends FEAT-001 scoping note §3C.5) | M (≈1–2 iterations, shared importer core) | scheduled — ITER-24 (promoted into [01 §12 FR-IMP-2](01-requirements.md) AC-IMP2a–IMP2i, ADR-010) |
 | — | *(related, owned in [06-gap-analysis](06-gap-analysis.md):* G-001 budgets · G-002 FIFO lots · G-004 role granularity · G-005 manual assets · G-006 desktop packaging | items | session decisions | — | recorded-at-time-zero |
 
 ## 3. Feature request FEAT-003 — DaisyUI winter theme preset
@@ -347,9 +347,11 @@ feature is scheduled ([§4 Maintenance](#4-maintenance)).
 
 ## 3D. Feature request FEAT-002 — Non-investment opening balances + statement migration import (CSV)
 
-> **Status: specified, unscheduled. Shares the importer core of FEAT-001; nothing below is implemented.
-> Together, FEAT-001 + FEAT-002 constitute the full "migrate from my previous app / bank statements" path —
-> supersedes the earlier statement in §3C.5 of FEAT-001 that migration was not in scope.**
+> **Status: scheduled (ITER-24) 2026-11-11.** §3D.3 sketch + §3D.6 Q&A resolutions were promoted into
+> `docs/01-requirements.md` §12 FR-IMP-2 (AC-IMP2a–IMP2i) at scheduling (ADR-010, [04 §4](04-progress.md));
+> the sketch below stays as the provenance record. Shares the FR-IMP-1 importer core of FEAT-001; nothing
+> below is implemented yet. Together, FEAT-001 + FEAT-002 constitute the full "migrate from my previous app /
+> bank statements" path — supersedes the earlier statement in §3C.5 of FEAT-001 that migration was not in scope.**
 
 ### 3D.1 Summary
 
@@ -430,5 +432,8 @@ Two flavors:
 - When FEAT-001 is scheduled: promote §3C.3 rows into new FR-IMP-* requirements with ACs; replace this row's
   Status → included; add the roadmap row(s) in [04 §2](04-progress.md); queue a corresponding prompt template in
   [07 §6](07-iterative-prompts.md).
+- 2026-11-11: FEAT-002 **scheduled by user instruction → ITER-24**; §3D requirements promoted into
+  [01 §12 FR-IMP-2](01-requirements.md) (AC-IMP2a–IMP2i, ADR-010); roadmap row added in [04 §2A](04-progress.md);
+  paste-ready prompt regenerated in [07 §4](07-iterative-prompts.md).
 - Related initial-scoping note: [06 GAP G-007](06-gap-analysis.md) is superseded by FEAT-001 as the working
   record for CSV import; G-007 remains for traceability.

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-10 (ITER-23 ✅ closed) |
+| **Last updated** | 2026-11-11 (ITER-23 ✅ closed; FEAT-002 promoted + scheduled as ITER-24 per ADR-010) |
 
 ## 1. Status legend
 
@@ -51,6 +51,7 @@ with the next iteration's template.
 | **ITER-21** | Navbar IA stabilization and closeout | FR-X4 validation, Escape focus-return fix, navbar L4 reachability scenario, full-gate closeout of ITER-19/ITER-20 | FR-X4, FR-N, NFR-7 | ✅ | DEF-003 (fixed) |
 | **ITER-22** | Portfolio CSV import | Import center `/investments/import` (Portfolio tab): mapping wizard + templates, dry-run preview, atomic positions/trades import via posting service, dedupe, audit entries (price-history stretch AC-IMP1h may slip to ITER-23) | FR-IMP-1 (AC-IMP1a–IMP1g; AC-IMP1h slipped → ITER-23) | ✅ | DEF-004 (fixed) |
 | **ITER-23** | Price-history CSV import | `price_history` kind in the importer core (daily close/volume CSV → `price_cache` with `source='manual'`, upsert on `(ticker, date)`, `latest_quotes` refresh, AC-I2c manual precedence), bank-statement starter template repointed to the price-history shape, wizard kind dropdown, L4 manual-price precedence scenario | FR-IMP-1 (AC-IMP1h; FR-IMP-1 complete) | ✅ | — |
+| **ITER-24** | Non-investment statement import (FEAT-002) | Import center **Statements & Balances** tab: opening balances (one balancing tx vs Equity ▸ Opening Balance) + statement transactions through the posting service, category resolver (one decision per unmatched label), credit-card transfer detector, provenance (`transactions.import_batch_id` + row number) + batch detail + reverse-batch void, hash-registry dedupe, same sync limits | FR-IMP-2 (AC-IMP2a–IMP2i) | 📋 | — |
 
 ## 3. Rolling progress log
 
@@ -325,6 +326,7 @@ Started: 2026-11-08 · Finished: 2026-11-08
 | ADR-007 | 2026-11-10 | FR-X4b submenu labels **supersede** FR-X3b (`Investments → Portfolio/Analysis/Research`, `Settings → Backup and Downloads`); FR-X3 keeps original record as the superseded draft | the implemented navbar follows FR-X4 (verified by L3/L4 in ITER-21); resolves the X3b/X4b AC contradiction recorded in [01 §12](01-requirements.md) without changing routes or auth | [01 §12](01-requirements.md), [02 §5.2](02-architecture.md) |
 | ADR-008 | 2026-11-10 | Portfolio CSV import (FR-IMP-1): buy/sell trade rows update **positions only** through the avg-cost engine (no ledger legs — positions live inside brokerage accounts per D-08, so trade cash flows belong to the mapped brokerage account); dividend/fee rows post real two-leg transactions through the posting service (cash leg + seeded `Interest & Dividends`/`Fees` COA leaf, hash stored as `reference` `import:<hash16>`); import adds staging tables `import_mappings`/`import_batches`/`import_rows` (spec addition to 02 §3.1) with the `import_rows` hash registry enabling re-import dedupe | keeps net-worth double-count-free (ledger basis never overlays holdings value), reuses the existing posting service as the only route to `transaction_lines` (T-1), and makes whole-file atomicity possible on a single connection; refines the backlog §3C wording that implied full double-entry trade legs | [01 §12](01-requirements.md), [02 §3.1](02-architecture.md), [02 §4.5](02-architecture.md) |
 | ADR-009 | 2026-11-10 | Price-history import (AC-IMP1h, ITER-23): the *bank statement* starter template is repointed to the price-history shape (`Date/Ticker/Close/Volume` — its ITER-22 bank-statement-shaped columns were invalid for the `price_history` kind and would 422); price rows are **not account-bound**; commit upserts `price_cache` on the unique `(ticker, date)` key with `source='manual'` (never duplicate rows) and refreshes `latest_quotes` with the newest imported close per ticker (`asof` = the close date at midnight UTC so the stale badge shows the true price date); dedupe uses a price-row hash registry `(date, ticker, close_q4, volume)` — identical re-imports are duplicate-skipped, corrected closes re-post and upsert; price history writes **no ledger rows** | resolves a shipped-template inconsistency proven by the red tests; honest `asof` keeps AC-I2b stale-badge semantics truthful while AC-I2c manual precedence (`resolve_quote` serves manual quotes before staleness checks) is unaffected; reuses the importer core (no second parser) per the ITER-23 traps | [01 §12](01-requirements.md), [02 §3.1](02-architecture.md), [08 §3C](08-backlog.md) |
+| ADR-010 | 2026-11-11 | FEAT-002 (non-investment opening balances + statement migration import, [08 §3D](08-backlog.md)) is **promoted into `01-requirements.md` §12 FR-IMP-2 (AC-IMP2a–IMP2i)** and **scheduled as ITER-24** (user instruction); it shares the FR-IMP-1 importer core, mapping-template system, and import staging tables (ADR-008), posts exclusively through the posting service (T-1), and adds `transactions.import_batch_id FK→import_batches NULL` as import provenance (02 §3.1 spec addition to be applied with ITER-24 tests); reverse-batch = staged `void`, never mass-delete | completes the full "migrate from my previous app / bank statements" path pair (FEAT-001 + FEAT-002) per 08 §3D.7; one wizard, two tabs (Q-10); scheduling is the user's call per the backlog lifecycle | [01 §12 FR-IMP-2](01-requirements.md), [08 §3D](08-backlog.md) |
 
 *(Append rows as decisions arise — never rewrite history rows.)*
 
@@ -355,6 +357,7 @@ Started: 2026-11-08 · Finished: 2026-11-08
 | 21 | FR-X4, FR-N, NFR-7 (regression gates) | 5.1, 5.2 (interaction model; no structural change) |
 | 22 | FR-IMP-1 | 3.1 (import_mappings/import_batches), 4.5 (posting service reuse), 5.1 (route `/investments/import`), 5.2 (Investments submenu wiring) |
 | 23 | FR-IMP-1 (AC-IMP1h) | 3.1 (price_cache + import staging price_history semantics) |
+| 24 | FR-IMP-2 (AC-IMP2a–IMP2i) | 3.1 (transactions provenance column + import staging reuse), 4.5 (posting service) — *(expected; update on finish)* |
 
 (served as "expected bootstrap" so sessions know exactly which docs the next iteration touches;
 update real rows on finish.)
