@@ -1,0 +1,4 @@
+71 files already formatted
+All checks passed!
+Success: no issues found in 35 source files
+pnpm --dir frontend exec eslint . && pnpm --dir frontend exec tsc --noEmit

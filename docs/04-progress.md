@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration (workflow: [07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-10 (ITER-19 ✅ · ITER-20 ✅ · ITER-21 ✅ closed) |
+| **Last updated** | 2026-11-10 (ITER-23 ✅ closed) |
 
 ## 1. Status legend
 
@@ -50,6 +50,7 @@ with the next iteration's template.
 | **ITER-20** | Horizontal navbar IA refinement | Horizontal top-level navbar order, submenu label alignment, alias/reachability regression checks | FR-X4, FR-N, NFR-7 | ✅ | — |
 | **ITER-21** | Navbar IA stabilization and closeout | FR-X4 validation, Escape focus-return fix, navbar L4 reachability scenario, full-gate closeout of ITER-19/ITER-20 | FR-X4, FR-N, NFR-7 | ✅ | DEF-003 (fixed) |
 | **ITER-22** | Portfolio CSV import | Import center `/investments/import` (Portfolio tab): mapping wizard + templates, dry-run preview, atomic positions/trades import via posting service, dedupe, audit entries (price-history stretch AC-IMP1h may slip to ITER-23) | FR-IMP-1 (AC-IMP1a–IMP1g; AC-IMP1h slipped → ITER-23) | ✅ | DEF-004 (fixed) |
+| **ITER-23** | Price-history CSV import | `price_history` kind in the importer core (daily close/volume CSV → `price_cache` with `source='manual'`, upsert on `(ticker, date)`, `latest_quotes` refresh, AC-I2c manual precedence), bank-statement starter template repointed to the price-history shape, wizard kind dropdown, L4 manual-price precedence scenario | FR-IMP-1 (AC-IMP1h; FR-IMP-1 complete) | ✅ | — |
 
 ## 3. Rolling progress log
 
@@ -66,6 +67,16 @@ Started: YYYY-MM-DD · Finished: YYYY-MM-DD
 - 📊 Coverage: backend X% · frontend Y% (vs targets [03 §6](03-test-plan.md))
 - 📝 Doc deltas: requirements/architecture changed? → updated files list
 ```
+
+### ITER-23 — Price-history CSV import (AC-IMP1h)            (status: ✅)
+Started: 2026-11-10 · Finished: 2026-11-10
+
+- ✅ ACs completed with tests: **AC-IMP1h** — price-history CSV import feeds `price_cache` with `source='manual'` and refreshes `latest_quotes`, subject to AC-I2c manual-price precedence. Mapped layers: L1 importer-core suite (`backend/tests/unit/test_importer_price_history.py`, 13 tests: bank-statement starter repointed to the price-history shape, canonical fields with optional volume, Decimal-only `decimal_to_volume`/q4 close conversion per NFR-10, plan normalization + row errors, committed/in-file duplicate marking, `price_row_hash`); L2 import-API suite (`backend/tests/api/test_imports.py`, +10 tests: preview would-post rows with date/close/volume, commit writing manual price_cache rows with upsert on `(ticker, date)` (never duplicate rows), hash-registry dedupe (identical re-import → duplicate-skipped; corrected close → upsert), latest_quotes refreshed with the newest imported close (`asof` = close date, `source='manual'`), AC-I2c precedence via `/api/investments/quotes/{ticker}` + `resolve_quote`, atomic abort on a hard row error, 5,000-row limit with split suggestion, `import.price_history` audit); L3 wizard suite (`frontend/app/__tests__/import-page.test.tsx`, 5 tests: `price_history` kind option + bank-statement template hint, preview showing date/close/volume effects); L4 (`e2e/smoke.spec.ts` import scenario extended: price-history fixture import → `Posted 4` → quote API `source='manual'`/`price_q4=3788500`/badge `@ 2024-01-05` → `/investments` stale-badge assertion)
+- 🔧 Implementation notes: strict TDD — red snapshots for L1/L2 (`red-backend.log`: 26 failed — missing `price_history` support), L3 (`red-frontend.log`: no price_history option/date column) and L4 (`red-e2e.log`: kind option absent from the combobox) captured in `docs/logs/iter-23/`; user Q&A resolved three ambiguities before red tests (bank statement template repointed to the price-history shape per the ITER-23 prompt wording; upsert + hash-registry dedupe semantics on `(ticker, date)`; `latest_quotes.asof` = imported close date so the stale badge stays honest). Importer core extended in place (`parser.decimal_to_volume`, `mapping` canonical fields + starter repoint, `dedupe.price_row_hash` over `(date, ticker, close_q4, volume)`, `evaluator.build_price_history_plan`, `service._apply_price_rows` with `INSERT … ON CONFLICT(ticker, date)` upserts into price_cache and `latest_quotes`, `ensure_market_tables()` hoisted before `BEGIN IMMEDIATE`); no second parser forked; price history writes **no ledger rows** (02 §4.5); no account bindings required for the kind; frontend adds the kind to the wizard dropdown + Date/Close/Volume preview columns (no new shell routes). ADR-009 records the decisions
+- ❌ Tests currently red (parked): none
+- 🐞 New defects: none (three red-phase test-authoring slips — a 3-decimal close used where the 4-decimal limit test needed 5 decimals, tuple-row access on the conftest `user_rows` helper, and a re-import count expectation that was wrong given hash-registry dedupe — were corrected in the red tests themselves before implementation, ITER-01 precedent; no product defect)
+- 📊 Coverage: backend 86.04% (gate 85%) · 151 backend tests + 19 frontend tests green · `make test-e2e` 7/7 green (import wizard scenario extended with the AC-IMP1h segment) · ruff/mypy/eslint/tsc green
+- 📝 Doc deltas: ADR-009 (price-history import semantics); [01 §12](01-requirements.md) ITER-23 refinement note (AC-IMP1h landed; FR-IMP-1 complete); [02 §3.1](02-architecture.md) import staging note extended with price_history commit semantics; [03 §4](03-test-plan.md) IMP row close note extended to IMP1h; [04 §2A](04-progress.md) ITER-23 row + §5 mapping row; [06 §0](06-gap-analysis.md) close-of-iteration status sentence; [08 §3C](08-backlog.md) FEAT-001 lifecycle note (AC-IMP1h landed — feature complete); [07 §4](07-iterative-prompts.md) §4 left as an unscheduled placeholder (next iteration pending user backlog review — scheduling is the user's call); [00](00-overview.md) untouched (no D-xx change)
 
 ### ITER-22 — Portfolio CSV import (FEAT-001)            (status: ✅)
 Started: 2026-11-10 · Finished: 2026-11-10
@@ -313,6 +324,7 @@ Started: 2026-11-08 · Finished: 2026-11-08
 | ADR-006 | 2026-11-08 | User delete is implemented as soft-delete (`is_active=0`) and self deactivate/delete is denied | preserves user-history rows while still satisfying revocation and last-active protections; aligns with shared-book continuity expectations | [01 §1 FR-U4](01-requirements.md), [02 §3.1](02-architecture.md) |
 | ADR-007 | 2026-11-10 | FR-X4b submenu labels **supersede** FR-X3b (`Investments → Portfolio/Analysis/Research`, `Settings → Backup and Downloads`); FR-X3 keeps original record as the superseded draft | the implemented navbar follows FR-X4 (verified by L3/L4 in ITER-21); resolves the X3b/X4b AC contradiction recorded in [01 §12](01-requirements.md) without changing routes or auth | [01 §12](01-requirements.md), [02 §5.2](02-architecture.md) |
 | ADR-008 | 2026-11-10 | Portfolio CSV import (FR-IMP-1): buy/sell trade rows update **positions only** through the avg-cost engine (no ledger legs — positions live inside brokerage accounts per D-08, so trade cash flows belong to the mapped brokerage account); dividend/fee rows post real two-leg transactions through the posting service (cash leg + seeded `Interest & Dividends`/`Fees` COA leaf, hash stored as `reference` `import:<hash16>`); import adds staging tables `import_mappings`/`import_batches`/`import_rows` (spec addition to 02 §3.1) with the `import_rows` hash registry enabling re-import dedupe | keeps net-worth double-count-free (ledger basis never overlays holdings value), reuses the existing posting service as the only route to `transaction_lines` (T-1), and makes whole-file atomicity possible on a single connection; refines the backlog §3C wording that implied full double-entry trade legs | [01 §12](01-requirements.md), [02 §3.1](02-architecture.md), [02 §4.5](02-architecture.md) |
+| ADR-009 | 2026-11-10 | Price-history import (AC-IMP1h, ITER-23): the *bank statement* starter template is repointed to the price-history shape (`Date/Ticker/Close/Volume` — its ITER-22 bank-statement-shaped columns were invalid for the `price_history` kind and would 422); price rows are **not account-bound**; commit upserts `price_cache` on the unique `(ticker, date)` key with `source='manual'` (never duplicate rows) and refreshes `latest_quotes` with the newest imported close per ticker (`asof` = the close date at midnight UTC so the stale badge shows the true price date); dedupe uses a price-row hash registry `(date, ticker, close_q4, volume)` — identical re-imports are duplicate-skipped, corrected closes re-post and upsert; price history writes **no ledger rows** | resolves a shipped-template inconsistency proven by the red tests; honest `asof` keeps AC-I2b stale-badge semantics truthful while AC-I2c manual precedence (`resolve_quote` serves manual quotes before staleness checks) is unaffected; reuses the importer core (no second parser) per the ITER-23 traps | [01 §12](01-requirements.md), [02 §3.1](02-architecture.md), [08 §3C](08-backlog.md) |
 
 *(Append rows as decisions arise — never rewrite history rows.)*
 
@@ -342,6 +354,7 @@ Started: 2026-11-08 · Finished: 2026-11-08
 | 20 | FR-X4, FR-N | 5.1, 5.2 |
 | 21 | FR-X4, FR-N, NFR-7 (regression gates) | 5.1, 5.2 (interaction model; no structural change) |
 | 22 | FR-IMP-1 | 3.1 (import_mappings/import_batches), 4.5 (posting service reuse), 5.1 (route `/investments/import`), 5.2 (Investments submenu wiring) |
+| 23 | FR-IMP-1 (AC-IMP1h) | 3.1 (price_cache + import staging price_history semantics) |
 
 (served as "expected bootstrap" so sessions know exactly which docs the next iteration touches;
 update real rows on finish.)

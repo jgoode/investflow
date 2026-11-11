@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Active |
-| **Last updated** | 2026-11-10 (ITER-22: FR-IMP-1 AC-IMP1a–IMP1g landed; AC-IMP1e leg refinement + AC-IMP1h slip per ADR-008) |
+| **Last updated** | 2026-11-10 (ITER-23: FR-IMP-1 AC-IMP1h landed — FR-IMP-1 complete per ADR-009) |
 | **Parent** | [00-overview](00-overview.md) |
 
 Requirement IDs: `FR-<area><n>` functional, `NFR-<n>` non-functional, `AC-<id>` acceptance criteria (Given/When/Then).
@@ -283,6 +283,17 @@ route aliases or auth gating.
 > `import_rows` registry. Dedupe matching is against the committed `import_rows` hash registry
 > (equivalent to the AC-IMP1c hash-tuple over normalized fields). **AC-IMP1h slipped to ITER-23 as
 > pre-agreed** — ITER-22 closed green without it; its starter template (`bank statement`) already ships.
+
+> **ITER-23 refinement (ADR-009, applied):** AC-IMP1h landed — the *bank statement* starter template is
+> repointed to the price-history shape (`Date/Ticker/Close/Volume`; its ITER-22 bank-statement-shaped
+> columns were invalid for the `price_history` kind). Price rows are not account-bound; the commit upserts
+> `price_cache` on the unique `(ticker, date)` key with `source='manual'` (never duplicate rows) and
+> refreshes `latest_quotes` with the newest imported close per ticker (`asof` = the close date at midnight
+> UTC, so the AC-I2b stale badge shows the true price date). Dedupe uses a price-row hash registry
+> `(date, ticker, close_q4, volume)`: identical re-imports are duplicate-skipped; a corrected close for an
+> existing `(ticker, date)` re-posts and upserts. Price history writes **no ledger rows** (02 §4.5);
+> AC-I2c manual precedence holds (manual `latest_quotes` rows are served before staleness checks and
+> provider rows do not overwrite them while they are current). FR-IMP-1 is now complete.
 
 ## 13. Data model summary
 

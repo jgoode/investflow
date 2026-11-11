@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — update at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-10 (ITER-22 close review: DEF-004 opened + verified-closed — test-suite dev-DB dependence; DEF-001/DEF-002/DEF-003 remain closed. Local dev-DB schema drift vs migration 0006 was an environment artifact, not a product defect — rebuilt via `alembic upgrade head`, noted in [04 §3](04-progress.md) ITER-22 entry) |
+| **Last updated** | 2026-11-10 (ITER-23 close review: no new defects — the three red-phase test-authoring slips were corrected in the red tests themselves before implementation, ITER-01 precedent; DEF-001–DEF-004 remain verified-closed) |
 
 ## 1. Definitions
 

@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Living document — §4 is **regenerated at the end of every iteration**; §3/§5 stay stable |
-| **Last updated** | 2026-11-10 (ITER-22 ✅ closed; §4 → ITER-23) |
+| **Last updated** | 2026-11-10 (ITER-23 ✅ closed; §4 → next iteration **unscheduled** — pending user backlog review) |
 
 This document is the operator's manual for driving InvestFlow development as a sequence of
 **interactive, test-driven iterations** in coding sessions. It contains:
@@ -55,41 +55,15 @@ ITER-02 are already green.
 
 ## 4. Paste-ready prompt — current next iteration
 
-> **ITER-23 — Price-history CSV import (AC-IMP1h)**
->
-> You are working in the InvestFlow monorepo (layout per [02 §2](02-architecture.md)). Read first:
-> `docs/00-overview.md` (D-04 double-entry, D-07 net worth, D-16 stack), `docs/01-requirements.md` §12
-> FR-IMP-1 (AC-IMP1h) and AC-I2c (manual-price precedence), `docs/02-architecture.md` §3.1
-> (`price_cache` + the import staging tables from migration 0007), §4.9 (price_cache/manual precedence),
-> §4.5 (posting service note — price history writes no ledger rows), `docs/03-test-plan.md` §4 (IMP row —
-> extend coverage to IMP1h), and `docs/08-backlog.md` §3C (provenance; ADR-008 in [04 §4](04-progress.md)).
->
-> **This is an interactive TDD session.** Tests before code (red snapshots required, [03 §8](03-test-plan.md));
-> scope only to AC-IMP1h — ask me about any ambiguity; never assume.
->
-> **Deliverable:**
-> 1. Extend the importer core (`backend/app/services/importer/`) with the `price_history` kind: parse the
->    `bank statement` starter template's daily close/volume CSV (ticker + date + close_q4 [+ volume]),
->    reusing the existing parser limits (5 MB / 5,000 rows), Decimal-only conversion, mapping resolver,
->    and staging tables (new `kind` value `price_history` in `import_batches` — the CHECK already allows it).
-> 2. Import API (L2): preview + commit for `price_history` writing `price_cache` rows with
->    `source='manual'` and refreshing `latest_quotes`, respecting AC-I2c manual precedence (manual rows
->    are not overwritten by provider refreshes); atomic per-file semantics and `import.price_history`
->    audit entries.
-> 3. Frontend: enable the kind in the `/investments/import` wizard (kind dropdown + template hint);
->    no new shell routes.
-> 4. L4 E2E: import a price-history fixture and see the position detail/manual-price precedence reflect it.
-> 5. Roll forward docs ([07 §2](07-iterative-prompts.md) R1–R8).
->
-> **Out of scope this iteration:** FEAT-002 (non-investment statement import — separate iteration),
-> PDF/OFX/QIF, background jobs, multi-currency, provider-auto-refresh logic changes.
->
-> **Definition of done:** AC-IMP1h mapped-layer tests green, `make test` + `make test-e2e` green,
-> lint/types green, backend coverage ≥ 85%, no untriaged defects, docs rolled forward.
->
-> **Known traps:** reuse the importer package — do not fork a second parser; `price_cache` unique key is
-> `(ticker, date)` (upsert, never duplicate rows); `source='manual'` rows win over provider rows per
-> AC-I2c; no ledger postings for price history; integer q4 prices only (NFR-10).
+> **⚠ Not scheduled yet.** The ITER-23 prompt was spent; the roadmap queue ([04 §2A](04-progress.md)) is
+> exhausted. The only specified-but-unscheduled backlog item is **FEAT-002** (non-investment opening
+> balances + statement migration import — [08 §3D](08-backlog.md), shares the importer core of FEAT-001).
+> Per the backlog lifecycle rule (scheduling is the user's call, [08 §4](08-backlog.md)), §4 stays a
+> placeholder until the user schedules the next iteration in a backlog-review session. When scheduled:
+> promote the §3D.3 rows into `01-requirements.md` FR/AC ids, add the roadmap row in 04 §2A, and regenerate
+> this §4 from the template in §5 below.
+
+*(No paste-ready prompt is current. Run the scheduling step first — see the note above.)*
 
 ## 5. Stable iteration prompt template (used by R5 to build §4)
 

@@ -1,0 +1,1 @@
+make test-e2e — 7 passed (13.0s), incl. "investment import wizard: import positions + trades fixtures (FR-IMP-1)" extended with the AC-IMP1h price-history segment: fixture import → Posted 4 → /api/investments/quotes/MSFT source=manual price_q4=3788500 badge @ 2024-01-05 → /investments badge assertion.

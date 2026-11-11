@@ -1,0 +1,29 @@
+[WebServer] INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
+[WebServer] INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+[WebServer] INFO:     Started server process [723722]
+[WebServer] INFO:     Waiting for application startup.
+[WebServer] INFO:     Application startup complete.
+[WebServer] INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+[WebServer] $ next dev --turbopack
+
+Running 1 test using 1 worker
+
+  ✘  1 e2e/smoke.spec.ts:146:1 › investment import wizard: import positions + trades fixtures (FR-IMP-1) (30.1s)
+
+
+  1) e2e/smoke.spec.ts:146:1 › investment import wizard: import positions + trades fixtures (FR-IMP-1) 
+
+    Test timeout of 30000ms exceeded.
+
+    Error Context: test-results/smoke-investment-import-wi-cb340-s-trades-fixtures-FR-IMP-1-/error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/smoke-investment-import-wi-cb340-s-trades-fixtures-FR-IMP-1-/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/smoke-investment-import-wi-cb340-s-trades-fixtures-FR-IMP-1-/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e/smoke.spec.ts:146:1 › investment import wizard: import positions + trades fixtures (FR-IMP-1) 

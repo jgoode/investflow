@@ -9,7 +9,7 @@ from datetime import date
 from typing import Any
 
 from app.positions import POSITION_OPEN, average_cost_after_trade, realized_gain_loss_cents
-from app.services.importer import parser
+from app.services.importer import dedupe, parser
 from app.services.importer.dedupe import trade_row_hash
 from app.services.importer.mapping import resolve_effective_mapping
 
@@ -322,6 +322,78 @@ def _simulate_trade_row(row: dict[str, Any], position_state: Any) -> dict[str, A
     return None
 
 
+def build_price_history_plan(
+    conn: Any,
+    *,
+    parsed: parser.CsvFile,
+    column_mapping: dict[str, str | None],
+    committed_hashes: set[str],
+) -> dict[str, Any]:
+    """Normalize daily close/volume rows for the ``price_history`` kind (AC-IMP1h).
+
+    Price rows are not account-bound and carry no replay-order semantics; a
+    (ticker, date) close upserts into price_cache. Duplicates are marked against
+    the committed hash registry and against identical rows earlier in the file.
+    """
+    rows: list[dict[str, Any]] = []
+    for index, raw in enumerate(parsed.rows, start=1):
+        errors: list[str] = []
+        date_value = _require_date(_cell(raw, column_mapping, "date"), errors)
+        ticker = (_cell(raw, column_mapping, "ticker") or "").strip().upper()
+        if not ticker:
+            errors.append("ticker is required")
+
+        close_q4: int | None = None
+        close_raw = _cell(raw, column_mapping, "close")
+        if close_raw is None:
+            errors.append("close column is not mapped")
+        else:
+            try:
+                close_q4 = parser.decimal_to_q4(close_raw, label="close")
+            except parser.ImportError as exc:
+                errors.append(str(exc))
+
+        volume = 0
+        volume_raw = _cell(raw, column_mapping, "volume")
+        if volume_raw is not None and volume_raw.strip():
+            try:
+                volume = parser.decimal_to_volume(volume_raw, label="volume")
+            except parser.ImportError as exc:
+                errors.append(str(exc))
+
+        row: dict[str, Any] = {
+            "row_index": index,
+            "kind": "price_history",
+            "date": date_value,
+            "ticker": ticker,
+            "close_q4": close_q4,
+            "volume": volume,
+            "errors": errors,
+            "duplicate": False,
+        }
+        row["hash"] = dedupe.price_row_hash(row)
+
+        if not errors and ticker and date_value:
+            if row["hash"] in committed_hashes:
+                row["duplicate"] = True
+            elif any(
+                existing["hash"] == row["hash"] and not existing["errors"] for existing in rows
+            ):
+                row["duplicate"] = True
+
+        if not errors:
+            row["effect"] = {
+                "action": "price",
+                "ticker": ticker,
+                "date": date_value,
+                "close_q4": close_q4,
+                "volume": volume,
+            }
+        rows.append(row)
+
+    return {"rows": rows}
+
+
 def build_preview(kind: str, parsed: parser.CsvFile, plan: dict[str, Any]) -> dict[str, Any]:
     rows = plan["rows"]
     error_rows = [
@@ -346,6 +418,7 @@ def build_preview(kind: str, parsed: parser.CsvFile, plan: dict[str, Any]) -> di
 __all__ = [
     "build_positions_plan",
     "build_trades_plan",
+    "build_price_history_plan",
     "build_preview",
     "resolve_effective_mapping",
     "TRADE_TYPES",

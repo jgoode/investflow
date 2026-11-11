@@ -200,6 +200,35 @@ test("investment import wizard: import positions + trades fixtures (FR-IMP-1)", 
   const descriptions = ledger.map((entry) => entry.description);
   expect(descriptions.some((text) => /Dividend AAPL/i.test(text))).toBe(true);
   expect(descriptions.some((text) => /Fee AAPL/i.test(text))).toBe(true);
+
+  // --- price history import feeds price_cache with manual prices (AC-IMP1h) ---
+  await page.goto("/investments/import");
+  await page.getByLabel("Import kind").selectOption("price_history");
+  await page
+    .getByLabel("CSV file")
+    .setInputFiles(fixturePath("price-history.csv"));
+  await expect(page.getByText(/bank statement/i)).toBeVisible();
+  await page.getByRole("button", { name: "Run preview" }).click();
+  await expect(page.getByText("Import preview")).toBeVisible();
+  await page.getByRole("button", { name: "Confirm import" }).click();
+  await expect(page.getByText(/Posted 4/)).toBeVisible();
+
+  // AC-I2c manual-price precedence: the imported manual quote wins and is
+  // served with source='manual' at the newest imported close.
+  const quoteResponse = await page.request.get(`${BACKEND}/api/investments/quotes/MSFT`);
+  expect(quoteResponse.ok()).toBeTruthy();
+  const quote = (await quoteResponse.json()) as {
+    source: string;
+    price_q4: number;
+    badge: string;
+  };
+  expect(quote.source).toBe("manual");
+  expect(quote.price_q4).toBe(3788500);
+  expect(quote.badge).toContain("2024-01-05");
+
+  // The investments position screen reflects the manual price badge.
+  await page.goto("/investments");
+  await expect(page.getByText(/stale, last price @ 2024-01-05/i)).toBeVisible();
 });
 
 test("reports monthly URL params are shareable and deterministic", async ({ page }) => {

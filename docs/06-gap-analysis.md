@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Rolling document — reviewed at the end of **every** iteration ([07-iterative-prompts](07-iterative-prompts.md) §2) |
-| **Last updated** | 2026-11-10 (ITER-22 close review: no new gaps; FR-IMP-1 AC-IMP1a–IMP1g covered at L1/L2/L3/L4, AC-IMP1h slipped → ITER-23 by pre-agreement, tracked as a scope delta not a gap) |
+| **Last updated** | 2026-11-10 (ITER-23 close review: no new gaps — FR-IMP-1 AC-IMP1h landed at L1/L2/L3/L4, so FR-IMP-1 is fully covered; FEAT-002 remains the next specified-but-unscheduled item) |
 
 Gap analysis compares three layers and records what does (not) survive between them:
 

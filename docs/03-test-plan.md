@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Active |
-| **Last updated** | 2026-11-10 |
+| **Last updated** | 2026-11-10 (ITER-23: IMP row extended to AC-IMP1h — FR-IMP-1 fully covered) |
 | **Parents** | [01-requirements](01-requirements.md) (AC ids) · [02-architecture](02-architecture.md) |
 | **Process** | Strict TDD — every requirement is implemented **failing-test-first** within its iteration (D-15) |
 
@@ -160,6 +160,20 @@ scenario (`e2e/smoke.spec.ts`: submenu reachability → positions snapshot impor
 ITER-23 as pre-agreed — tracked in [01 §12](01-requirements.md) and [08 §3C](08-backlog.md); red snapshots in
 `docs/logs/iter-22/red-*.log`. Full gates green at close: backend 124 passed (coverage 85.66%), frontend 17
 passed, e2e 7/7, ruff/mypy/eslint/tsc clean.*
+
+*ITER-23 close note: the IMP row now covers **AC-IMP1h** at its mapped layers — L1 price-history importer
+suite (`backend/tests/unit/test_importer_price_history.py`, 13 tests: repointed bank-statement starter,
+canonical fields with optional volume, Decimal-only volume/q4 close conversion, plan normalization + row
+errors, committed/in-file duplicate marking, price-row hash), L2 import-API extension
+(`backend/tests/api/test_imports.py`, +10 tests: preview would-post rows, manual price_cache upsert on
+`(ticker, date)`, hash-registry dedupe + corrected-close upsert, latest_quotes refresh with the imported
+close date, AC-I2c manual precedence via quote API + `resolve_quote`, atomic abort, 5,000-row limit,
+`import.price_history` audit), L3 wizard suite (`frontend/app/__tests__/import-page.test.tsx`, 5 tests:
+price_history kind option + template hint + date/close/volume preview effects), and the L4 import-wizard
+scenario extension (`e2e/smoke.spec.ts`: price-history fixture import → quote API `source='manual'` →
+`/investments` stale badge reflects the manual price). FR-IMP-1 is now fully covered. Red snapshots in
+`docs/logs/iter-23/red-*.log`. Full gates green at close: backend 151 passed (coverage 86.04%), frontend
+19 passed, e2e 7/7, ruff/mypy/eslint/tsc clean.*
 
 ## 5. Dedicated suites
 

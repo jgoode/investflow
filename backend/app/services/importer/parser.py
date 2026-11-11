@@ -116,3 +116,8 @@ def decimal_to_q4(value: str, *, label: str = "quantity") -> int:
 def decimal_to_cents(value: str, *, label: str = "amount") -> int:
     """Convert a decimal string to an integer-cents amount."""
     return _parse_decimal(value, scale=_CENTS, label=label, max_decimals=2)
+
+
+def decimal_to_volume(value: str, *, label: str = "volume") -> int:
+    """Convert an integer share-volume string (no fractional shares)."""
+    return _parse_decimal(value, scale=Decimal("1"), label=label, max_decimals=0)

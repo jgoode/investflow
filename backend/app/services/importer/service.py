@@ -21,6 +21,7 @@ from fastapi import HTTPException, status
 
 from app.db.connection import connect
 from app.positions import apply_trade_on_connection, ensure_positions_tables
+from app.providers import ensure_market_tables
 from app.services.importer import dedupe, evaluator, mapping, parser
 from app.services.importer.parser import ImportError as FileImportError
 from app.transactions import (
@@ -29,8 +30,12 @@ from app.transactions import (
     post_transaction_on_connection,
 )
 
-KINDS = ("positions", "trades")
-AUDIT_ACTIONS = {"positions": "import.positions", "trades": "import.transactions"}
+KINDS = ("positions", "trades", "price_history")
+AUDIT_ACTIONS = {
+    "positions": "import.positions",
+    "trades": "import.transactions",
+    "price_history": "import.price_history",
+}
 
 DEFAULT_INCOME_ACCOUNT = "Interest & Dividends"
 DEFAULT_EXPENSE_ACCOUNT = "Fees"
@@ -169,10 +174,7 @@ def _parse_request(
     if kind not in KINDS:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
-            detail=(
-                f"unsupported import kind: {kind!r}; supported kinds: "
-                f"{', '.join(KINDS)} (price history import arrives in ITER-23)"
-            ),
+            detail=(f"unsupported import kind: {kind!r}; supported kinds: {', '.join(KINDS)}"),
         )
     csv_text = payload.get("csv_text")
     if not isinstance(csv_text, str):
@@ -330,6 +332,56 @@ def _remove_absent_holdings(conn: Any, absent: list[dict[str, Any]]) -> int:
     return removed
 
 
+def _apply_price_rows(conn: Any, rows: list[dict[str, Any]]) -> int:
+    """Upsert price_cache rows (source='manual') and refresh latest_quotes.
+
+    price_cache's unique key is (ticker, date): a row is upserted, never
+    duplicated. The newest imported close per ticker is promoted into
+    latest_quotes with asof = the close date (midnight UTC) so the manual
+    price carries its true date (AC-I2c: manual rows win over provider rows).
+    No ledger postings — price history writes no transaction rows (02 §4.5).
+    """
+    posted = 0
+    newest: dict[str, dict[str, Any]] = {}
+    now = _now_ts()
+    for row in rows:
+        if row["errors"] or row["duplicate"]:
+            continue
+        ticker = str(row["ticker"])
+        date_value = str(row["date"])
+        conn.execute(
+            """
+            INSERT INTO price_cache (ticker, date, close_q4, volume, source, fetched_at)
+            VALUES (?, ?, ?, ?, 'manual', ?)
+            ON CONFLICT(ticker, date) DO UPDATE SET
+                close_q4 = excluded.close_q4,
+                volume = excluded.volume,
+                source = 'manual',
+                fetched_at = excluded.fetched_at
+            """,
+            (ticker, date_value, int(row["close_q4"] or 0), int(row["volume"] or 0), now),
+        )
+        current = newest.get(ticker)
+        if current is None or date_value > current["date"]:
+            newest[ticker] = {"date": date_value, "close_q4": int(row["close_q4"] or 0)}
+        posted += 1
+
+    for ticker, entry in newest.items():
+        conn.execute(
+            """
+            INSERT INTO latest_quotes (ticker, price_q4, asof, source, fetched_at)
+            VALUES (?, ?, ?, 'manual', ?)
+            ON CONFLICT(ticker) DO UPDATE SET
+                price_q4 = excluded.price_q4,
+                asof = excluded.asof,
+                source = excluded.source,
+                fetched_at = excluded.fetched_at
+            """,
+            (ticker, entry["close_q4"], f"{entry['date']}T00:00:00Z", now),
+        )
+    return posted
+
+
 def run_preview(payload: dict[str, Any], *, user_id: int | None = None) -> dict[str, Any]:
     kind, parsed, resolved, bindings, _file_name, _raw = _parse_request(
         payload, require_confirm=False
@@ -340,6 +392,13 @@ def run_preview(payload: dict[str, Any], *, user_id: int | None = None) -> dict[
         if kind == "positions":
             plan = evaluator.build_positions_plan(
                 conn, parsed=parsed, column_mapping=resolved, bindings=bindings
+            )
+        elif kind == "price_history":
+            plan = evaluator.build_price_history_plan(
+                conn,
+                parsed=parsed,
+                column_mapping=resolved,
+                committed_hashes=select_imported_row_hashes(conn, kind=kind),
             )
         else:
             plan = evaluator.build_trades_plan(
@@ -377,6 +436,10 @@ def run_commit(payload: dict[str, Any], *, user_id: int | None = None) -> dict[s
     # audit_log + transaction tables must exist before BEGIN IMMEDIATE, since
     # _log_audit joins this transaction instead of ensuring on its own conn.
     ensure_transactions_tables()
+    # price_cache / latest_quotes must exist before BEGIN IMMEDIATE for the
+    # price_history kind (ensure_* on their own connection would deadlock the
+    # write lock mid-transaction).
+    ensure_market_tables()
 
     with connect() as conn:
         conn.execute("BEGIN IMMEDIATE")
@@ -402,6 +465,15 @@ def run_commit(payload: dict[str, Any], *, user_id: int | None = None) -> dict[s
                         },
                     )
                 rows = plan["rows"]
+                order_errors: list[str] = []
+            elif kind == "price_history":
+                plan = evaluator.build_price_history_plan(
+                    conn,
+                    parsed=parsed,
+                    column_mapping=resolved,
+                    committed_hashes=select_imported_row_hashes(conn, kind=kind),
+                )
+                rows = plan["rows"]
                 order_errors = []
             else:
                 plan = evaluator.build_trades_plan(
@@ -425,6 +497,14 @@ def run_commit(payload: dict[str, Any], *, user_id: int | None = None) -> dict[s
                 for row in rows:
                     results.append({"row_index": row["row_index"], "status": "posted"})
                     registrations.append((row["row_index"], row["hash"], "posted"))
+            elif kind == "price_history":
+                counts["posted"] = _apply_price_rows(conn, rows)
+                for row in rows:
+                    status_ = "duplicate" if row["duplicate"] else "posted"
+                    if row["duplicate"]:
+                        counts["duplicate"] += 1
+                    results.append({"row_index": row["row_index"], "status": status_})
+                    registrations.append((row["row_index"], row["hash"], status_))
             else:
                 for row in rows:
                     if row["duplicate"]:

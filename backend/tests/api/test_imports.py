@@ -5,10 +5,16 @@ skip-and-report dedupe (AC-IMP1c), positions replace-with-flag (AC-IMP1d),
 trades through the avg-cost engine + cash events through the posting service
 (AC-IMP1e), synchronous limits (AC-IMP1f), audit `import.*` (AC-IMP1g), and
 mapping templates (AC-IMP1a).
+
+ITER-23 extends the file with the price_history kind (AC-IMP1h): preview +
+commit writing price_cache rows with source='manual', latest_quotes refresh,
+AC-I2c manual-price precedence, upsert-on-(ticker,date), hash-registry dedupe,
+atomic per-file abort, and the import.price_history audit entry.
 """
 
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -378,6 +384,244 @@ def test_oversized_file_is_refused(client: TestClient, chunk: str) -> None:
     response = _post_json(client, "/api/imports/commit", payload)
     assert response.status_code == 422
     assert "5 MB" in response.text
+
+
+# --- AC-IMP1h: price-history import (ITER-23) -----------------------------------
+
+PRICE_HISTORY_CSV = """Date,Ticker,Close,Volume
+2024-01-02,msft,372.50,24850000
+2024-01-03,MSFT,374.20,23100000
+2024-01-04,MSFT,376.10,
+2024-01-05,MSFT,378.85,20540000
+"""
+
+PRICE_COLUMNS = {
+    "date": "Date",
+    "ticker": "Ticker",
+    "close": "Close",
+    "volume": "Volume",
+}
+
+PRICE_MIN_COLUMNS = {"date": "Date", "ticker": "Ticker", "close": "Close"}
+
+
+def _price_payload(client: TestClient, csv_text: str = PRICE_HISTORY_CSV, **extra: Any) -> Any:
+    payload: dict[str, Any] = {
+        "kind": "price_history",
+        "csv_text": csv_text,
+        "column_mapping": PRICE_COLUMNS,
+        "file_name": "prices.csv",
+        "confirm": True,
+        **extra,
+    }
+    return _post_json(client, "/api/imports/commit", payload)
+
+
+def _db_rows(app_env: Path, sql: str) -> list[dict[str, Any]]:
+    import sqlite3
+
+    conn = sqlite3.connect(app_env)
+    conn.row_factory = sqlite3.Row
+    try:
+        rows = [dict(row) for row in conn.execute(sql).fetchall()]  # type: ignore[arg-type]
+        conn.commit()
+        return rows
+    finally:
+        conn.close()
+
+
+def test_price_history_preview_reports_would_post_rows(client: TestClient) -> None:
+    _auth(client)
+    preview = _post_json(
+        client,
+        "/api/imports/preview",
+        {
+            "kind": "price_history",
+            "csv_text": PRICE_HISTORY_CSV,
+            "column_mapping": PRICE_COLUMNS,
+            "confirm": False,
+        },
+    )
+    assert preview.status_code == 200, preview.text
+    body = preview.json()
+    assert body["kind"] == "price_history"
+    assert body["total_rows"] == 4
+    assert body["valid_rows"] == 4
+    assert body["error_rows"] == []
+    would_post = body["would_post"]
+    assert [entry["action"] for entry in would_post] == ["price"] * 4
+    assert all(entry["ticker"] == "MSFT" for entry in would_post)  # uppercased
+    assert would_post[0] == {
+        "action": "price",
+        "ticker": "MSFT",
+        "date": "2024-01-02",
+        "close_q4": 3_725_000,
+        "volume": 24_850_000,
+    }
+
+
+def test_price_history_preview_reports_row_errors(client: TestClient) -> None:
+    _auth(client)
+    bad = """Date,Ticker,Close
+2024-13-01,MSFT,372.50
+2024-01-03,MSFT,374.20005
+"""
+    preview = _post_json(
+        client,
+        "/api/imports/preview",
+        {
+            "kind": "price_history",
+            "csv_text": bad,
+            "column_mapping": PRICE_MIN_COLUMNS,
+            "confirm": False,
+        },
+    )
+    assert preview.status_code == 200
+    errors = preview.json()["error_rows"]
+    assert len(errors) == 2
+
+
+def test_price_history_commit_writes_manual_price_cache_and_latest_quotes(
+    client: TestClient, app_env: Path
+) -> None:
+    _auth(client)
+    response = _price_payload(client)
+    assert response.status_code == 200, response.text
+    counts = response.json()["counts"]
+    assert counts["posted"] == 4
+    assert counts["duplicate"] == 0
+    assert counts["removed"] == 0
+
+    cache = _db_rows(
+        app_env,
+        "SELECT ticker, date, close_q4, volume, source FROM price_cache ORDER BY date ASC",
+    )
+    assert [(str(row["ticker"]), str(row["date"])) for row in cache] == [  # type: ignore[index]
+        ("MSFT", "2024-01-02"),
+        ("MSFT", "2024-01-03"),
+        ("MSFT", "2024-01-04"),
+        ("MSFT", "2024-01-05"),
+    ]
+    assert all(str(row["source"]) == "manual" for row in cache)  # type: ignore[index]
+    assert int(cache[0]["close_q4"]) == 3_725_000  # type: ignore[index]
+    assert int(cache[2]["volume"]) == 0  # blank volume → 0 # type: ignore[index]
+
+    quotes = _db_rows(
+        app_env,
+        "SELECT ticker, price_q4, asof, source FROM latest_quotes",
+    )
+    assert len(quotes) == 1
+    quote = quotes[0]
+    assert str(quote["ticker"]) == "MSFT"  # type: ignore[index]
+    assert int(quote["price_q4"]) == 3_788_500  # newest close wins # type: ignore[index]
+    assert str(quote["source"]) == "manual"  # type: ignore[index]
+    assert str(quote["asof"]).startswith("2024-01-05")  # type: ignore[index]
+
+
+def test_price_history_commit_needs_no_account_bindings(client: TestClient, app_env: Path) -> None:
+    _auth(client)
+    response = _price_payload(client, **{"account_bindings": {}})
+    assert response.status_code == 200, response.text
+    assert len(_db_rows(app_env, "SELECT 1 FROM price_cache")) == 4
+
+
+def test_price_history_reimport_duplicates_identical_rows_and_upserts_changed_closes(
+    client: TestClient, app_env: Path
+) -> None:
+    _auth(client)
+    assert _price_payload(client).status_code == 200
+
+    # identical re-import → every row duplicate-skipped, cache unchanged
+    second = _price_payload(client)
+    assert second.status_code == 200, second.text
+    counts = second.json()["counts"]
+    assert counts["duplicate"] == 4
+    assert counts["posted"] == 0
+    assert len(_db_rows(app_env, "SELECT 1 FROM price_cache")) == 4
+
+    # corrected close for an existing (ticker, date) → upsert (no duplicate row);
+    # unchanged rows stay hash-identical → duplicate-skipped
+    corrected = PRICE_HISTORY_CSV.replace("378.85", "380.10")
+    third = _price_payload(client, corrected)
+    assert third.status_code == 200, third.text
+    counts = third.json()["counts"]
+    assert counts["posted"] == 1
+    assert counts["duplicate"] == 3
+    rows = _db_rows(app_env, "SELECT close_q4 FROM price_cache WHERE date = '2024-01-05'")
+    assert len(rows) == 1  # still exactly one (ticker, date) row
+    assert int(rows[0]["close_q4"]) == 3_801_000  # type: ignore[index]
+
+
+def test_price_history_manual_quote_precedence_holds_after_import(
+    client: TestClient,
+) -> None:
+    _auth(client)
+    assert _price_payload(client).status_code == 200
+
+    quote = client.get("/api/investments/quotes/MSFT", headers=CSRF_HEADER)
+    assert quote.status_code == 200
+    body = quote.json()
+    assert body["source"] == "manual"
+    assert body["price_q4"] == 3_788_500
+
+    # AC-I2c: resolve_quote serves the manual price without a provider round-trip
+    from app.providers import resolve_quote
+
+    resolved = resolve_quote("MSFT")
+    assert resolved["source"] == "manual"
+    assert resolved["price_q4"] == 3_788_500
+
+
+def test_price_history_hard_row_error_aborts_whole_file(client: TestClient, app_env: Path) -> None:
+    _auth(client)
+    good_then_bad = """Date,Ticker,Close
+2024-01-02,MSFT,372.50
+2024-01-03,MSFT,374.20
+2024-01-04,MSFT,not-a-number
+"""
+    response = _price_payload(client, good_then_bad)
+    assert response.status_code == 422
+    assert "row errors" in response.text
+
+    # nothing was committed — atomic per file (AC-IMP1c posture)
+    assert _db_rows(app_env, "SELECT 1 FROM price_cache") == []
+    assert _db_rows(app_env, "SELECT 1 FROM latest_quotes") == []
+    batches = _db_rows(app_env, "SELECT 1 FROM import_batches WHERE kind = 'price_history'")
+    assert batches == []
+
+
+def test_price_history_row_limit_is_refused_with_split_suggestion(client: TestClient) -> None:
+    _auth(client)
+    header = "Date,Ticker,Close"
+    rows = "\n".join(f"2024-01-02,T{i},10" for i in range(5001))
+    response = _price_payload(client, f"{header}\n{rows}", column_mapping=PRICE_MIN_COLUMNS)
+    assert response.status_code == 422
+    assert "split" in response.text.lower()
+
+
+def test_price_history_commit_writes_audit_entry(client: TestClient) -> None:
+    _auth(client)
+    assert _price_payload(client).status_code == 200
+    response = client.get("/api/audit", headers=CSRF_HEADER)
+    assert response.status_code == 200
+    actions = {entry["action"] for entry in response.json()["items"]}
+    assert "import.price_history" in actions
+
+
+def test_bank_statement_template_hint_lists_price_history_columns(client: TestClient) -> None:
+    _auth(client)
+    response = client.get("/api/imports/templates", headers=CSRF_HEADER)
+    assert response.status_code == 200
+    template = next(
+        entry for entry in response.json()["templates"] if entry["name"] == "bank statement"
+    )
+    assert template["kind"] == "price_history"
+    assert template["column_mapping"] == {
+        "date": "Date",
+        "ticker": "Ticker",
+        "close": "Close",
+        "volume": "Volume",
+    }
 
 
 # --- AC-IMP1g: audit trail -------------------------------------------------------

@@ -1,0 +1,80 @@
+E       AssertionError: assert {'date': 'Dat...t': 'Account'} == {'date': 'Dat...me': 'Volume'}
+E         
+E         Omitting 1 identical items, use -vv to show
+E         Left contains 3 more items:
+E         {'account': 'Account', 'amount': 'Amount', 'description': 'Description'}
+E         Right contains 3 more items:
+E         {'close': 'Close', 'ticker': 'Ticker', 'volume': 'Volume'}
+E         Use -v to get more diff
+tests/unit/test_importer_price_history.py:36: AssertionError
+E       AssertionError: assert ['date', 'ticker', 'close'] == ['date', 'tic...se', 'volume']
+E         
+E         Right contains one more item: 'volume'
+E         Use -v to get more diff
+tests/unit/test_importer_price_history.py:45: AssertionError
+tests/unit/test_importer_price_history.py:50: 
+E                   app.services.importer.parser.ImportError: unknown column field for price_history import: 'volume'
+E       AssertionError: assert None == {'date': 'Date', 'ticker': 'Ticker', 'close': 'Close', 'volume': 'Volume'}
+E        +  where {'date': 'Date', 'ticker': 'Ticker', 'close': 'Close', 'volume': 'Volume'} = dict({'date': 'Date', 'ticker': 'Ticker', 'close': 'Close', 'volume': 'Volume'})
+tests/unit/test_importer_price_history.py:67: AssertionError
+E       AttributeError: module 'app.services.importer.parser' has no attribute 'decimal_to_volume'. Did you mean: 'decimal_to_cents'?
+tests/unit/test_importer_price_history.py:78: AttributeError
+E       AttributeError: module 'app.services.importer.parser' has no attribute 'decimal_to_volume'. Did you mean: 'decimal_to_cents'?
+tests/unit/test_importer_price_history.py:78: AttributeError
+E       AttributeError: module 'app.services.importer.parser' has no attribute 'decimal_to_volume'. Did you mean: 'decimal_to_cents'?
+tests/unit/test_importer_price_history.py:78: AttributeError
+E           AttributeError: module 'app.services.importer.parser' has no attribute 'decimal_to_volume'. Did you mean: 'decimal_to_cents'?
+tests/unit/test_importer_price_history.py:84: AttributeError
+E           AttributeError: module 'app.services.importer.parser' has no attribute 'decimal_to_volume'. Did you mean: 'decimal_to_cents'?
+tests/unit/test_importer_price_history.py:84: AttributeError
+E           AttributeError: module 'app.services.importer.parser' has no attribute 'decimal_to_volume'. Did you mean: 'decimal_to_cents'?
+tests/unit/test_importer_price_history.py:84: AttributeError
+E           AttributeError: module 'app.services.importer.parser' has no attribute 'decimal_to_volume'. Did you mean: 'decimal_to_cents'?
+tests/unit/test_importer_price_history.py:84: AttributeError
+E       AttributeError: module 'app.services.importer.evaluator' has no attribute 'build_price_history_plan'
+tests/unit/test_importer_price_history.py:92: AttributeError
+E       AttributeError: module 'app.services.importer.evaluator' has no attribute 'build_price_history_plan'
+tests/unit/test_importer_price_history.py:124: AttributeError
+E       AttributeError: module 'app.services.importer.evaluator' has no attribute 'build_price_history_plan'
+tests/unit/test_importer_price_history.py:135: AttributeError
+E       AttributeError: module 'app.services.importer.evaluator' has no attribute 'build_price_history_plan'
+tests/unit/test_importer_price_history.py:146: AttributeError
+E       AttributeError: module 'app.services.importer.dedupe' has no attribute 'price_row_hash'. Did you mean: 'trade_row_hash'?
+tests/unit/test_importer_price_history.py:171: AttributeError
+E       AssertionError: {"detail":"unsupported import kind: 'price_history'; supported kinds: positions, trades (price history import arrives in ITER-23)"}
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+tests/api/test_imports.py:436: AssertionError
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+tests/api/test_imports.py:470: AssertionError
+E       AssertionError: {"detail":"unsupported import kind: 'price_history'; supported kinds: positions, trades (price history import arrives in ITER-23)"}
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+tests/api/test_imports.py:480: AssertionError
+E       AssertionError: {"detail":"unsupported import kind: 'price_history'; supported kinds: positions, trades (price history import arrives in ITER-23)"}
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+tests/api/test_imports.py:516: AssertionError
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E        +    where <Response [422 Unprocessable Entity]> = _price_payload(<starlette.testclient.TestClient object at 0xf328fe652e10>)
+tests/api/test_imports.py:524: AssertionError
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E        +    where <Response [422 Unprocessable Entity]> = _price_payload(<starlette.testclient.TestClient object at 0xf328fe70f8c0>)
+tests/api/test_imports.py:548: AssertionError
+E       assert 'row errors' in '{"detail":"unsupported import kind: \'price_history\'; supported kinds: positions, trades (price history import arrives in ITER-23)"}'
+E        +  where '{"detail":"unsupported import kind: \'price_history\'; supported kinds: positions, trades (price history import arrives in ITER-23)"}' = <Response [422 Unprocessable Entity]>.text
+tests/api/test_imports.py:573: AssertionError
+E       assert 'split' in '{"detail":"unsupported import kind: \'price_history\'; supported kinds: positions, trades (price history import arrives in iter-23)"}'
+E        +  where '{"detail":"unsupported import kind: \'price_history\'; supported kinds: positions, trades (price history import arrives in iter-23)"}' = <built-in method lower of str object at 0xf328ffb03730>()
+E        +    where <built-in method lower of str object at 0xf328ffb03730> = '{"detail":"unsupported import kind: \'price_history\'; supported kinds: positions, trades (price history import arrives in ITER-23)"}'.lower
+E        +      where '{"detail":"unsupported import kind: \'price_history\'; supported kinds: positions, trades (price history import arrives in ITER-23)"}' = <Response [422 Unprocessable Entity]>.text
+tests/api/test_imports.py:590: AssertionError
+E       assert 422 == 200
+E        +  where 422 = <Response [422 Unprocessable Entity]>.status_code
+E        +    where <Response [422 Unprocessable Entity]> = _price_payload(<starlette.testclient.TestClient object at 0xf328fea55dc0>)
+tests/api/test_imports.py:595: AssertionError
+E       AssertionError: assert {'date': 'Dat...t': 'Account'} == {'date': 'Dat...me': 'Volume'}
+E         

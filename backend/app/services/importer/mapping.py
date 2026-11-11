@@ -14,7 +14,7 @@ from app.services.importer.parser import ImportError
 CANONICAL_FIELDS: dict[str, list[str]] = {
     "positions": ["account", "ticker", "quantity", "avg_cost"],
     "trades": ["date", "type", "ticker", "quantity", "price", "fee", "amount", "cash_account"],
-    "price_history": ["date", "ticker", "close"],
+    "price_history": ["date", "ticker", "close", "volume"],
 }
 
 REQUIRED_FIELDS: dict[str, list[str]] = {
@@ -53,9 +53,9 @@ STARTER_TEMPLATES: list[dict[str, Any]] = [
         "kind": "price_history",
         "column_mapping": {
             "date": "Date",
-            "description": "Description",
-            "amount": "Amount",
-            "account": "Account",
+            "ticker": "Ticker",
+            "close": "Close",
+            "volume": "Volume",
         },
     },
 ]

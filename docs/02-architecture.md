@@ -3,7 +3,7 @@
 | | |
 |---|---|
 | **Status** | Active |
-| **Last updated** | 2026-11-10 (post-ITER-16 extension planning applied) |
+| **Last updated** | 2026-11-10 (post-ITER-23 price-history import semantics per ADR-009) |
 | **Parent** | [00-overview](00-overview.md) · Decisions D-01…D-16 |
 
 ## 1. System overview
@@ -187,6 +187,14 @@ quantities/prices `*_q4` INTEGER (×10⁴). All Fks with `ON DELETE` per column;
 | import_mappings | id PK / name UNIQUE / kind / columns_json / created_by FK / created_at / updated_at | saved column-mapping templates (starter + user); raw CSV never persisted |
 | import_batches | id PK / kind CHECK(`positions\|trades\|price_history`) / file_name / status CHECK(`committed\|failed`) / counts_json / created_by FK / created_at | one row per finished import; counts only, no row payloads |
 | import_rows | id PK / batch_id FK ON DELETE CASCADE / row_index / row_hash / status CHECK(`posted\|duplicate\|removed`) / detail_json NULL (failure rows only) / created_at | the dedupe registry (AC-IMP1c): a committed batch's posted hashes make re-imported identical rows duplicates; idx `(batch_id)`, `(row_hash)` |
+
+*Price-history import commit semantics (ITER-23, ADR-009):* `price_history` rows are **not account-bound**;
+the commit upserts `price_cache` on the unique `(ticker, date)` key with `source='manual'` (never duplicate
+rows) and refreshes `latest_quotes` with the newest imported close per ticker (`asof` = the close date at
+midnight UTC). Dedupe hashes cover `(date, ticker, close_q4, volume)`; identical re-imports are
+duplicate-skipped, corrected closes re-post and upsert. Price history writes **no ledger rows** (§4.5);
+AC-I2c manual precedence applies (`resolve_quote` serves manual `latest_quotes` rows before staleness
+checks).
 
 **settings** *(typed KV; effects validated against enum table)*
 

@@ -24,9 +24,12 @@ type WouldPostRow = {
   action?: string;
   account?: string;
   ticker?: string;
+  date?: string;
   quantity_q4?: number;
   avg_cost_q4?: number;
   amount_cents?: number;
+  close_q4?: number;
+  volume?: number;
   resulting_quantity_q4?: number;
   realized_gain_loss_cents?: number;
 };
@@ -50,12 +53,13 @@ const quantity = (q4: number | undefined) =>
 const KIND_OPTIONS = [
   { value: "positions", label: "Positions snapshot" },
   { value: "trades", label: "Trade history" },
+  { value: "price_history", label: "Price history" },
 ];
 
 export default function ImportPage() {
   const [templates, setTemplates] = useState<StarterTemplate[]>([]);
   const [accounts, setAccounts] = useState<AccountOption[]>([]);
-  const [kind, setKind] = useState<"positions" | "trades">("positions");
+  const [kind, setKind] = useState<"positions" | "trades" | "price_history">("positions");
   const [fileName, setFileName] = useState("");
   const [csvText, setCsvText] = useState("");
   const [preview, setPreview] = useState<PreviewPayload | null>(null);
@@ -218,7 +222,7 @@ export default function ImportPage() {
               className="select select-bordered min-h-11"
               value={kind}
               onChange={(event) => {
-                setKind(event.target.value as "positions" | "trades");
+                setKind(event.target.value as "positions" | "trades" | "price_history");
                 setPreview(null);
                 setResult(null);
               }}
@@ -340,8 +344,11 @@ export default function ImportPage() {
                     <th>Action</th>
                     <th>Account</th>
                     <th>Ticker</th>
+                    <th>Date</th>
                     <th>Quantity</th>
                     <th>Avg cost</th>
+                    <th>Close</th>
+                    <th>Volume</th>
                     <th>Amount</th>
                   </tr>
                 </thead>
@@ -352,8 +359,11 @@ export default function ImportPage() {
                       <td>{row.action ?? ""}</td>
                       <td>{row.account ?? ""}</td>
                       <td>{row.ticker ?? ""}</td>
+                      <td>{row.date ?? ""}</td>
                       <td>{quantity(row.quantity_q4)}</td>
                       <td>{quantity(row.avg_cost_q4)}</td>
+                      <td>{quantity(row.close_q4)}</td>
+                      <td>{row.volume === undefined ? "" : row.volume.toLocaleString()}</td>
                       <td>{money(row.amount_cents)}</td>
                     </tr>
                   ))}

@@ -32,6 +32,21 @@ def trade_row_hash(row: dict[str, Any]) -> str:
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
+_PRICE_HASHED_FIELDS = ("date", "ticker", "close_q4", "volume")
+
+
+def price_row_hash(row: dict[str, Any]) -> str:
+    """Deterministic content hash over a price-history plan row.
+
+    Identity is (date, ticker, close, volume); a corrected close for the same
+    (ticker, date) hashes differently → it re-posts and upserts the cached row
+    instead of being skipped as a duplicate.
+    """
+    fields = {field: row.get(field) for field in _PRICE_HASHED_FIELDS}
+    payload = json.dumps(fields, sort_keys=True, separators=(",", ":"), default=str)
+    return hashlib.sha256(payload.encode("utf-8")).hexdigest()
+
+
 def hash16(row_hash: str) -> str:
     """Short hash used inside the transaction reference (``import:<hash16>``)."""
     return row_hash[:16]

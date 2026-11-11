@@ -1,0 +1,25 @@
+              [36m</tbody>[39m
+            [36m</table>[39m
+          [36m</div>[39m
+        [36m</section>[39m
+      [36m</main>[39m
+    [36m</div>[39m
+  [36m</body>[39m
+[36m</html>[39m
+ ❯ Proxy.waitForWrapper node_modules/.pnpm/@testing-library+dom@10.4.2/node_modules/@testing-library/dom/dist/wait-for.js:163:27
+ ❯ app/__tests__/import-page.test.tsx:150:11
+    148|     fireEvent.click(screen.getByRole("button", { name: /run preview/i …
+    149| 
+    150|     await waitFor(() => expect(screen.getByText(/2024-01-02/)).toBeTru…
+       |           ^
+    151|     expect(screen.getByText(/price/i)).toBeTruthy(); // action column …
+    152|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 3 passed (5)
+   Start at  20:17:43
+   Duration  1.53s (transform 44ms, setup 0ms, collect 93ms, tests 1.09s, environment 229ms, prepare 33ms)
+

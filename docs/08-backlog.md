@@ -38,7 +38,7 @@ Rules:
 | **FEAT-004** | Data table standardization research + rollout | Frontend platform enhancement | User request 2026-11-10 | L (≈2–3 iterations, staged rollout) | scheduled — ITER-18 |
 | **FEAT-005** | Navbar information architecture redesign | UX/navigation | User request 2026-11-10 | M (≈1 iteration) | included ✅ — ITER-19/ITER-20 (closed ITER-21) |
 | **FEAT-006** | Horizontal navbar IA refinement | UX/navigation | User request 2026-11-10 | S (≈0.5–1 iteration) | scheduled — ITER-20 |
-| **FEAT-001** | Portfolio CSV import (positions + transactions) | Future feature request | User request 2026-11-08 | M (≈1–2 iterations) | included ✅ — ITER-22 (AC-IMP1a–IMP1g; AC-IMP1h price-history slipped → ITER-23; ADR-008) |
+| **FEAT-001** | Portfolio CSV import (positions + transactions) | Future feature request | User request 2026-11-08 | M (≈1–2 iterations) | included ✅ — ITER-22 (AC-IMP1a–IMP1g) + ITER-23 (AC-IMP1h price-history; ADR-009) — **feature complete** |
 | **FEAT-002** | Non-investment opening balances + statement migration import (CSV) | Future feature request | User request 2026-11-08 (extends FEAT-001 scoping note §3C.5) | M (≈1–2 iterations, shared importer core) | specified — Q&A resolved (§3D.6) |
 | — | *(related, owned in [06-gap-analysis](06-gap-analysis.md):* G-001 budgets · G-002 FIFO lots · G-004 role granularity · G-005 manual assets · G-006 desktop packaging | items | session decisions | — | recorded-at-time-zero |
 
@@ -250,12 +250,13 @@ and shell accessibility semantics.
 
 ## 3C. Feature request FEAT-001 — Portfolio CSV import
 
-> **Status: included ✅ (ITER-22) 2026-11-10. §3C.3 sketch + §3C.7 Q&A resolutions were promoted into
+> **Status: included ✅ (ITER-22 + ITER-23) 2026-11-10. §3C.3 sketch + §3C.7 Q&A resolutions were promoted into
 > `docs/01-requirements.md` §12 FR-IMP-1 (AC-IMP1a–IMP1h) at scheduling; the sketch below stays as the
 > provenance record. ITER-22 landed AC-IMP1a–IMP1g (mapping wizard + templates, dry-run preview, atomic
 > commit, hash-tuple dedupe, avg-cost trade replay with positions-only legs per ADR-008, cash-event
-> postings, limits, audit) at `/investments/import`; **AC-IMP1h (price-history) slipped to ITER-23 as
-> pre-agreed** — its starter template already ships. Backlog wording note: §3C.3's "post real
+> postings, limits, audit) at `/investments/import`; **ITER-23 landed AC-IMP1h (price-history → price_cache
+> with `source='manual'`, upsert on `(ticker, date)`, latest_quotes refresh, manual-price precedence per
+> ADR-009)** — FR-IMP-1 is complete. Backlog wording note: §3C.3's "post real
 > double-entry transactions ... feed the average-cost engine" is refined by ADR-008 (buy/sell =
 > positions-only; dividend/fee = real two-leg postings through the posting service).**
 
